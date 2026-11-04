@@ -26,13 +26,13 @@ async function Board({ params }: { params: Promise<{ key: string }> }) {
   return (
     <>
       <div className="mb-6">
-        <Link href="/projects" className="text-sm text-muted-fg hover:text-fg">
+        <Link href="/projects" className="text-sm font-medium text-accent hover:underline">
           ← Projects
         </Link>
         <div className="mt-2 flex flex-wrap items-baseline gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">{project.name}</h1>
           <span className="font-mono text-sm text-muted-fg">{project.key}</span>
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
+          <span className="rounded bg-accent-soft px-2 py-0.5 text-xs font-semibold text-accent">
             {PROJECT_STATUS_LABEL[project.status]}
           </span>
         </div>
@@ -44,7 +44,7 @@ async function Board({ params }: { params: Promise<{ key: string }> }) {
       </div>
 
       {can(actor.role, "task:create") && (
-        <section className="mb-6 rounded-lg border border-border bg-surface p-4">
+        <section className="mb-6 rounded-lg border border-border bg-surface p-4 shadow-card">
           <NewTaskForm projectId={project.id} members={members} />
         </section>
       )}
@@ -53,15 +53,15 @@ async function Board({ params }: { params: Promise<{ key: string }> }) {
         {TASK_STATUSES.map((status) => {
           const col = tasks.filter((t) => t.status === status);
           return (
-            <section key={status} className="rounded-lg bg-muted/60 p-3">
-              <h2 className="mb-3 flex justify-between text-xs font-semibold uppercase tracking-wide text-muted-fg">
+            <section key={status} className="rounded-lg border border-border bg-muted/70 p-3">
+              <h2 className="mb-3 flex justify-between border-b border-border pb-2 font-heading text-xs font-semibold uppercase tracking-wide text-muted-fg">
                 {TASK_STATUS_LABEL[status]} <span>{col.length}</span>
               </h2>
               <ul className="space-y-2">
                 {col.map((t) => (
                   <li
                     key={t.id}
-                    className="rounded-md border border-border bg-surface p-3 shadow-sm"
+                    className="rounded border border-border bg-surface p-3 shadow-card"
                   >
                     <div className="mb-1 flex items-center justify-between">
                       <span className="font-mono text-xs text-muted-fg">

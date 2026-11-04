@@ -14,8 +14,8 @@ async function ProjectList() {
   return (
     <>
       {can(actor.role, "project:create") && (
-        <section className="mb-8 rounded-lg border border-border bg-surface p-5">
-          <h2 className="mb-4 text-sm font-semibold">New project</h2>
+        <section className="mb-8 rounded-lg border border-border bg-surface p-5 shadow-card">
+          <h2 className="mb-4 text-[17px] font-bold">New project</h2>
           <NewProjectForm />
         </section>
       )}
@@ -30,15 +30,15 @@ async function ProjectList() {
               <li key={p.id}>
                 <Link
                   href={`/projects/${p.key}`}
-                  className="block rounded-lg border border-border bg-surface p-5 transition hover:border-accent"
+                  className="block rounded-lg border border-border border-t-[3px] border-t-accent bg-surface p-5 shadow-card transition hover:border-line hover:border-t-accent"
                 >
                   <div className="mb-1 flex items-center justify-between">
                     <span className="font-mono text-xs text-muted-fg">{p.key}</span>
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
+                    <span className="rounded bg-accent-soft px-2 py-0.5 text-xs font-semibold text-accent">
                       {PROJECT_STATUS_LABEL[p.status]}
                     </span>
                   </div>
-                  <h3 className="font-medium">{p.name}</h3>
+                  <h3 className="text-[17px] font-bold">{p.name}</h3>
                   {p.description && (
                     <p className="mt-1 line-clamp-2 text-sm text-muted-fg">{p.description}</p>
                   )}

@@ -18,7 +18,7 @@ export function TaskStatusSelect({ taskId, status }: { taskId: string; status: s
           if (!r.ok) alert(r.message);
         });
       }}
-      className="rounded border border-border bg-surface px-1.5 py-0.5 text-xs text-muted-fg disabled:opacity-50"
+      className="rounded border border-line bg-surface px-1.5 py-0.5 text-xs text-muted-fg focus:border-accent disabled:opacity-50"
     >
       {TASK_STATUSES.map((s) => (
         <option key={s} value={s}>

@@ -5,8 +5,8 @@ import { createProjectAction, createTaskAction, type ActionState } from "@/lib/a
 
 const initial: ActionState = { ok: false };
 const input =
-  "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20";
-const label = "block text-xs font-medium text-muted-fg mb-1";
+  "w-full h-[38px] rounded border border-line bg-surface px-3 py-2 text-sm text-fg outline-none focus:border-accent focus:ring-2 focus:ring-accent/20";
+const label = "block text-xs font-semibold text-muted-fg mb-1";
 
 function FieldError({ errors }: { errors?: string[] }) {
   return errors?.length ? <p className="mt-1 text-xs text-danger">{errors[0]}</p> : null;
@@ -74,7 +74,7 @@ export function NewProjectForm() {
       <div className="flex items-center gap-3 sm:col-span-6">
         <button
           disabled={pending}
-          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-fg hover:opacity-90 disabled:opacity-50"
+          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-fg font-heading font-semibold hover:bg-accent-strong disabled:opacity-50"
         >
           {pending ? "Creating…" : "Create project"}
         </button>
@@ -143,7 +143,7 @@ export function NewTaskForm({
       <div className="flex items-end sm:col-span-1">
         <button
           disabled={pending}
-          className="w-full rounded-md bg-accent px-3 py-2 text-sm font-medium text-accent-fg hover:opacity-90 disabled:opacity-50"
+          className="w-full rounded-md bg-accent px-3 py-2 text-sm font-medium text-accent-fg font-heading font-semibold hover:bg-accent-strong disabled:opacity-50"
         >
           {pending ? "…" : "Add"}
         </button>

@@ -1,54 +1,82 @@
 @import "tailwindcss";
 
+/* Len classic theme — plan/interface-menu.md (default for all web apps).
+ * Existing utility names (bg-accent, border-border, text-muted-fg …) map onto the Len tokens. */
 :root {
-  --bg: #f7f8fa;
-  --surface: #ffffff;
-  --fg: #16181d;
-  --muted: #eef0f3;
-  --muted-fg: #5d6470;
-  --border: #e2e5ea;
-  --accent: #1f5fbf;
-  --accent-fg: #ffffff;
-  --success: #1a7f4b;
-  --warn: #b25e09;
-  --danger: #c0352b;
-  --info: #1f5fbf;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f1115;
-    --surface: #171a20;
-    --fg: #e7e9ee;
-    --muted: #222630;
-    --muted-fg: #9aa1ad;
-    --border: #2a2f3a;
-    --accent: #5b9bff;
-    --accent-fg: #0b1220;
-    --success: #4cc38a;
-    --warn: #f0a44b;
-    --danger: #ff6b5e;
-    --info: #5b9bff;
-  }
+  --len-navy: #194a80;
+  --len-navy-700: #12375f;
+  --len-navy-50: #eef3f9;
+  --len-red: #da0000;
+  --len-red-700: #cf0000;
+  --len-blue: #0562c9;
+  --len-ink: #3b3b3b;
+  --len-text: #515151;
+  --len-text-2: #54595f;
+  --len-muted: #838282;
+  --len-line: #c4c4c4;
+  --len-line-soft: #e6e6e6;
+  --len-bg: #f5f6f8;
+  --len-surface: #ffffff;
+  --len-footer: #000000;
+  --len-success: #1e7b34;
+  --len-warning: #b26a00;
+  --len-shadow-header: 0 2px 6px rgba(0, 0, 0, 0.18);
+  --len-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 @theme inline {
-  --color-bg: var(--bg);
-  --color-surface: var(--surface);
-  --color-fg: var(--fg);
-  --color-muted: var(--muted);
-  --color-muted-fg: var(--muted-fg);
-  --color-border: var(--border);
-  --color-accent: var(--accent);
-  --color-accent-fg: var(--accent-fg);
-  --color-success: var(--success);
-  --color-warn: var(--warn);
-  --color-danger: var(--danger);
-  --color-info: var(--info);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--len-bg);
+  --color-surface: var(--len-surface);
+  --color-fg: var(--len-ink);
+  --color-text: var(--len-text);
+  --color-muted: #f3f4f6;
+  --color-muted-fg: var(--len-text-2);
+  --color-border: var(--len-line-soft);
+  --color-line: var(--len-line);
+  --color-accent: var(--len-navy);
+  --color-accent-strong: var(--len-navy-700);
+  --color-accent-soft: var(--len-navy-50);
+  --color-accent-fg: #ffffff;
+  --color-marker: var(--len-red-700);
+  --color-success: var(--len-success);
+  --color-warn: var(--len-warning);
+  --color-danger: var(--len-red);
+  --color-info: var(--len-blue);
+  --color-footer: var(--len-footer);
+
+  --font-sans: var(--font-open-sans), "Segoe UI", Arial, sans-serif;
+  --font-heading: var(--font-montserrat), "Segoe UI", Arial, sans-serif;
+  --font-mono: ui-monospace, Consolas, monospace;
+
+  /* §3 radii: controls 4px, cards 6px */
+  --radius-sm: 4px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+
+  --shadow-header: var(--len-shadow-header);
+  --shadow-card: var(--len-shadow-card);
 }
 
 body {
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--len-bg);
+  color: var(--len-text);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  color: var(--len-ink);
+}
+h1 {
+  letter-spacing: -0.3px;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--len-blue);
+  outline-offset: 2px;
 }
