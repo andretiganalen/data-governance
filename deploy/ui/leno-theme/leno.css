@@ -51,14 +51,23 @@ h1, h2, h3, h4, h5, h6, .ant-typography h1, .ant-typography h2, .ant-typography 
 .navbar-container .ant-input-affix-wrapper,
 .navbar-container .ant-select-selector { border-radius: var(--len-radius) !important; }
 
-/* ---- Home welcome banner: flat Len navy, no gradient/texture, square ---- */
+/* ---- Home welcome banner: flat, follows the theme ----
+ * Default = theme Primary Color (Settings › Preferences › Appearance), no gradient/texture.
+ * A colour chosen in Settings › Persona › Customize UI › Home is set inline by OM and wins
+ * (background-color is deliberately NOT !important here). */
 .customise-landing-page-header {
-  background: var(--len-navy) !important;
   background-image: none !important;
+  background-color: var(--ant-primary-color, var(--len-red));
   border-radius: 0 !important;
   box-shadow: none !important;
 }
-.customise-landing-page-header::before, .customise-landing-page-header::after { background-image: none !important; }
+
+/* ---- Other hard-coded blues on Home → theme ---- */
+.whats-new-alert-left { background: var(--ant-primary-color, var(--len-red)) !important; background-image: none !important; }
+[class*="whats-new-alert"] a, [class*="whats-new-alert"] a *, [class*="whats-new-alert"] .ant-btn-link,
+[class*="whats-new-alert"] .ant-btn-link * { color: var(--len-navy) !important; }
+[class*="whats-new-alert"] a:hover, [class*="whats-new-alert"] a:hover *,
+[class*="whats-new-alert"] .ant-btn-link:hover * { color: var(--len-red-700) !important; }
 
 /* ---- §4.2 Sidebar: white, square items, Len red pointer ---- */
 .left-sidebar-layout, .ant-layout-sider.left-sidebar-layout,
