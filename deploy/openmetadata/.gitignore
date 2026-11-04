@@ -1,0 +1,4 @@
+# secrets & data live in /srv/openmetadata — never in git
+*.env
+!openmetadata.base.env
+__pycache__/

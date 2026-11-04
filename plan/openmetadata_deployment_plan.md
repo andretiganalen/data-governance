@@ -27,7 +27,7 @@ artefak: deploy/
 | Alat | OpenMetadata, fitur bawaan saja: beranda, Teams/Roles/Policies, kustomisasi logo/tema/teks, aset Tabel ERM. Tanpa aplikasi kustom. |
 | Hubungan dengan LenO | Terpisah, database sendiri, **tanpa koneksi** ke database LenO. |
 | Server | jitsi 192.168.125.14 (bersama, development). |
-| Akses | HTTP `0.0.0.0:8585`, tanpa TLS & reverse proxy, jaringan internal saja. |
+| Akses | HTTP `0.0.0.0:8585`, tanpa TLS, jaringan internal saja. Pintu masuknya nginx `om-ui`, yang hanya berfungsi menyisipkan tema LenO. |
 | Login | Fase 1: basic auth sementara (admin UV-3). Fase 2: **IDS** (OIDC). Kunci identitas = email kantor. |
 | Admin | UV-3 IT Development. |
 | Teams | Direktorat › Divisi › Unit Kerja (45) dari `Master_Organization`; Seluruh Unit Kerja = root. Keanggotaan diimpor berkala dari daftar HR/IDS; satu Pengguna boleh di beberapa team. |
@@ -38,6 +38,7 @@ artefak: deploy/
 | Layar LenO | Aset Dashboard di service "LenO ERM"; lineage kolom → layar. |
 | Aturan kualitas | Definisi test case saja (tidak dijalankan). |
 | Bahasa konten | Bahasa Indonesia sesuai Workbook. |
+| Tampilan | **LenO Interface: warna + gaya header/sidebar** ([[leno_interface_theme.md]]). Disisipkan lewat CSS (`ui/leno-theme/leno.css`) oleh nginx `om-ui`, ditambah pengaturan tema bawaan OM (warna, logo). Menu tetap milik OM. Susunan menu LPMS dan pola menu terkunci **tidak** dipakai. |
 | Backup | `pg_dump` harian lokal, retensi 14 hari. |
 
 ---
@@ -46,8 +47,9 @@ artefak: deploy/
 
 ```mermaid
 flowchart LR
-  PC["Browser Pengguna (intranet)"] -- "HTTP :8585" --> OM["openmetadata-server 2.0.7<br/>(UI + API, admin :8586 internal)"]
+  PC["Browser Pengguna (intranet)"] -- "HTTP :8585" --> UI
   subgraph jitsi["Server jitsi 192.168.125.14 — project compose 'openmetadata'"]
+    UI["om-ui (nginx)<br/>proxy + sisip leno.css"] --> OM["openmetadata-server 2.0.7<br/>(UI + API, admin :8586 internal)"]
     MIG["openmetadata-migrate<br/>(sekali jalan saat up)"] --> PG
     OM --> PG[("PostgreSQL 15<br/>openmetadata_db")]
     OM --> OS[("OpenSearch 3.2.0<br/>indeks pencarian")]
@@ -66,9 +68,10 @@ Aplikasi ERM LenO ditampilkan hanya sebagai konteks: **tidak ada panah ke LenO**
 | postgresql | `postgres:15-bookworm` | om-internal | — | 1 GB |
 | opensearch | `opensearchproject/opensearch:3.2.0` (heap 1 GB) | om-internal | — | 2 GB |
 | openmetadata-migrate | `docker.getcollate.io/openmetadata/server:2.0.7` | om-internal | — | — (sekali jalan) |
-| openmetadata-server | `docker.getcollate.io/openmetadata/server:2.0.7` (heap 1,5 GB) | om-internal, om-egress | **0.0.0.0:8585** | 2,5 GB |
+| openmetadata-server | `docker.getcollate.io/openmetadata/server:2.0.7` (heap 1,5 GB) | om-internal, om-egress | — | 2,5 GB |
+| om-ui | `nginxinc/nginx-unprivileged:stable-alpine` | om-egress | **0.0.0.0:8585** | 128 MB |
 
-- **Total batas memori ≈ 5,5 GB.** Jitsi memiliki ≈ 10 GiB tersedia.
+- **Total batas memori ≈ 5,6 GB.** Jitsi memiliki ≈ 10 GiB tersedia.
 - **Subnet tetap:** `om-internal` 172.28.10.0/24 (tanpa rute keluar) dan `om-egress` 172.28.11.0/24. Keduanya tidak bertabrakan dengan network yang sudah ada (172.17–172.21, Podman 10.89.0.0/24, LAN 192.168.x).
 - **Versi** mengikuti matriks resmi OpenMetadata 2.0.x: OpenSearch 3.2.0 dan PostgreSQL 15. Elasticsearch (ELv2/AGPL) dan MySQL (GPL) tidak dipakai.
 
@@ -78,7 +81,10 @@ Aplikasi ERM LenO ditampilkan hanya sebagai konteks: **tidak ada panah ke LenO**
 
 | Path | Fungsi |
 | :-- | :-- |
-| `compose.yaml` | 4 service, network bersubnet tetap, konfigurasi server (variabel sesuai `conf/openmetadata.yaml` 2.0.7) |
+| `compose.yaml` | 5 service, network bersubnet tetap, konfigurasi server (variabel sesuai `conf/openmetadata.yaml` 2.0.7) |
+| `ui/nginx.conf` | Proxy `om-ui` → OpenMetadata; menyisipkan `<link>` ke `leno.css` di setiap halaman HTML |
+| `ui/leno-theme/leno.css` | Token warna LenO, font Poppins, gaya header merah & sidebar LPMS, tombol/kartu |
+| `scripts/fetch-ui-assets.sh` | Mengambil font Poppins (OFL) dan logo LenO ke `ui/leno-theme/` |
 | `.env.example` | Direktori, port, domain email, admin, image (dikunci digest) |
 | `postgres/init/10-openmetadata.sh` | Membuat `openmetadata_user` + `openmetadata_db` (setara skrip resmi, tanpa Airflow) |
 | `host/prepare.sh` | Aman untuk server bersama: cek port, `vm.max_map_count`, direktori, aturan UFW 8585, unit backup |
@@ -135,6 +141,7 @@ Simpan salinan `/srv/openmetadata/secrets` di tempat aman di luar server (branka
 
 **5. Kunci image & deploy**
 ```bash
+sudo ./scripts/fetch-ui-assets.sh
 sudo ./scripts/pin-images.sh
 sudo ./scripts/deploy.sh
 sudo docker compose logs -f openmetadata-migrate openmetadata-server
@@ -145,6 +152,19 @@ Start pertama memakan waktu beberapa menit. Tekan Ctrl+C setelah log server menu
 1. Masuk dengan admin bawaan. Pada konfigurasi basic auth standar, akunnya `admin@<OM_PRINCIPAL_DOMAIN>` dengan password `admin` (verifikasi V-2).
 2. **Segera ganti password admin.**
 3. Buat akun basic auth untuk admin UV-3 dan beri peran Admin. Akun sementara ini dinonaktifkan di fase 2.
+4. Terapkan tema LenO di pengaturan tema/tampilan OpenMetadata (verifikasi V-6), dengan nilai dari [[leno_interface_theme.md]]:
+
+   | Pengaturan OM | Nilai |
+   | :-- | :-- |
+   | Warna utama (primary) | `#a51c20` |
+   | Info | `#1f6feb` |
+   | Success | `#16a34a` |
+   | Warning | `#f59e0b` |
+   | Error | `#dc2626` |
+   | Logo / monogram / favicon | URL aset logo LenO resmi (mintakan URL tetap ke pengelola aset LenO; sementara boleh `https://dev-lpms.len.co.id/images/leno-logo.png`) |
+
+   Pengaturan tema bawaan ini mewarnai komponen OM. Header merah, sidebar bergaya LPMS, dan font Poppins berasal dari `leno.css` yang disisipkan `om-ui`.
+5. Buka beberapa halaman (beranda, Explore, Glossary, Settings) dan periksa header & sidebar. Bila ada yang tidak berubah, sesuaikan selector di `leno.css` (V-8), naikkan `?v=` di `ui/nginx.conf`, lalu `sudo docker compose restart om-ui`.
 
 **7. Backup & verifikasi**
 ```bash
@@ -177,6 +197,7 @@ Restore memerlukan `openmetadata.env` dan `jwt/` yang sama dari salinan rahasia.
 1. Jalankan backup.
 2. Ganti tag di `.env` (mis. `2.0.8`), lalu `pin-images.sh` → `deploy.sh`. Migrasi skema berjalan otomatis.
 3. Periksa catatan rilis untuk perubahan versi OpenSearch/PostgreSQL yang didukung.
+4. Periksa tampilan header & sidebar: UI OM yang berubah bisa membuat selector di `leno.css` tidak berlaku lagi (V-8).
 
 ---
 
@@ -245,6 +266,9 @@ Keanggotaan team diimpor berkala dari CSV HR/IDS (`email, ORG_ID`).
 | V-3 | `PIPELINE_SERVICE_CLIENT_ENABLED=false` tanpa efek samping selain menu ingestion | Peringatan di UI | Abaikan; ingestion memang tidak dipakai |
 | V-4 | IDS mengizinkan redirect URI HTTP | Fase 2 terhambat | Tambahkan TLS self-signed di depan OpenMetadata |
 | V-5 | Nilai provider OIDC kustom untuk 2.0 | Login IDS gagal | Ikuti panduan SSO OpenMetadata 2.0 saat fase 2 |
+| V-6 | Lokasi & isi pengaturan tema di OM 2.0 (logo, monogram, favicon, 5 warna) | Tema LenO tidak bisa diterapkan penuh | Pakai yang tersedia; catat selisihnya |
+| V-7 | Alamat IDS terjangkau dari jitsi (keluar dari network `om-egress`) | Login IDS gagal walau client sudah ada | Setelah URL discovery diterima: `curl -fsS <discovery-url>` dari server |
+| V-8 | Selector header/sidebar di `leno.css` (`.navbar-container`, `.left-sidebar-col`, kelas Ant Design) cocok dengan DOM OM 2.0.7 | Header/sidebar tidak berubah atau teks sulit dibaca | Periksa DOM halaman OM yang berjalan, sesuaikan selector; ulangi setiap upgrade OM |
 
 **Risiko yang diterima untuk server dev:**
 - Password basic auth melintas tanpa TLS di LAN.

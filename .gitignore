@@ -5,3 +5,12 @@ node_modules/
 __pycache__/
 *.log
 .claude/settings.local.json
+.next/
+dist/
+.turbo/
+coverage/
+*.tsbuildinfo
+packages/db/src/generated/
+
+# Internal governance workbooks — repo is public; never commit
+*.xlsx

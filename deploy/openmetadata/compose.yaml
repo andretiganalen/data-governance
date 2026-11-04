@@ -1,0 +1,96 @@
+# OpenMetadata 2.0.7 — dev-data.len.co.id (server jitsi 192.168.125.14)
+# Plan: plan/openmetadata_deployment_plan.md
+# Data & secrets live OUTSIDE git in ${OM_DATA_DIR:-/srv/openmetadata}.
+name: openmetadata
+
+x-om-env: &om-env
+  env_file:
+    - ./openmetadata.base.env                       # non-secret settings (in git)
+    - ${OM_DATA_DIR:-/srv/openmetadata}/secrets/openmetadata.env  # secrets + IDS (not in git)
+  volumes:
+    - ${OM_DATA_DIR:-/srv/openmetadata}/secrets/jwt:/opt/openmetadata/conf/jwt:ro
+
+services:
+  postgresql:
+    image: postgres:15-bookworm
+    restart: unless-stopped
+    command: ["postgres", "-c", "work_mem=10MB", "-c", "max_connections=200"]
+    env_file: [ "${OM_DATA_DIR:-/srv/openmetadata}/secrets/postgres.env" ]
+    volumes:
+      - ${OM_DATA_DIR:-/srv/openmetadata}/postgres:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    networks: [om-internal]
+    mem_limit: 1g
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d openmetadata_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  opensearch:
+    image: opensearchproject/opensearch:3.2.0
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - cluster.name=om-cluster
+      - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
+      - DISABLE_SECURITY_PLUGIN=true          # internal network only
+      - DISABLE_INSTALL_DEMO_CONFIG=true
+    ulimits:
+      nofile: { soft: 65536, hard: 65536 }
+    volumes:
+      - ${OM_DATA_DIR:-/srv/openmetadata}/opensearch:/usr/share/opensearch/data
+    networks: [om-internal]
+    mem_limit: 2g
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -qE '\"status\":\"(green|yellow)\"'"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+
+  openmetadata-migrate:
+    <<: *om-env
+    image: docker.getcollate.io/openmetadata/server:2.0.7
+    command: "./bootstrap/openmetadata-ops.sh migrate"
+    depends_on:
+      postgresql: { condition: service_healthy }
+      opensearch: { condition: service_healthy }
+    networks: [om-internal]
+
+  openmetadata-server:
+    <<: *om-env
+    image: docker.getcollate.io/openmetadata/server:2.0.7
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:8585:8585"     # direct access http://192.168.125.14:8585
+      - "127.0.0.1:8586:8586"   # admin/health — localhost only
+    depends_on:
+      postgresql: { condition: service_healthy }
+      opensearch: { condition: service_healthy }
+      openmetadata-migrate: { condition: service_completed_successfully }
+    networks: [om-internal, om-egress]   # egress needed to reach ids.len.co.id
+    mem_limit: 2500m
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8586/healthcheck"]
+      interval: 15s
+      timeout: 10s
+      retries: 40
+
+  gateway:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:80:80"         # http://dev-data.len.co.id
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./gateway/html:/usr/share/nginx/html:ro
+      - ./ui/leno-theme:/usr/share/nginx/leno:ro
+    networks: [om-egress]
+    mem_limit: 128m
+
+networks:
+  om-internal:
+    internal: true
+    ipam: { config: [ { subnet: 172.28.10.0/24 } ] }
+  om-egress:
+    ipam: { config: [ { subnet: 172.28.11.0/24 } ] }

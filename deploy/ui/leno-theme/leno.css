@@ -1,0 +1,110 @@
+/* LenO Interface theme for OpenMetadata 2.0.7
+ * Source: plan/leno_interface_theme.md — colour & position reference only.
+ * Used: §1 tokens/typography, §2 header, §3 sidebar item style, §5 cards.
+ * NOT used: LPMS menu grouping and locked-menu pattern (§4). Menus & access stay OpenMetadata's.
+ * Selectors verified against openmetadata-ui-2.0.7 CSS bundle. Primary colour is ALSO set via
+ * OM Settings › Appearance (customUiThemePreference) so Ant Design derives its palette from it.
+ */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+:root {
+  --lpms-red: #a51c20;
+  --lpms-red-deep: #7f1417;
+  --lpms-red-soft: #fdecec;
+  --lpms-red-warn: #dc2626;
+  --lpms-blue: #1f6feb;
+  --lpms-green: #16a34a;
+  --lpms-amber: #f59e0b;
+  --lpms-bg: #fafafa;
+  --lpms-surface: #ffffff;
+  --lpms-border: #e5e7eb;
+  --lpms-ink: #1f1f1f;
+  --lpms-ink-soft: #6b7280;
+  --lpms-ink-mute: #9ca3af;
+}
+
+/* §1 typography */
+body, .ant-typography, .ant-btn, .ant-input, .ant-select, .ant-menu, .ant-table {
+  font-family: Poppins, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+body { background: var(--lpms-bg); color: var(--lpms-ink); }
+
+/* §2 header: red bar, 61px, deep-red underline + shadow */
+.navbar-container, .ant-layout-header.navbar-container {
+  background: var(--lpms-red) !important;
+  min-height: 61px;
+  border-bottom: 1px solid var(--lpms-red-deep) !important;
+  box-shadow: 0 2px 6px rgba(127, 20, 23, .18) !important;
+}
+.navbar-container,
+.navbar-container .ant-typography,
+.navbar-container .ant-btn-text,
+.navbar-container .ant-dropdown-trigger,
+.navbar-container .anticon { color: #fff !important; }
+/* round icon buttons on the right (rgba white 12%) */
+.navbar-container .ant-btn-icon-only,
+.navbar-container .ant-badge > .ant-btn {
+  background: rgba(255, 255, 255, .12) !important;
+  border-color: transparent !important;
+  border-radius: 50% !important;
+}
+.navbar-container .ant-badge-count { background: #ff4d4f; box-shadow: 0 0 0 1px var(--lpms-red); }
+/* search box stays white for legibility */
+.navbar-container .ant-input-affix-wrapper,
+.navbar-container .ant-select-selector { background: #fff !important; color: var(--lpms-ink) !important; }
+.navbar-container .ant-input-affix-wrapper .anticon,
+.navbar-container .ant-input { color: var(--lpms-ink) !important; }
+/* avatar: white circle, red initials */
+.navbar-container .ant-avatar { background: #fff !important; color: var(--lpms-red) !important; }
+
+/* §3 sidebar: white, right rule */
+.left-sidebar-layout, .ant-layout-sider.left-sidebar-layout {
+  background: var(--lpms-surface) !important;
+  border-right: 1px solid var(--lpms-border);
+}
+.left-sidebar-menu.ant-menu .ant-menu-item {
+  position: relative;
+  border-radius: 8px !important;
+  color: var(--lpms-ink-soft);
+  font-size: 14px;
+}
+/* hover #f3f4f6 */
+.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-active:not(.ant-menu-item-selected) {
+  background: #f3f4f6 !important;
+}
+.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-active:not(.ant-menu-item-selected) .anticon,
+.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-active:not(.ant-menu-item-selected) .left-panel-label {
+  color: var(--lpms-ink) !important;
+}
+/* active: soft red bg, red 600 text, 3px left bar */
+.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected {
+  background: var(--lpms-red-soft) !important;
+  color: var(--lpms-red) !important;
+}
+.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected a,
+.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected .anticon,
+.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected .left-panel-label {
+  color: var(--lpms-red) !important;
+  font-weight: 600 !important;
+}
+.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 8px; bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--lpms-red);
+}
+.left-sidebar-menu .ant-menu-submenu.ant-menu-submenu-open { border-color: var(--lpms-border) !important; }
+
+/* §5 cards: white, radius 10, #f0f0f0 border, soft shadow */
+.ant-card {
+  border-radius: 10px !important;
+  border-color: #f0f0f0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+}
+
+/* status colours */
+.ant-tag-success, .ant-badge-status-success { color: var(--lpms-green); }
+.ant-tag-warning { color: var(--lpms-amber); }
+.ant-tag-error { color: var(--lpms-red-warn); }
