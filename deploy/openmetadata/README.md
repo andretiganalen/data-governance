@@ -53,3 +53,5 @@ reviewers = Data Steward, owner = Data Owner, property Data User), service LenO 
 (column tags: sensitivity + glossary term), 19 LenO screens (dashboard + data model, property *Hak Akses LenO*),
 column lineage table → screen, DQ test-case definitions (not executed), DG-* → policy/role for the team.
 Defect report → `/srv/openmetadata/reports/workbook-defects-<date>.md` (outside git — repo is public).
+
+After UG-1/UV-1 fix the workbook: `scripts/reload-workbook.sh [file.xlsx]` reloads and lists closed/new defects.
