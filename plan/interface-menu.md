@@ -2,7 +2,7 @@
 title: Interface & Menu — Standar Tema Web-based Apps Len (default)
 tags: [ui, theme, design-system, standard, len]
 dibuat: 2026-11-04
-status: Default v1.0 — wajib untuk aplikasi web baru
+status: Default v1.1 — wajib untuk aplikasi web baru
 sumber: https://www.len.co.id/ (dibaca read-only: Elementor global kit post-5.css, header post-77.css, konten post-36.css, footer post-63.css)
 menggantikan_warna_dari: "[[leno_interface_theme.md]]"
 ---
@@ -54,12 +54,13 @@ konsisten dengan palet Len untuk kebutuhan aplikasi (status, latar, garis) yang 
 | Judul halaman (H1) | Montserrat | 24px / 700, letter-spacing −0.3px | (Len) Montserrat 700; ukuran disesuaikan untuk aplikasi |
 | Judul hero (landing saja) | Montserrat | 38px / 900, letter-spacing −1.6px | (Len) typography 24e5958 |
 | Sub-judul / judul kartu | Montserrat | 17px / 700 | (Len) typography 86efe63 |
-| Teks isi | Open Sans | 14–15px / 400 | (Len) 15px/400; Open Sans dipakai agar tabel padat tetap terbaca |
-| Label menu | Open Sans | 14–15px / 500 | (Len) menu Open Sans 500 |
+| Teks isi | Montserrat | 14–15px / 400–500 | (Len) global text: Montserrat 500, 15px/400 |
+| Label menu (header & sidebar) | Open Sans | 14–15px / 500 | (Len) menu Open Sans 500 |
 | Tombol | Montserrat | 14px / 600 | (Len) accent Montserrat 500, dinaikkan ke 600 |
 | Angka/kode | `ui-monospace, Consolas` | 13px | *(turunan)* |
 
-Stack: `Montserrat, "Segoe UI", Arial, sans-serif` (judul) · `"Open Sans", "Segoe UI", Arial, sans-serif` (isi/menu).
+Stack: `Montserrat, "Segoe UI", Arial, sans-serif` (judul **dan isi**) · `"Open Sans", "Segoe UI", Arial, sans-serif` (**menu saja**).
+Koreksi 2026-11-04: v1.0 keliru menaruh Open Sans untuk isi; len.co.id memakai Montserrat untuk isi.
 Muat dari Google Fonts dengan `display=swap`; tanpa internet tetap jatuh ke Segoe UI/Arial.
 
 ## 3. Batas, sudut, bayangan
@@ -78,7 +79,7 @@ Muat dari Google Fonts dengan `display=swap`; tanpa internet tetap jatuh ke Sego
 
 ### 4.1 Header & menu atas (pola len.co.id)
 - Header **putih**, tinggi 64px, padding `0 24px`, bayangan header (§3). Logo kiri (tinggi 32px), menu di tengah/kanan, aksi pengguna paling kanan.
-- Item menu: Open Sans 500 15px, warna `--len-text`, padding `15px` (Len), tanpa latar.
+- Item menu: Open Sans 500 15px (`--len-font-menu`), warna `--len-text`, padding `15px` (Len), tanpa latar.
 - Hover: teks `--len-navy` + garis bawah 3px `--len-red-700`. Aktif: sama, permanen.
 - Dropdown: latar putih, lebar min. 240px, item padding `12px 16px`, pemisah `1px solid --len-line` (Len);
   hover item **latar `--len-red-hover`, teks putih** (Len). Judul grup (item `href="#"`) Montserrat 600 12px kapital, abu.
@@ -119,7 +120,8 @@ Muat dari Google Fonts dengan `display=swap`; tanpa internet tetap jatuh ke Sego
   --len-line:#C4C4C4; --len-line-soft:#E6E6E6; --len-bg:#F5F6F8; --len-surface:#FFFFFF; --len-footer:#000000;
   --len-success:#1E7B34; --len-warning:#B26A00; --len-danger:#DA0000;
   --len-font-head: Montserrat, "Segoe UI", Arial, sans-serif;
-  --len-font-body: "Open Sans", "Segoe UI", Arial, sans-serif;
+  --len-font-body: Montserrat, "Segoe UI", Arial, sans-serif;   /* isi = Montserrat (Len) */
+  --len-font-menu: "Open Sans", "Segoe UI", Arial, sans-serif;  /* menu saja */
   --len-radius-control:4px; --len-radius-card:6px;
   --len-shadow-header:0 2px 6px rgba(0,0,0,.18); --len-shadow-card:0 1px 2px rgba(0,0,0,.06);
 }

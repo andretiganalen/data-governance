@@ -6,7 +6,7 @@
 <meta name="data-ids-status" content="off">
 <title>Data Governance · Len</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Open+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23194A80'/><text x='16' y='22' text-anchor='middle' font-family='Arial' font-weight='700' font-size='16' fill='white'>D</text></svg>">
 <style>
   /* Len classic tokens — plan/interface-menu.md §6 */
@@ -16,7 +16,7 @@
     --len-ink:#3B3B3B; --len-text:#515151; --len-muted:#838282;
     --len-line:#C4C4C4; --len-line-soft:#E6E6E6; --len-bg:#F5F6F8; --len-surface:#FFFFFF; --len-footer:#000000;
     --len-warning:#B26A00;
-    --len-font-head:Montserrat,"Segoe UI",Arial,sans-serif; --len-font-body:"Open Sans","Segoe UI",Arial,sans-serif;
+    --len-font-head:Montserrat,"Segoe UI",Arial,sans-serif; --len-font-body:Montserrat,"Segoe UI",Arial,sans-serif; --len-font-menu:"Open Sans","Segoe UI",Arial,sans-serif;
   }
   *{box-sizing:border-box}
   body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var(--len-bg);color:var(--len-text);
@@ -28,7 +28,7 @@
   .mark{width:34px;height:34px;border-radius:4px;background:var(--len-navy);color:#fff;display:grid;place-items:center;
         font:700 16px var(--len-font-head)}
   header h1{margin:0;font:700 17px var(--len-font-head);color:var(--len-navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  header a{position:relative;color:var(--len-text);text-decoration:none;font:500 15px var(--len-font-body);padding:20px 15px;white-space:nowrap}
+  header a{position:relative;color:var(--len-text);text-decoration:none;font:500 15px var(--len-font-menu);padding:20px 15px;white-space:nowrap}
   header a::after{content:"";position:absolute;left:15px;right:15px;bottom:0;height:3px;background:transparent}
   header a:hover{color:var(--len-navy)} header a:hover::after{background:var(--len-red-700)}
   main{flex:1;display:grid;place-items:center;padding:48px 16px}

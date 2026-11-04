@@ -5,11 +5,11 @@ import { Montserrat, Open_Sans } from "next/font/google";
 import { getActor } from "@/lib/session";
 import "./globals.css";
 
-// plan/interface-menu.md §2: Montserrat headings/buttons, Open Sans body/menu
+// plan/interface-menu.md §2: Montserrat for text and headings, Open Sans for menus
 const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin"],
-  weight: ["600", "700"],
+  weight: ["400", "500", "600", "700"],
 });
 const openSans = Open_Sans({
   variable: "--font-open-sans",

@@ -44,7 +44,8 @@
   --color-info: var(--len-blue);
   --color-footer: var(--len-footer);
 
-  --font-sans: var(--font-open-sans), "Segoe UI", Arial, sans-serif;
+  --font-sans: var(--font-montserrat), "Segoe UI", Arial, sans-serif; /* Len: text = Montserrat */
+  --font-menu: var(--font-open-sans), "Segoe UI", Arial, sans-serif; /* Len: menu only */
   --font-heading: var(--font-montserrat), "Segoe UI", Arial, sans-serif;
   --font-mono: ui-monospace, Consolas, monospace;
 
