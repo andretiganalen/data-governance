@@ -1,152 +1,154 @@
-/* Len classic theme for OpenMetadata 2.0.7
- * Standard: plan/interface-menu.md (colours, fonts, borders, menu — from len.co.id)
- * Positions: plan/leno_interface_theme.md (top header, left sidebar, cards).
- * Menus, content and access stay OpenMetadata's. Selectors verified against openmetadata-ui-2.0.7.
- * Primary colour is ALSO set via Settings › Preferences › Theme so Ant Design derives its palette.
+/* Len classic theme for OpenMetadata 2.0.7 — look of https://www.len.co.id
+ * Standard: plan/interface-menu.md. Positions: plan/leno_interface_theme.md.
+ * Menus, content and access stay OpenMetadata's. Selectors verified on openmetadata-ui-2.0.7 (rendered DOM).
+ * Primary/brand colour comes from Settings › Preferences › Theme (customUiThemePreference) — not forced here,
+ * so Ant Design + Untitled UI (--tw-color-brand-*) keep deriving their palettes from it.
  */
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Open+Sans:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600&display=swap");
 
 :root {
   --len-navy: #194A80; --len-navy-700: #12375F; --len-navy-50: #EEF3F9;
-  --len-red: #DA0000; --len-red-700: #CF0000; --len-red-hover: #FF2121; --len-blue: #0562C9;
+  --len-red: #DA0000; --len-red-700: #CF0000; --len-red-hover: #FF2121; --len-red-50: #FFF2F2;
+  --len-blue: #0562C9;
   --len-ink: #3B3B3B; --len-text: #515151; --len-text-2: #54595F; --len-muted: #838282;
-  --len-line: #C4C4C4; --len-line-soft: #E6E6E6; --len-bg: #F5F6F8; --len-surface: #FFFFFF;
-  --len-success: #1E7B34; --len-warning: #B26A00; --len-danger: #DA0000;
-  --len-font-head: Montserrat, "Segoe UI", Arial, sans-serif;
-  --len-font-body: "Open Sans", "Segoe UI", Arial, sans-serif;
-  --len-radius-control: 4px; --len-radius-card: 6px;
-  --len-shadow-header: 0 2px 6px rgba(0, 0, 0, .18); --len-shadow-card: 0 1px 2px rgba(0, 0, 0, .06);
+  --len-line: #C4C4C4; --len-line-soft: #E6E6E6; --len-bg: #FFFFFF; --len-surface: #FFFFFF;
+  --len-font: Montserrat, "Segoe UI", Arial, sans-serif;           /* Len: text + headings */
+  --len-font-menu: "Open Sans", "Segoe UI", Arial, sans-serif;     /* Len: navigation menu */
+  --len-radius: 4px;
+  --len-shadow-header: 0 2px 6px rgba(0, 0, 0, .18);
 }
 
-/* §2 typography: Open Sans body/menu, Montserrat headings */
-body, .ant-typography, .ant-input, .ant-select, .ant-menu, .ant-table, .ant-tabs, .ant-form {
-  font-family: var(--len-font-body) !important;
+/* ---- §2 Typography: Montserrat everywhere (OM sets Inter on many components directly) ---- */
+/* :where() keeps specificity at 0 so the targeted rules below (menu, code) can override it */
+html body,
+body :where(*:not(code):not(pre):not(kbd):not(samp):not(svg):not(svg *):not([class*="katex"]):not([class*="katex"] *):not([class*="mono"]):not([class*="Mono"]):not(.CodeMirror *):not(.monaco-editor *)) {
+  font-family: var(--len-font) !important;
 }
-h1, h2, h3, h4, h5, .ant-typography h1, .ant-typography h2, .ant-typography h3, .ant-typography h4,
-.ant-card-head-title, .ant-modal-title, .ant-btn {
-  font-family: var(--len-font-head) !important;
+body { color: var(--len-text); background: var(--len-bg) !important; }
+h1, h2, h3, h4, h5, h6, .ant-typography h1, .ant-typography h2, .ant-typography h3, .ant-typography h4 {
+  color: var(--len-ink) !important; font-weight: 700 !important; letter-spacing: -.2px;
 }
-h1.ant-typography, .ant-typography h1 { letter-spacing: -.3px; color: var(--len-ink); }
-body { background: var(--len-bg); color: var(--len-text); }
-a { color: var(--len-blue); }
+/* menu labels: Open Sans 500 like the Len navigation */
+.left-sidebar-menu, .left-sidebar-menu :where(*:not(svg):not(svg *)),
+.ant-dropdown-menu, .ant-dropdown-menu :where(*:not(svg):not(svg *)) {
+  font-family: var(--len-font-menu) !important;
+}
 
-/* §4.1 header: white, Len shadow, navy ink */
-.navbar-container, .ant-layout-header.navbar-container {
-  background: var(--len-surface) !important;
-  min-height: 64px;
-  border-bottom: 1px solid var(--len-line-soft) !important;
-  box-shadow: var(--len-shadow-header) !important;
-}
-.navbar-container .ant-typography,
-.navbar-container .ant-btn-text,
-.navbar-container .ant-dropdown-trigger,
-.navbar-container .anticon { color: var(--len-text) !important; }
-/* §4.3 user actions: transparent 36px icon buttons, navy tint on hover */
-.navbar-container .ant-btn-icon-only,
-.navbar-container .ant-badge > .ant-btn {
-  background: transparent !important;
-  border-color: transparent !important;
-  border-radius: var(--len-radius-control) !important;
-}
-.navbar-container .ant-btn-icon-only:hover,
-.navbar-container .ant-badge > .ant-btn:hover { background: var(--len-navy-50) !important; }
-.navbar-container .ant-badge-count { background: var(--len-red); box-shadow: 0 0 0 1px #fff; }
-.navbar-container .ant-input-affix-wrapper,
-.navbar-container .ant-select-selector {
-  background: #fff !important;
-  border: 1px solid var(--len-line) !important;
-  border-radius: var(--len-radius-control) !important;
-}
-.navbar-container .ant-input-affix-wrapper-focused,
-.navbar-container .ant-input-affix-wrapper:hover { border-color: var(--len-navy) !important; }
-.navbar-container .ant-input { color: var(--len-ink) !important; }
-.navbar-container .ant-avatar { background: var(--len-navy) !important; color: #fff !important; }
-
-/* §4.2 sidebar: white, square items, navy-50 active + 3px red left marker */
-.left-sidebar-layout, .ant-layout-sider.left-sidebar-layout {
-  background: var(--len-surface) !important;
-  border-right: 1px solid var(--len-line-soft);
-}
-.left-sidebar-menu.ant-menu .ant-menu-item {
-  position: relative;
-  border-radius: 0 !important;
-  color: var(--len-text);
-  font-family: var(--len-font-body);
-  font-size: 14px;
-  font-weight: 500;
-}
-.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-active:not(.ant-menu-item-selected) {
-  background: #F3F4F6 !important;
-}
-.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-active:not(.ant-menu-item-selected) .anticon,
-.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-active:not(.ant-menu-item-selected) .left-panel-label {
-  color: var(--len-ink) !important;
-}
-.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected {
-  background: var(--len-navy-50) !important;
+/* ---- Links & entity titles: Len navy, red on hover (red stays for markers/actions) ---- */
+.text-link-color, a.text-link-color, [data-testid="entity-link"], [data-testid="entity-link"] *,
+[data-testid="entity-header-display-name"], .summary-item-link, .ant-typography a, a.ant-typography {
   color: var(--len-navy) !important;
+}
+.text-link-color:hover, [data-testid="entity-link"]:hover, [data-testid="entity-link"]:hover *,
+.summary-item-link:hover, .ant-typography a:hover { color: var(--len-red-700) !important; }
+[data-testid="entity-header-display-name"] { font-weight: 600 !important; }
+
+/* ---- Page background white like len.co.id ---- */
+.app-container, .app-container .ant-layout, .ant-layout-content,
+.page-layout-v1, .page-layout-v1-center { background: var(--len-bg) !important; }
+
+/* ---- Header bar: flat, OpenMetadata default (user preference) — only square inputs ---- */
+.navbar-container .ant-input-affix-wrapper,
+.navbar-container .ant-select-selector { border-radius: var(--len-radius) !important; }
+
+/* ---- Home welcome banner: flat Len navy, no gradient/texture, square ---- */
+.customise-landing-page-header {
+  background: var(--len-navy) !important;
+  background-image: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.customise-landing-page-header::before, .customise-landing-page-header::after { background-image: none !important; }
+
+/* ---- §4.2 Sidebar: white, square items, Len red pointer ---- */
+.left-sidebar-layout, .ant-layout-sider.left-sidebar-layout,
+.left-sidebar-layout .menu-container, .left-sidebar-layout .top-menu, .left-sidebar-layout .bottom-menu,
+.left-sidebar-menu.ant-menu, .ant-layout-sider, .ant-layout-sider-children {
+  background: var(--len-surface) !important;
+  border-right: 1px solid var(--len-line-soft) !important;
+}
+.left-sidebar-menu.ant-menu .ant-menu-item,
+.left-sidebar-menu.ant-menu .ant-menu-submenu-title {
+  position: relative; border-radius: 0 !important;
+  color: var(--len-text) !important; font-size: 14px !important; font-weight: 500 !important;
+}
+.left-sidebar-menu.ant-menu .ant-menu-item:hover,
+.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-active:not(.ant-menu-item-selected),
+.left-sidebar-menu.ant-menu .ant-menu-submenu-title:hover {
+  background: #F5F5F5 !important; color: var(--len-red-700) !important;
+}
+.left-sidebar-menu.ant-menu .ant-menu-item:hover .anticon,
+.left-sidebar-menu.ant-menu .ant-menu-item:hover .left-panel-label { color: var(--len-red-700) !important; }
+.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected {
+  background: var(--len-red-50) !important; color: var(--len-red-700) !important;
 }
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected a,
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected .anticon,
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected .left-panel-label {
-  color: var(--len-navy) !important;
-  font-weight: 600 !important;
+  color: var(--len-red-700) !important; font-weight: 600 !important;
 }
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected::before {
-  content: "";
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 3px;
-  background: var(--len-red-700);
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--len-red-700);
 }
-.left-sidebar-menu .ant-menu-submenu.ant-menu-submenu-open {
-  border-color: var(--len-line-soft) !important;
+.left-sidebar-menu .ant-menu-submenu.ant-menu-submenu-open { border-color: var(--len-line-soft) !important; border-radius: 0 !important; }
+
+/* ---- §4.1 Dropdowns: white, 1px separators, red hover with white text (Len) ---- */
+.ant-dropdown-menu { border-radius: var(--len-radius) !important; padding: 0 !important; box-shadow: var(--len-shadow-header) !important; }
+.ant-dropdown-menu-item { border-radius: 0 !important; padding: 10px 16px !important; }
+.ant-dropdown-menu-item:not(:last-child) { border-bottom: 1px solid var(--len-line-soft); }
+.ant-dropdown-menu-item:hover:not(.ant-dropdown-menu-item-disabled) { background: var(--len-red-hover) !important; color: #fff !important; }
+.ant-dropdown-menu-item:hover:not(.ant-dropdown-menu-item-disabled) * { color: #fff !important; }
+
+/* ---- §3 Corners: square, classic (antd + OM Tailwind "tw:" utilities), keep circles ---- */
+.ant-card, .ant-btn, .ant-input, .ant-input-affix-wrapper, .ant-select-selector, .ant-picker, .ant-tag,
+.ant-modal-content, .ant-drawer-content, .ant-collapse, .ant-table-wrapper, .ant-popover-inner, .ant-tabs-card .ant-tabs-tab,
+[class*="tw:rounded"]:not([class*="rounded-full"]):not(.ant-avatar),
+[class*="card"]:not(.ant-avatar):not([class*="rounded-full"]) {
+  border-radius: var(--len-radius) !important;
+}
+.ant-card, [class*="tw:rounded-xl"], [class*="tw:rounded-2xl"] { box-shadow: none !important; border-color: var(--len-line-soft) !important; }
+
+/* ---- Headings in explore/entity pages: Montserrat 600, Len ink ---- */
+.ant-card-head-title, .entity-header-title, [class*="entity-header"] .ant-typography { font-weight: 600 !important; }
+
+/* ---- Tables (Len classic) ---- */
+.ant-table-thead > tr > th {
+  background: #F7F7F7 !important; color: var(--len-text-2) !important;
+  font-weight: 600 !important; font-size: 12px !important; text-transform: uppercase; letter-spacing: .3px;
   border-radius: 0 !important;
 }
 
-/* §4.1 dropdowns: white, Len separators, red hover with white text */
-.ant-dropdown-menu { border-radius: var(--len-radius-control) !important; padding: 0 !important; }
-.ant-dropdown-menu-item:not(:last-child) { border-bottom: 1px solid var(--len-line-soft); }
-.ant-dropdown-menu-item { border-radius: 0 !important; }
-.ant-dropdown-menu-item:hover:not(.ant-dropdown-menu-item-disabled) {
-  background: var(--len-red-hover) !important;
-  color: #fff !important;
-}
-.ant-dropdown-menu-item:hover:not(.ant-dropdown-menu-item-disabled) * { color: #fff !important; }
+/* ---- Active tab marker = Len red pointer ---- */
+.ant-tabs-ink-bar { background: var(--len-red-700) !important; height: 3px !important; }
 
-/* §5 controls */
-.ant-btn { border-radius: var(--len-radius-control) !important; font-weight: 600; }
-.ant-btn-primary { background: var(--len-navy) !important; border-color: var(--len-navy) !important; }
-.ant-btn-primary:hover, .ant-btn-primary:focus { background: var(--len-navy-700) !important; border-color: var(--len-navy-700) !important; }
-.ant-btn-dangerous.ant-btn-primary { background: var(--len-red) !important; border-color: var(--len-red) !important; }
-.ant-input, .ant-input-affix-wrapper, .ant-select-selector, .ant-picker { border-radius: var(--len-radius-control) !important; }
-.ant-tag { border-radius: var(--len-radius-control) !important; }
+/* ---- Focus ---- */
 :focus-visible { outline: 2px solid var(--len-blue); outline-offset: 2px; }
 
-/* §5 cards: square-ish, thin border, light shadow */
-.ant-card {
-  border-radius: var(--len-radius-card) !important;
-  border-color: var(--len-line-soft) !important;
-  box-shadow: var(--len-shadow-card);
+/* ---- Sign-in page: Len navy panel with the red diagonal accent of the len.co.id banners ---- */
+main[data-testid="signin-page"] > div:first-child {
+  background: linear-gradient(160deg, var(--len-navy) 0%, var(--len-navy-700) 100%) !important;
+  position: relative;
 }
-
-/* §5 tables */
-.ant-table-thead > tr > th {
-  background: #F7F8FA !important;
-  font-family: var(--len-font-head) !important;
-  font-weight: 600 !important;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: .3px;
-  color: var(--len-text-2) !important;
+main[data-testid="signin-page"] > div:first-child::before {
+  content: ""; position: absolute; top: 56px; left: 56px; width: 180px; height: 12px;
+  background: var(--len-red); transform: skewX(-35deg); z-index: 1;
 }
-.ant-table-tbody > tr:hover > td { background: #FAFBFC !important; }
-
-/* active tab marker = Len red pointer */
-.ant-tabs-ink-bar { background: var(--len-red-700) !important; height: 3px !important; }
-.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn { color: var(--len-navy) !important; font-weight: 600; }
-
-/* status colours */
-.ant-tag-success, .ant-badge-status-success { color: var(--len-success); }
-.ant-tag-warning { color: var(--len-warning); }
-.ant-tag-error { color: var(--len-danger); }
+main[data-testid="signin-page"] > div:first-child::after {
+  content: ""; position: absolute; top: 76px; left: 40px; width: 110px; height: 12px;
+  background: var(--len-red); transform: skewX(-35deg); opacity: .85; z-index: 1;
+}
+[data-testid="login-video"] { display: none !important; }
+main[data-testid="signin-page"] > div:first-child [class*="tw:aspect"] {
+  background: transparent !important; box-shadow: none !important;
+}
+.login-box {
+  border-radius: var(--len-radius) !important;
+  border: 1px solid var(--len-line-soft) !important;
+  border-top: 3px solid var(--len-navy) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .12) !important;
+}
+.login-box .ant-input, .login-box .ant-input-affix-wrapper {
+  background: #fff !important; border: 1px solid var(--len-line) !important; box-shadow: none !important;
+}
+.login-box .ant-input-affix-wrapper .ant-input { border: 0 !important; }
+.login-box .ant-input:focus, .login-box .ant-input-affix-wrapper-focused { border-color: var(--len-navy) !important; }
