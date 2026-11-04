@@ -5,7 +5,7 @@ Deploys OpenMetadata 2.0.7 on server jitsi (192.168.125.14). Follows `plan/openm
 | URL | What |
 |---|---|
 | http://dev-data.len.co.id | Landing page → "Masuk dengan IDS" → OpenMetadata (via gateway :80) |
-| http://192.168.125.14:8585 | OpenMetadata direct |
+| http://192.168.125.14:8585 | OpenMetadata via the same gateway (LenO theme applied) |
 | http://127.0.0.1:8586/healthcheck | Admin/health (server-local only) |
 
 | Path | Content |

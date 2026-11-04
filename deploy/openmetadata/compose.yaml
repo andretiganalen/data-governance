@@ -62,8 +62,7 @@ services:
     image: docker.getcollate.io/openmetadata/server:2.0.7
     restart: unless-stopped
     ports:
-      - "0.0.0.0:8585:8585"     # direct access http://192.168.125.14:8585
-      - "127.0.0.1:8586:8586"   # admin/health — localhost only
+      - "127.0.0.1:8586:8586"   # admin/health — localhost only (UI/API go through the gateway)
     depends_on:
       postgresql: { condition: service_healthy }
       opensearch: { condition: service_healthy }
@@ -80,7 +79,8 @@ services:
     image: nginx:1.27-alpine
     restart: unless-stopped
     ports:
-      - "0.0.0.0:80:80"         # http://dev-data.len.co.id
+      - "0.0.0.0:80:80"         # http://dev-data.len.co.id · http://192.168.125.14
+      - "0.0.0.0:8585:8585"     # http://192.168.125.14:8585 — same gateway, so the LenO theme applies here too
     volumes:
       - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./gateway/html:/usr/share/nginx/html:ro
