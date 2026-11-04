@@ -1,110 +1,152 @@
-/* LenO Interface theme for OpenMetadata 2.0.7
- * Source: plan/leno_interface_theme.md — colour & position reference only.
- * Used: §1 tokens/typography, §2 header, §3 sidebar item style, §5 cards.
- * NOT used: LPMS menu grouping and locked-menu pattern (§4). Menus & access stay OpenMetadata's.
- * Selectors verified against openmetadata-ui-2.0.7 CSS bundle. Primary colour is ALSO set via
- * OM Settings › Appearance (customUiThemePreference) so Ant Design derives its palette from it.
+/* Len classic theme for OpenMetadata 2.0.7
+ * Standard: plan/interface-menu.md (colours, fonts, borders, menu — from len.co.id)
+ * Positions: plan/leno_interface_theme.md (top header, left sidebar, cards).
+ * Menus, content and access stay OpenMetadata's. Selectors verified against openmetadata-ui-2.0.7.
+ * Primary colour is ALSO set via Settings › Preferences › Theme so Ant Design derives its palette.
  */
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Open+Sans:wght@400;500;600&display=swap");
 
 :root {
-  --lpms-red: #a51c20;
-  --lpms-red-deep: #7f1417;
-  --lpms-red-soft: #fdecec;
-  --lpms-red-warn: #dc2626;
-  --lpms-blue: #1f6feb;
-  --lpms-green: #16a34a;
-  --lpms-amber: #f59e0b;
-  --lpms-bg: #fafafa;
-  --lpms-surface: #ffffff;
-  --lpms-border: #e5e7eb;
-  --lpms-ink: #1f1f1f;
-  --lpms-ink-soft: #6b7280;
-  --lpms-ink-mute: #9ca3af;
+  --len-navy: #194A80; --len-navy-700: #12375F; --len-navy-50: #EEF3F9;
+  --len-red: #DA0000; --len-red-700: #CF0000; --len-red-hover: #FF2121; --len-blue: #0562C9;
+  --len-ink: #3B3B3B; --len-text: #515151; --len-text-2: #54595F; --len-muted: #838282;
+  --len-line: #C4C4C4; --len-line-soft: #E6E6E6; --len-bg: #F5F6F8; --len-surface: #FFFFFF;
+  --len-success: #1E7B34; --len-warning: #B26A00; --len-danger: #DA0000;
+  --len-font-head: Montserrat, "Segoe UI", Arial, sans-serif;
+  --len-font-body: "Open Sans", "Segoe UI", Arial, sans-serif;
+  --len-radius-control: 4px; --len-radius-card: 6px;
+  --len-shadow-header: 0 2px 6px rgba(0, 0, 0, .18); --len-shadow-card: 0 1px 2px rgba(0, 0, 0, .06);
 }
 
-/* §1 typography */
-body, .ant-typography, .ant-btn, .ant-input, .ant-select, .ant-menu, .ant-table {
-  font-family: Poppins, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+/* §2 typography: Open Sans body/menu, Montserrat headings */
+body, .ant-typography, .ant-input, .ant-select, .ant-menu, .ant-table, .ant-tabs, .ant-form {
+  font-family: var(--len-font-body) !important;
 }
-body { background: var(--lpms-bg); color: var(--lpms-ink); }
+h1, h2, h3, h4, h5, .ant-typography h1, .ant-typography h2, .ant-typography h3, .ant-typography h4,
+.ant-card-head-title, .ant-modal-title, .ant-btn {
+  font-family: var(--len-font-head) !important;
+}
+h1.ant-typography, .ant-typography h1 { letter-spacing: -.3px; color: var(--len-ink); }
+body { background: var(--len-bg); color: var(--len-text); }
+a { color: var(--len-blue); }
 
-/* §2 header: red bar, 61px, deep-red underline + shadow */
+/* §4.1 header: white, Len shadow, navy ink */
 .navbar-container, .ant-layout-header.navbar-container {
-  background: var(--lpms-red) !important;
-  min-height: 61px;
-  border-bottom: 1px solid var(--lpms-red-deep) !important;
-  box-shadow: 0 2px 6px rgba(127, 20, 23, .18) !important;
+  background: var(--len-surface) !important;
+  min-height: 64px;
+  border-bottom: 1px solid var(--len-line-soft) !important;
+  box-shadow: var(--len-shadow-header) !important;
 }
-.navbar-container,
 .navbar-container .ant-typography,
 .navbar-container .ant-btn-text,
 .navbar-container .ant-dropdown-trigger,
-.navbar-container .anticon { color: #fff !important; }
-/* round icon buttons on the right (rgba white 12%) */
+.navbar-container .anticon { color: var(--len-text) !important; }
+/* §4.3 user actions: transparent 36px icon buttons, navy tint on hover */
 .navbar-container .ant-btn-icon-only,
 .navbar-container .ant-badge > .ant-btn {
-  background: rgba(255, 255, 255, .12) !important;
+  background: transparent !important;
   border-color: transparent !important;
-  border-radius: 50% !important;
+  border-radius: var(--len-radius-control) !important;
 }
-.navbar-container .ant-badge-count { background: #ff4d4f; box-shadow: 0 0 0 1px var(--lpms-red); }
-/* search box stays white for legibility */
+.navbar-container .ant-btn-icon-only:hover,
+.navbar-container .ant-badge > .ant-btn:hover { background: var(--len-navy-50) !important; }
+.navbar-container .ant-badge-count { background: var(--len-red); box-shadow: 0 0 0 1px #fff; }
 .navbar-container .ant-input-affix-wrapper,
-.navbar-container .ant-select-selector { background: #fff !important; color: var(--lpms-ink) !important; }
-.navbar-container .ant-input-affix-wrapper .anticon,
-.navbar-container .ant-input { color: var(--lpms-ink) !important; }
-/* avatar: white circle, red initials */
-.navbar-container .ant-avatar { background: #fff !important; color: var(--lpms-red) !important; }
+.navbar-container .ant-select-selector {
+  background: #fff !important;
+  border: 1px solid var(--len-line) !important;
+  border-radius: var(--len-radius-control) !important;
+}
+.navbar-container .ant-input-affix-wrapper-focused,
+.navbar-container .ant-input-affix-wrapper:hover { border-color: var(--len-navy) !important; }
+.navbar-container .ant-input { color: var(--len-ink) !important; }
+.navbar-container .ant-avatar { background: var(--len-navy) !important; color: #fff !important; }
 
-/* §3 sidebar: white, right rule */
+/* §4.2 sidebar: white, square items, navy-50 active + 3px red left marker */
 .left-sidebar-layout, .ant-layout-sider.left-sidebar-layout {
-  background: var(--lpms-surface) !important;
-  border-right: 1px solid var(--lpms-border);
+  background: var(--len-surface) !important;
+  border-right: 1px solid var(--len-line-soft);
 }
 .left-sidebar-menu.ant-menu .ant-menu-item {
   position: relative;
-  border-radius: 8px !important;
-  color: var(--lpms-ink-soft);
+  border-radius: 0 !important;
+  color: var(--len-text);
+  font-family: var(--len-font-body);
   font-size: 14px;
+  font-weight: 500;
 }
-/* hover #f3f4f6 */
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-active:not(.ant-menu-item-selected) {
-  background: #f3f4f6 !important;
+  background: #F3F4F6 !important;
 }
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-active:not(.ant-menu-item-selected) .anticon,
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-active:not(.ant-menu-item-selected) .left-panel-label {
-  color: var(--lpms-ink) !important;
+  color: var(--len-ink) !important;
 }
-/* active: soft red bg, red 600 text, 3px left bar */
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected {
-  background: var(--lpms-red-soft) !important;
-  color: var(--lpms-red) !important;
+  background: var(--len-navy-50) !important;
+  color: var(--len-navy) !important;
 }
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected a,
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected .anticon,
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected .left-panel-label {
-  color: var(--lpms-red) !important;
+  color: var(--len-navy) !important;
   font-weight: 600 !important;
 }
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected::before {
   content: "";
   position: absolute;
-  left: 0; top: 8px; bottom: 8px;
+  left: 0; top: 0; bottom: 0;
   width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--lpms-red);
+  background: var(--len-red-700);
 }
-.left-sidebar-menu .ant-menu-submenu.ant-menu-submenu-open { border-color: var(--lpms-border) !important; }
+.left-sidebar-menu .ant-menu-submenu.ant-menu-submenu-open {
+  border-color: var(--len-line-soft) !important;
+  border-radius: 0 !important;
+}
 
-/* §5 cards: white, radius 10, #f0f0f0 border, soft shadow */
-.ant-card {
-  border-radius: 10px !important;
-  border-color: #f0f0f0 !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+/* §4.1 dropdowns: white, Len separators, red hover with white text */
+.ant-dropdown-menu { border-radius: var(--len-radius-control) !important; padding: 0 !important; }
+.ant-dropdown-menu-item:not(:last-child) { border-bottom: 1px solid var(--len-line-soft); }
+.ant-dropdown-menu-item { border-radius: 0 !important; }
+.ant-dropdown-menu-item:hover:not(.ant-dropdown-menu-item-disabled) {
+  background: var(--len-red-hover) !important;
+  color: #fff !important;
 }
+.ant-dropdown-menu-item:hover:not(.ant-dropdown-menu-item-disabled) * { color: #fff !important; }
+
+/* §5 controls */
+.ant-btn { border-radius: var(--len-radius-control) !important; font-weight: 600; }
+.ant-btn-primary { background: var(--len-navy) !important; border-color: var(--len-navy) !important; }
+.ant-btn-primary:hover, .ant-btn-primary:focus { background: var(--len-navy-700) !important; border-color: var(--len-navy-700) !important; }
+.ant-btn-dangerous.ant-btn-primary { background: var(--len-red) !important; border-color: var(--len-red) !important; }
+.ant-input, .ant-input-affix-wrapper, .ant-select-selector, .ant-picker { border-radius: var(--len-radius-control) !important; }
+.ant-tag { border-radius: var(--len-radius-control) !important; }
+:focus-visible { outline: 2px solid var(--len-blue); outline-offset: 2px; }
+
+/* §5 cards: square-ish, thin border, light shadow */
+.ant-card {
+  border-radius: var(--len-radius-card) !important;
+  border-color: var(--len-line-soft) !important;
+  box-shadow: var(--len-shadow-card);
+}
+
+/* §5 tables */
+.ant-table-thead > tr > th {
+  background: #F7F8FA !important;
+  font-family: var(--len-font-head) !important;
+  font-weight: 600 !important;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  color: var(--len-text-2) !important;
+}
+.ant-table-tbody > tr:hover > td { background: #FAFBFC !important; }
+
+/* active tab marker = Len red pointer */
+.ant-tabs-ink-bar { background: var(--len-red-700) !important; height: 3px !important; }
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn { color: var(--len-navy) !important; font-weight: 600; }
 
 /* status colours */
-.ant-tag-success, .ant-badge-status-success { color: var(--lpms-green); }
-.ant-tag-warning { color: var(--lpms-amber); }
-.ant-tag-error { color: var(--lpms-red-warn); }
+.ant-tag-success, .ant-badge-status-success { color: var(--len-success); }
+.ant-tag-warning { color: var(--len-warning); }
+.ant-tag-error { color: var(--len-danger); }

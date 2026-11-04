@@ -6,3 +6,4 @@
 - Schema change: edit `packages/db/prisma/schema.prisma` → `pnpm db:migrate` → commit the migration folder.
 - Env lives in repo-root `.env` (copy from `.env.example`). Postgres: `pnpm db:up` (port 5433).
 - Architecture rules: `docs/adr/pm-0001-application-stack.md`.
+- UI default for every web app: `plan/interface-menu.md` (Len classic: colours, fonts, borders, menu from len.co.id). Positions: `plan/leno_interface_theme.md`.
