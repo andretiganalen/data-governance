@@ -208,8 +208,8 @@ Restore memerlukan `openmetadata.env` dan `jwt/` yang sama dari salinan rahasia.
 | Item | Nilai |
 | :-- | :-- |
 | Jenis client | Confidential, Authorization Code |
-| Redirect URI | `http://192.168.125.14:8585/callback` (**HTTP**; pastikan IDS mengizinkan) |
-| Post-logout redirect | `http://192.168.125.14:8585/` |
+| Redirect URI | `http://dev-data.len.co.id/callback` (**HTTP**; pastikan IDS mengizinkan) |
+| Post-logout redirect | `http://dev-data.len.co.id/` |
 | Scope | `openid email profile` |
 | Klaim wajib | `email` (kunci identitas), `name`, `preferred_username` |
 | Yang diterima dari IDS | Discovery URL (`/.well-known/openid-configuration`), `client_id`, `client_secret` (lewat kanal aman), JWKS URL |
@@ -254,6 +254,7 @@ Keanggotaan team diimpor berkala dari CSV HR/IDS (`email, ORG_ID`).
 | HR / tim IDS | Daftar Pengguna ↔ Unit Kerja berbasis email | Keanggotaan team |
 | UG-1 / UV-1 | Tindak lanjut laporan cacat Workbook | Fase 3 |
 | UV-3 | Daftar email admin | Fase 1–2 |
+| Tim jaringan | A record internal `dev-data.len.co.id` → `192.168.125.14` (per 2026-11-05 masih NXDOMAIN) | Fase 2 — redirect IDS menuju nama ini |
 
 ---
 
@@ -265,9 +266,9 @@ Keanggotaan team diimpor berkala dari CSV HR/IDS (`email, ORG_ID`).
 | V-2 | Kredensial admin bawaan basic auth = `admin@<domain>` / `admin` | Tidak bisa login pertama | Cek log server / dokumentasi basic auth 2.0 |
 | V-3 | `PIPELINE_SERVICE_CLIENT_ENABLED=false` tanpa efek samping selain menu ingestion | Peringatan di UI | Abaikan; ingestion memang tidak dipakai |
 | V-4 | IDS mengizinkan redirect URI HTTP | Fase 2 terhambat | Tambahkan TLS self-signed di depan OpenMetadata |
-| V-5 | Nilai provider OIDC kustom untuk 2.0 | Login IDS gagal | Ikuti panduan SSO OpenMetadata 2.0 saat fase 2 |
+| V-5 | Nilai provider OIDC kustom untuk 2.0 | Login IDS gagal | **Terverifikasi 2026-11-05**: semua variabel di `enable-ids.sh` ada di `conf/openmetadata.yaml` 2.0.7; IDS mendukung `code`, `client_secret_post`, RS256 |
 | V-6 | Lokasi & isi pengaturan tema di OM 2.0 (logo, monogram, favicon, 5 warna) | Tema LenO tidak bisa diterapkan penuh | Pakai yang tersedia; catat selisihnya |
-| V-7 | Alamat IDS terjangkau dari jitsi (keluar dari network `om-egress`) | Login IDS gagal walau client sudah ada | Setelah URL discovery diterima: `curl -fsS <discovery-url>` dari server |
+| V-7 | Alamat IDS terjangkau dari jitsi (keluar dari network `om-egress`) | Login IDS gagal walau client sudah ada | **Terverifikasi 2026-11-05**: discovery & JWKS `ids.len.co.id` HTTP 200 dari network `om-egress`; sertifikat (DigiCert, s.d. 2027-03-20) dipercaya Java di container server |
 | V-8 | Selector header/sidebar di `leno.css` (`.navbar-container`, `.left-sidebar-col`, kelas Ant Design) cocok dengan DOM OM 2.0.7 | Header/sidebar tidak berubah atau teks sulit dibaca | Periksa DOM halaman OM yang berjalan, sesuaikan selector; ulangi setiap upgrade OM |
 
 **Risiko yang diterima untuk server dev:**

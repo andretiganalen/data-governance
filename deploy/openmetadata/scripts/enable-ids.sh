@@ -6,6 +6,16 @@ set -euo pipefail
 [[ $# -eq 2 ]] || { echo "usage: $0 <client_id> <client_secret>"; exit 1; }
 SEC=${OM_DATA_DIR:-/srv/openmetadata}/secrets/openmetadata.env
 URL=http://dev-data.len.co.id
+IDS=https://ids.len.co.id
+
+# Preflight: fail before touching config if IDS is unreachable or rejects the credentials.
+curl -fsS -m 10 -o /dev/null "$IDS/.well-known/openid-configuration" \
+  || { echo "IDS discovery unreachable: $IDS"; exit 1; }
+resp=$(curl -sS -m 10 -u "$1:$2" -d grant_type=client_credentials "$IDS/connect/token" || true)
+grep -q '"invalid_client"' <<<"$resp" && { echo "IDS rejected client_id/client_secret (invalid_client)"; exit 1; }
+getent hosts "${URL#http://}" >/dev/null \
+  || echo "WARN: ${URL#http://} has no DNS record; IDS will redirect there, so each PC needs a hosts entry (README › DNS)"
+
 cp "$SEC" "$SEC.bak.$(date +%s)"
 sed -i '/^AUTHENTICATION_\|^OIDC_\|^CUSTOM_OIDC_/d' "$SEC"
 cat >> "$SEC" <<ENV
