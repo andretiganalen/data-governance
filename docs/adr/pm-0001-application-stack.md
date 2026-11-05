@@ -1,6 +1,6 @@
 # PM-0001 — Application stack for DG Projects
 
-- Status: Accepted
+- Status: Retired (2026-11-05) — DG Projects app removed; port 3000 freed. Kept for history.
 - Date: 2026-11-04
 
 ## Context
