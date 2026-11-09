@@ -74,9 +74,9 @@ class Trino:
 
     RETRYABLE = ("ICEBERG_COMMIT_ERROR", "ICEBERG_CATALOG_ERROR", "Error processing metadata for table", "Failed to open input stream")
 
-    def q(self, sql: str, attempts: int = 3) -> list:
-        """Galat commit/katalog Lakekeeper yang sementara dicoba ulang (30 s, 60 s). Pernyataan yang gagal commit tidak
-        meninggalkan perubahan, dan DELETE/INSERT loader aman diulang."""
+    def q(self, sql: str, attempts: int = 8) -> list:
+        """Galat commit/katalog/S3 Lakekeeper yang sementara dicoba ulang (jeda 30 s … 5 menit, total ±20 menit).
+        Pernyataan yang gagal commit tidak meninggalkan perubahan, dan DELETE/INSERT loader aman diulang."""
         import time
         for i in range(attempts):
             try:
@@ -86,8 +86,9 @@ class Trino:
             except Exception as e:  # noqa: BLE001
                 if i + 1 == attempts or not any(k in str(e) for k in self.RETRYABLE):
                     raise
-                log(f"    … Lakekeeper: {str(e)[:90]} — coba lagi dalam {30 * (i + 1)} detik")
-                time.sleep(30 * (i + 1))
+                wait = min(300, 30 * 2 ** i if i < 2 else 60 * i)
+                log(f"    … Lakekeeper: {str(e)[:90]} — percobaan {i + 2}/{attempts} dalam {wait} detik")
+                time.sleep(wait)
 
     def fq(self, table: str) -> str:
         return f"{self.catalog}.{self.schema}.{table}"
@@ -274,15 +275,18 @@ def ingest(tq: Trino, path: Path, schema: dict, batch_id: str, now: datetime, na
     raw = path.read_bytes()
     checksum = hashlib.sha256(raw).hexdigest()
     file_id = checksum[:16]
-    prev = [r[0] for r in tq.q(f"SELECT DISTINCT ingestion_status FROM {tq.fq('bronze_repository')} "
-                               f"WHERE file_checksum = {sq(checksum)}")]
-    if prev and all(s == "SUCCESS" for s in prev):
+    prev = dict(tq.q(f"SELECT source_object, max(ingestion_status) FROM {tq.fq('bronze_repository')} "
+                     f"WHERE file_checksum = {sq(checksum)} GROUP BY 1"))
+    sheets = read_sheets(path)
+    todo = [sh for sh, (h, _) in sheets.items() if h and prev.get(sh) != "SUCCESS"]
+    if not todo:
         log(f"  = {name}: sudah pernah dimuat (file_id {file_id}) — Bronze dilewati")
         return None
-    if prev:  # pemuatan sebelumnya PARTIAL/FAILED → ulangi berkas ini secara utuh
-        tq.q(f"DELETE FROM {tq.fq('bronze_repository')} WHERE file_checksum = {sq(checksum)}")
-        tq.q(f"DELETE FROM {tq.fq('bronze_meta_quarantine')} WHERE file_id = {sq(file_id)}")
-    sheets = read_sheets(path)
+    if prev:
+        log(f"  … {name}: melanjutkan — {len(prev) - sum(1 for s in prev if s in todo)} sheet sudah ada, {len(todo)} sheet tersisa")
+        undone = ", ".join(sq(s) for s in todo)
+        tq.q(f"DELETE FROM {tq.fq('bronze_repository')} WHERE file_checksum = {sq(checksum)} AND source_object IN ({undone})")
+        tq.q(f"DELETE FROM {tq.fq('bronze_meta_quarantine')} WHERE file_id = {sq(file_id)} AND source_object IN ({undone})")
     source = detect_source(sheets)
     staging = DATA / "medallion" / "staging"
     staging.mkdir(parents=True, exist_ok=True)
@@ -295,9 +299,8 @@ def ingest(tq: Trino, path: Path, schema: dict, batch_id: str, now: datetime, na
         fields = tq.q(f"SELECT field_id, column_name, business_term FROM {tq.fq('silver_dim_meta_field')}")
     prefix = {"DG_WORKBOOK": "bronze_dg_workbook", "EGRC": "bronze_egrc"}.get(source) or f"bronze_file_{snake(path.stem, 30)}"
     live = set(tq.tables())
-    repo_rows, quarantine = [], []
     for sheet, (header, rows) in sheets.items():
-        if not header:
+        if sheet not in todo:
             continue
         table = f"{prefix}_{snake(sheet, 40)}"[:100]
         names = column_names(header)
@@ -349,18 +352,16 @@ def ingest(tq: Trino, path: Path, schema: dict, batch_id: str, now: datetime, na
                            "source_locator": f"{sheet}!kolom {i + 1}", "source_header": h, "normalized_header": n,
                            "suggested_field_id": sug if score >= 0.6 else None, "suggestion_score": round(score, 2),
                            "sample_values": " | ".join(samples)[:500], "review_status": "OPEN", "ingested_at": now})
-        quarantine += q_here
-        repo_rows.append({
+        insert(tq, "bronze_meta_quarantine", [(c, t) for c, t, _ in schema["bronze_meta_quarantine"]["cols"]], q_here)
+        insert(tq, "bronze_repository", [(c, t) for c, t, _ in schema["bronze_repository"]["cols"]], [{
             "file_id": file_id, "batch_id": batch_id, "source_system": source, "source_object": sheet,
             "source_format": path.suffix.lower().lstrip("."), "file_name": name, "file_path": str(staged),
             "file_size_bytes": len(raw), "file_checksum": checksum, "row_count": len(rows),
             "header_mapped_count": sum(1 for h in header if h) - len(q_here), "header_quarantined_count": len(q_here),
             "target_bronze_table": table, "ingestion_status": "SUCCESS" if raw_ok else "PARTIAL", "is_processed_to_silver": source != "FILE",
-            "contract_version": CONTRACT_VERSION, "ingested_at": now})
+            "contract_version": CONTRACT_VERSION, "ingested_at": now}])  # dicatat per sheet → bisa dilanjutkan
         log(f"  {'+' if raw_ok else '~'} {table}: {len(rows)} baris" + ("" if raw_ok else " (ditunda: PARTIAL)")
             + (f", {len(q_here)} header dikarantina" if q_here else ""))
-    insert(tq, "bronze_repository", [(c, t) for c, t, _ in schema["bronze_repository"]["cols"]], repo_rows)
-    insert(tq, "bronze_meta_quarantine", [(c, t) for c, t, _ in schema["bronze_meta_quarantine"]["cols"]], quarantine)
     return {"source": source, "file_id": file_id, "staged": staged}
 
 
