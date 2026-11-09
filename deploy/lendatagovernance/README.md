@@ -7,7 +7,7 @@ Compose project `lendatagovernance` (live: `/opt/lendatagovernance/deploy`, data
 | http://dev-data.len.co.id | Landing page → "Masuk dengan IDS" → OpenMetadata (via gateway :80) |
 | http://192.168.125.14:8585 | OpenMetadata via the same gateway (LenO theme applied) |
 | http://127.0.0.1:8586/healthcheck | Admin/health (server-local only) |
-| http://192.168.125.14:8585/visualisasi/ | Visualisasi Gold — Apache Superset 6, menu *Visualisasi* di sidebar OpenMetadata (tidak ada port terpisah) |
+| http://192.168.125.14:8585 › menu **Visualisasi** | Dashboard Gold di dalam aplikasi utama (tab Risiko ERM · Tata Kelola Data · Semua dashboard · Grafik · SQL Lab); login = sesi Len Data Governance |
 
 | Path | Content |
 |---|---|
@@ -84,14 +84,21 @@ Inbox otomatis: letakkan berkas di `/srv/lendatagovernance/medallion/inbox/`; ti
 Pasang: `sudo cp host/systemd/lendatagovernance-lakehouse-inbox.* /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable --now lendatagovernance-lakehouse-inbox.timer`.
 Penyuntingan langsung di tabel `silver_*`/`gold_*` akan tertimpa pada pemuatan berikutnya — perbaiki di sumber lalu unggah ulang.
 
-## Visualisasi Gold — Apache Superset (`superset/`)
-Image `lendatagovernance/superset:6.0.0-dg1` (driver Trino + Postgres, tema & palet Len), berjalan di subpath `/visualisasi` (`SUPERSET_APP_ROOT`) di belakang gateway :8585 — port 8088 tidak dibuka. Menu *Visualisasi* di sidebar OpenMetadata disisipkan oleh `ui/leno-theme/leno-menu.js`. Metadata Superset (pengguna, grafik,
-dashboard) di database `superset` pada Postgres stack ini; **data** dibaca dari Trino (koneksi hanya baca, `allow_dml` mati).
-Rahasia: `/srv/lendatagovernance/secrets/superset.env` (`SUPERSET_SECRET_KEY`, `SUPERSET_DB_PASSWORD`, `SUPERSET_ADMIN_*`).
+## Visualisasi Gold — di dalam aplikasi utama (`superset/`, `../ui/leno-theme/leno-menu.js`)
+Pengguna hanya melihat Len Data Governance (:8585). Menu **Visualisasi** di sidebar membuka panel di area konten
+(header & sidebar tetap) berisi dashboard Gold. Mesinnya Apache Superset 6 (`lendatagovernance/superset:6.0.0-dg1`,
+`SUPERSET_APP_ROOT=/visualisasi`) di belakang gateway; tidak ada port terpisah. Data dibaca dari Trino (hanya baca).
+
+- **Tanpa kredensial baru (SSO):** `leno-menu.js` meneruskan token sesi Len Data Governance ke cookie `dg_om_token`
+  (path `/visualisasi`); `superset/dg_om_sso.py` memverifikasinya ke OpenMetadata (`/api/v1/users/loggedInUser`).
+  Admin OM → Admin Visualisasi; pengguna lain → Gamma (lihat semua dataset, membuat grafik). Logout/token berganti →
+  sesi Visualisasi berakhir. Login kata sandi Superset dimatikan.
+- **Tema:** `leno-superset.css` (font Montserrat/Open Sans, navy/merah Len, kartu 4px) + `THEME_DEFAULT` Superset;
+  menu atas Superset disembunyikan saat tampil di dalam aplikasi (`leno-superset.js`).
+- Metadata Superset (grafik, dashboard) di database `superset` pada Postgres stack ini. Rahasia: `secrets/superset.env`
+  (`SUPERSET_SECRET_KEY`, `SUPERSET_DB_PASSWORD`).
 ```bash
-docker compose build superset && docker compose up -d superset && docker compose up -d --force-recreate gateway   # nginx.conf adalah bind-mount berkas: rsync → gateway harus dibuat ulang
-/srv/lendatagovernance/medallion/.venv/bin/python scripts/superset-setup.py           # koneksi + dataset + 2 dashboard awal
+docker compose build superset && docker compose up -d superset && docker compose up -d --force-recreate gateway   # nginx.conf = bind-mount berkas
+/srv/lendatagovernance/medallion/.venv/bin/python scripts/superset-setup.py           # koneksi + dataset + 2 dashboard (login SSO via OM_TOKEN)
 /srv/lendatagovernance/medallion/.venv/bin/python scripts/superset-setup.py --force   # buat ulang dashboard awal
 ```
-Dashboard awal: `:8585/visualisasi/superset/dashboard/risiko-erm/` dan `:8585/visualisasi/superset/dashboard/tata-kelola-data/`. Skrip setup memakai admin awal atau akun Anda: `SUPERSET_USER=… SUPERSET_PASSWORD=…`. Admin membuat grafik sendiri lewat
-**Charts › + Chart** (tren waktu, histogram, donut, heatmap, dll.) atau **SQL Lab**.

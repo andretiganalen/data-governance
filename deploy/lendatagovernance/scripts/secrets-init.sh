@@ -34,10 +34,10 @@ fi
 
 if [[ ! -f $SEC/superset.env ]]; then
   SS_DB=$(rnd)
-  printf 'SUPERSET_SECRET_KEY=%s\nSUPERSET_DB_PASSWORD=%s\nSUPERSET_ADMIN_USER=admin\nSUPERSET_ADMIN_PASSWORD=%s\n' "$(rnd 48)" "$SS_DB" "$(rnd 16)" > "$SEC/superset.env"
+  printf 'SUPERSET_SECRET_KEY=%s\nSUPERSET_DB_PASSWORD=%s\n' "$(rnd 48)" "$SS_DB" > "$SEC/superset.env"
   grep -q '^SUPERSET_DB_PASSWORD=' "$SEC/postgres.env" || echo "SUPERSET_DB_PASSWORD=$SS_DB" >> "$SEC/postgres.env"
   chmod 600 "$SEC/superset.env"
-  echo "created superset.env (admin password inside; hand it to the DG admin once)"
+  echo "created superset.env (no login password: Visualisasi uses the Len Data Governance session)"
 fi
 
 if [[ ! -f $SEC/jwt/private_key.der ]]; then

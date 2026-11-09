@@ -3,6 +3,11 @@
 # Rahasia dibaca dari environment (secrets/superset.env, tidak di git). Data dibaca dari Trino lakehouse;
 # Postgres di stack hanya menyimpan metadata Superset (pengguna, grafik, dashboard).
 import os
+from datetime import timedelta
+
+from flask_appbuilder.security.manager import AUTH_REMOTE_USER
+
+from dg_om_sso import OMSecurityManager, dg_guard
 
 APP_ROOT = os.environ.get("SUPERSET_APP_ROOT", "/visualisasi")
 
@@ -37,6 +42,14 @@ THEME_DEFAULT = {
     },
 }
 THEME_DARK = None
+
+# Login = sesi Len Data Governance (OpenMetadata); tidak ada kata sandi/akun Superset terpisah (dg_om_sso.py).
+AUTH_TYPE = AUTH_REMOTE_USER
+CUSTOM_SECURITY_MANAGER = OMSecurityManager
+FLASK_APP_MUTATOR = dg_guard
+PERMANENT_SESSION_LIFETIME = timedelta(hours=8)
+# Ditampilkan di dalam kerangka Len Data Governance (iframe, origin sama).
+HTTP_HEADERS = {"X-Frame-Options": "SAMEORIGIN"}
 
 # Di belakang gateway nginx (:8585). TLS menyusul bersama IDS (fase 2).
 ENABLE_PROXY_FIX = True

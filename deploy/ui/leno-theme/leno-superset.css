@@ -1,0 +1,41 @@
+/* Visualisasi (Superset 6) di dalam kerangka Len Data Governance — tema yang sama dengan leno.css.
+ * Disisipkan gateway ke setiap halaman /visualisasi/. Saat tampil di dalam Len Data Governance (iframe,
+ * html.dg-embedded oleh leno-superset.js), menu atas Superset disembunyikan: navigasi memakai tab di
+ * kerangka Len Data Governance. Standar: plan/interface-menu.md.
+ */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600&display=swap");
+
+:root {
+  --len-navy: #194A80; --len-navy-700: #12375F; --len-navy-50: #EEF3F9;
+  --len-red: #DA0000; --len-blue: #0562C9;
+  --len-ink: #3B3B3B; --len-text: #515151; --len-muted: #838282;
+  --len-line-soft: #E6E6E6; --len-bg: #F5F6F8; --len-surface: #FFFFFF;
+  --len-font: Montserrat, "Segoe UI", Arial, sans-serif;
+  --len-radius: 4px;
+}
+
+/* Tipografi Len: Montserrat untuk semua teks (kode/SQL tetap monospace) */
+html body,
+body :where(*:not(code):not(pre):not(kbd):not(samp):not(svg):not(svg *):not(.ace_editor):not(.ace_editor *):not([class*="mono"])) {
+  font-family: var(--len-font) !important;
+}
+body { color: var(--len-text); }
+h1, h2, h3, h4, .header-title, .dashboard-header .editable-title input, [data-test="editable-title"] {
+  color: var(--len-ink) !important; font-weight: 700 !important;
+}
+a { color: var(--len-navy); }
+a:hover { color: var(--len-red); }
+
+/* Kartu grafik: garis tipis dan sudut 4px seperti kartu Len Data Governance */
+.dashboard-component-chart-holder, .ant-card {
+  border: 1px solid var(--len-line-soft) !important;
+  border-radius: var(--len-radius) !important;
+  box-shadow: none !important;
+}
+.ant-btn, .ant-input, .ant-select-selector, .ant-tag { border-radius: var(--len-radius) !important; }
+.ant-btn-primary { background: var(--len-navy) !important; border-color: var(--len-navy) !important; }
+.ant-btn-primary:hover { background: var(--len-navy-700) !important; border-color: var(--len-navy-700) !important; }
+
+/* Di dalam Len Data Governance: tanpa menu atas Superset (navigasi lewat tab di kerangka utama) */
+html.dg-embedded header#main-menu { display: none !important; }
+html.dg-embedded body { background: var(--len-bg) !important; }

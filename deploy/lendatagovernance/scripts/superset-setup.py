@@ -9,9 +9,8 @@ Aman diulang: koneksi diperbarui, dataset yang sudah ada dilewati, dashboard han
 (pakai --force untuk membuat ulang dashboard awal; dashboard buatan admin lain tidak disentuh).
 
 Pemakaian (di server):  /srv/lendatagovernance/medallion/.venv/bin/python scripts/superset-setup.py [--force]
-  Akun: admin awal dari secrets/superset.env, atau akun Admin Superset Anda sendiri:
-  SUPERSET_USER=<username> SUPERSET_PASSWORD=<sandi> …/python scripts/superset-setup.py
-Kredensial: $DATA/secrets/superset.env dan $DATA/secrets/trino.env (tidak pernah di git).
+  Login: SSO dengan token admin Len Data Governance (OM_TOKEN di secrets/loader.env) — tanpa kata sandi Superset.
+Kredensial: $DATA/secrets/loader.env (token OM) dan $DATA/secrets/trino.env (tidak pernah di git).
 """
 from __future__ import annotations
 
@@ -38,15 +37,16 @@ def env(name: str) -> dict[str, str]:
 
 
 class API:
+    """Login lewat SSO Len Data Governance: token admin OpenMetadata (secrets/loader.env, OM_TOKEN) sebagai cookie
+    dg_om_token → /visualisasi/login/ → sesi Superset. Tidak ada kata sandi Superset."""
     def __init__(self):
-        e = env("superset.env")
+        token = os.environ.get("OM_TOKEN") or env("loader.env")["OM_TOKEN"]
+        host = BASE.split("/")[2].split(":")[0]
         self.s = requests.Session()
-        r = self.s.post(f"{BASE}/api/v1/security/login", json={
-            "username": os.environ.get("SUPERSET_USER") or e.get("SUPERSET_ADMIN_USER", "admin"),
-            "password": os.environ.get("SUPERSET_PASSWORD") or e["SUPERSET_ADMIN_PASSWORD"],
-            "provider": "db", "refresh": True})
-        r.raise_for_status()
-        self.s.headers["Authorization"] = f"Bearer {r.json()['access_token']}"
+        self.s.cookies.set("dg_om_token", token, domain=host, path="/visualisasi")
+        r = self.s.get(f"{BASE}/login/", allow_redirects=False)
+        if r.status_code != 302:
+            raise SystemExit(f"SSO gagal ({r.status_code}): token OM_TOKEN kedaluwarsa atau bukan admin.")
         self.s.headers["X-CSRFToken"] = self.s.get(f"{BASE}/api/v1/security/csrf_token/").json()["result"]
         self.s.headers["Referer"] = BASE
 
