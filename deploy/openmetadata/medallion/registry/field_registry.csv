@@ -1,0 +1,146 @@
+field_id,kolom_nama,bisnis_nama,definisi_uraian,kelas_kode,tipe_data_kode,satuan_kode,sensitivitas_kategori,turunan_dari_field_id,field_status_kategori,berlaku_sejak_tgl
+CMN-F0001,field_id,ID elemen data,Identitas permanen elemen data: <DOMAIN>-F<4 digit>. Tidak pernah dipakai ulang.,id,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0002,kolom_nama,Nama kolom,"Nama kolom fisik sesuai standar penamaan (snake_case, diakhiri kata kelas).",nama,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0003,bisnis_nama,Nama bisnis,Nama elemen data dalam bahasa bisnis untuk ditampilkan ke pengguna.,nama,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0004,definisi_uraian,Definisi,"Arti elemen data, cara menghitung bila turunan, dan batasannya.",uraian,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0005,kelas_kode,Kata kelas,"Kata kelas di akhir nama kolom (key, kode, nama, jt_idr, rasio, ...).",kode,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0006,tipe_data_kode,Tipe data,"Tipe data logis: TEXT, INT, DECIMAL, DATE, BOOLEAN.",kode,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0007,satuan_kode,Satuan,"Satuan nilai (jt IDR, rasio 0-1, skor 1-5, hari, -).",kode,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0008,sensitivitas_kategori,Sensitivitas,"Klasifikasi: Public, Restricted, Confidential, StrictlyConfidential.",kategori,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0009,turunan_dari_field_id,Turunan dari,"field_id elemen dasar bila kolom ini turunan (tahap, periode, agregat).",id,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0010,field_status_kategori,Status elemen,Aktif atau Usang. Elemen usang tetap tercatat dan ID-nya tidak dipakai ulang.,kategori,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0011,berlaku_sejak_tgl,Berlaku sejak,Tanggal elemen mulai berlaku (ISO YYYY-MM-DD).,tgl,DATE,-,Public,,Aktif,2026-11-06
+CMN-F0012,tabel_uraian,Dipakai di tabel,Daftar tabel Silver/Gold yang memuat kolom ini.,uraian,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0013,periode_key,Periode,"Kunci periode bulanan YYYYMM, mis. 202601 = Januari 2026.",key,INT,YYYYMM,Public,,Aktif,2026-11-06
+CMN-F0014,tahun_no,Tahun,Tahun kalender (4 digit).,no,INT,tahun,Public,,Aktif,2026-11-06
+CMN-F0015,bulan_no,Bulan,Nomor bulan 1-12.,no,INT,bulan,Public,,Aktif,2026-11-06
+CMN-F0016,bulan_nama,Nama bulan,Nama bulan dalam bahasa Indonesia.,nama,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0017,kuartal_no,Kuartal,Kuartal kalender 1-4.,no,INT,-,Public,,Aktif,2026-11-06
+CMN-F0018,semester_no,Semester,Semester kalender 1-2.,no,INT,-,Public,,Aktif,2026-11-06
+CMN-F0019,periode_label,Label periode,"Label tampilan periode, mis. 'Jan 2026'.",label,TEXT,-,Public,CMN-F0013,Aktif,2026-11-06
+CMN-F0020,entitas_key,Entitas,"Kode entitas grup (3 huruf, dari referensi entitas). Dipakai lintas domain.",key,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0021,entitas_nama,Nama entitas,Nama resmi entitas/perusahaan sesuai sumber.,nama,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0022,entitas_risiko_prefiks_kode,Prefiks kode risiko,Dua huruf setelah 'R' pada kode risiko E-GRC (mis. DF pada RDF001).,kode,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0023,entitas_kode_status_kategori,Status kode entitas,Usulan atau Disetujui. Kode berstatus Usulan perlu dikonfirmasi pemilik data.,kategori,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0024,meta_sumber_sheet_nama,Sheet sumber,Nama sheet Bronze asal baris.,nama,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0025,meta_sumber_baris_no,Baris sumber,Nomor baris Excel asal (untuk penelusuran audit).,no,INT,-,Public,,Aktif,2026-11-06
+CMN-F0026,meta_rilis_kode,Rilis,Nomor rilis Medallion 'YYMMDD CC' yang menghasilkan baris ini.,kode,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0027,meta_catatan_mutu_uraian,Catatan mutu,Catatan pembersihan/temuan pada baris ini. Kosong bila bersih.,uraian,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0028,temuan_kode,Kode temuan,"Kode temuan mutu data, mis. GRC-Q01.",kode,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0029,temuan_kategori,Kategori temuan,"Jenis temuan: Perhitungan, Konsistensi, Kelengkapan, Format, Asumsi.",kategori,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0030,tingkat_kategori,Tingkat,"Tinggi, Sedang, atau Rendah.",kategori,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0031,sheet_nama,Sheet,Nama sheet Bronze yang terdampak.,nama,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0032,baris_jml,Jumlah baris,Jumlah baris terdampak.,jml,INT,baris,Public,,Aktif,2026-11-06
+CMN-F0033,temuan_uraian,Uraian temuan,Penjelasan temuan.,uraian,TEXT,-,Restricted,,Aktif,2026-11-06
+CMN-F0034,contoh_uraian,Contoh,Contoh baris/nilai yang terdampak.,uraian,TEXT,-,Restricted,,Aktif,2026-11-06
+CMN-F0035,tindakan_etl_uraian,Tindakan ETL,Apa yang dilakukan ETL terhadap temuan ini.,uraian,TEXT,-,Public,,Aktif,2026-11-06
+CMN-F0036,tindak_lanjut_pemilik_nama,Tindak lanjut oleh,Pihak yang perlu memperbaiki sumber.,nama,TEXT,-,Public,,Aktif,2026-11-06
+GRC-F0001,rkap_tahun,Tahun RKAP,Tahun Rencana Kerja dan Anggaran Perusahaan tempat risiko/ambang berlaku.,tahun,INT,tahun,Restricted,,Aktif,2026-11-06
+GRC-F0002,taksonomi_key,Taksonomi risiko,"Kode taksonomi risiko baku (STR, OPS, FIN, INV, MKT, CRD, REP, RLC).",key,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0003,taksonomi_nama,Nama taksonomi,Nama taksonomi risiko baku.,nama,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0004,taksonomi_varian_sumber_uraian,Varian penulisan sumber,Semua penulisan taksonomi di sumber yang dipetakan ke kode ini.,uraian,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0005,taksonomi_urutan_no,Urutan taksonomi,Urutan taksonomi pada risiko bertaksonomi ganda (1 = utama).,no,INT,-,Restricted,,Aktif,2026-11-06
+GRC-F0006,taksonomi_semua_nama,Semua taksonomi,"Seluruh taksonomi risiko, dipisah '; ' (taksonomi utama di depan).",nama,TEXT,-,Restricted,GRC-F0003,Aktif,2026-11-06
+GRC-F0007,sasaran_key,Sasaran strategis,Kunci sasaran strategis: 'SS-' + 8 hex SHA-1 teks sasaran yang dinormalisasi.,key,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0008,sasaran_tema_nama,Tema sasaran,"Tema sasaran strategis (bagian sebelum tanda pisah), mis. 'Business Upscaled'.",nama,TEXT,-,Restricted,GRC-F0009,Aktif,2026-11-06
+GRC-F0009,sasaran_uraian,Uraian sasaran,Teks lengkap sasaran strategis (spasi dan karakter tak terlihat dibersihkan).,uraian,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0010,risiko_key,Risiko,"Kunci risiko: '<rkap_tahun>-<risiko_kode>', mis. 2026-RDF001.",key,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0011,risiko_kode,Kode risiko,Kode risiko dari E-GRC: 'R' + prefiks entitas + 3 digit.,kode,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0012,risiko_nama,Nama risiko,Nama/peristiwa risiko pada Risk Register.,nama,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0013,risiko_penyebab_uraian,Penyebab (ringkas),Teks penyebab gabungan seperti di Risk Register.,uraian,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0014,dampak_uraian,Deskripsi dampak,Uraian dampak bila risiko terjadi.,uraian,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0015,dampak_asumsi_uraian,Asumsi dampak,Asumsi/parameter yang dipakai untuk menghitung dampak.,uraian,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0016,penyebab_key,Penyebab,Kunci penyebab: '<risiko_key>-P' + nomor 2 digit.,key,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0017,penyebab_kode,Nomor penyebab,Nomor penyebab dalam satu risiko (teks).,kode,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0018,penyebab_uraian,Uraian penyebab,Uraian satu penyebab risiko.,uraian,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0019,penyebab_sumber_kategori,Sumber penyebab,D_Pengendalian Risiko (terstruktur) atau Risk Register (dipecah dari teks bernomor).,kategori,TEXT,-,Public,,Aktif,2026-11-06
+GRC-F0020,rencana_key,Rencana pengendalian,"Kunci rencana: '<risiko_key>-R' + nomor rencana (bagian bulat 2 digit, mis. R03.1).",key,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0021,rencana_kode,Nomor rencana,Nomor rencana pengendalian sebagai teks (mis. '3.1'). Tidak boleh disimpan sebagai angka.,kode,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0022,rencana_uraian,Uraian rencana,Rencana pengendalian/mitigasi.,uraian,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0023,pic_uraian,PIC/Fungsi,Teks PIC/fungsi seperti di sumber (bisa lebih dari satu).,uraian,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0024,fungsi_kode,Kode fungsi,"Kode fungsi penanggung jawab (mis. MSC, BDGP, IC).",kode,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0025,fungsi_nama,Nama fungsi,Nama lengkap fungsi. Kosong bila belum ada di referensi.,nama,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0026,matriks_key,Sel matriks risiko,Kunci sel matriks: 'K<skor kemungkinan>-D<skor dampak>'.,key,TEXT,-,Public,,Aktif,2026-11-06
+GRC-F0027,dampak_skor,Skor dampak,Skor dampak 1-5.,skor,INT,skor 1-5,Restricted,,Aktif,2026-11-06
+GRC-F0028,kemungkinan_skor,Skor kemungkinan,Skor kemungkinan 1-5.,skor,INT,skor 1-5,Restricted,,Aktif,2026-11-06
+GRC-F0029,skala_risiko_nilai,Skala risiko,"Nilai sel matriks risiko 1-25 dari (skor kemungkinan, skor dampak).",nilai,INT,1-25,Restricted,,Aktif,2026-11-06
+GRC-F0030,level_risiko_kategori,Level risiko,"Low, Low to Moderate, Moderate, Moderate to High, High.",kategori,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0031,level_risiko_urutan_no,Urutan level,"Urutan level risiko 1 (Low) - 5 (High), untuk pengurutan dashboard.",no,INT,-,Public,GRC-F0030,Aktif,2026-11-06
+GRC-F0032,skala_risiko_min_nilai,Skala minimum,Batas bawah skala risiko untuk level ini.,nilai,INT,1-25,Public,GRC-F0029,Aktif,2026-11-06
+GRC-F0033,skala_risiko_max_nilai,Skala maksimum,Batas atas skala risiko untuk level ini.,nilai,INT,1-25,Public,GRC-F0029,Aktif,2026-11-06
+GRC-F0034,parameter_key,Parameter profil risiko,Kunci parameter: '<rkap_tahun>-<parameter_kode>'.,key,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0035,parameter_kode,Kode parameter,Kode parameter profil risiko dari sumber (RP01...).,kode,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0036,parameter_nama,Parameter risiko,Nama parameter/indikator profil risiko.,nama,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0037,parameter_rumus_uraian,Rumus parameter,Rumus/definisi perhitungan parameter seperti di sumber (kolom 'Target').,uraian,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0038,parameter_nilai_jenis_kategori,Jenis nilai,"Rasio, Hari, Jumlah, atau Level — menentukan cara membaca nilai aktual.",kategori,TEXT,-,Public,,Aktif,2026-11-06
+GRC-F0039,parameter_arah_kategori,Arah risiko,"'Makin tinggi makin buruk' bila toleransi > limit, sebaliknya 'Makin rendah makin buruk'.",kategori,TEXT,-,Public,,Aktif,2026-11-06
+GRC-F0040,ambang_limit_nilai,Limit,Batas limit parameter (angka). Untuk jenis Level: angka level tertinggi.,nilai,DECIMAL,sesuai jenis,Confidential,,Aktif,2026-11-06
+GRC-F0041,ambang_limit_teks,Limit (teks sumber),Nilai limit apa adanya bila bukan angka (mis. 'Level 0-1').,teks,TEXT,-,Confidential,,Aktif,2026-11-06
+GRC-F0042,ambang_selera_teks,Selera risiko,"Rentang selera risiko seperti di sumber, mis. '10% < X < 30%'.",teks,TEXT,-,Confidential,,Aktif,2026-11-06
+GRC-F0043,ambang_toleransi_nilai,Toleransi,Batas toleransi parameter (angka).,nilai,DECIMAL,sesuai jenis,Confidential,,Aktif,2026-11-06
+GRC-F0044,ambang_toleransi_teks,Toleransi (teks sumber),Nilai toleransi apa adanya bila bukan angka.,teks,TEXT,-,Confidential,,Aktif,2026-11-06
+GRC-F0045,profil_status_sumber_kategori,Status (sumber),"Status di sheet sumber (rumus Excel, hanya membaca Juli).",kategori,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0046,profil_status_kategori,Status profil,"Aman (<= limit), Hati-hati (limit < x <= toleransi), Bahaya (> toleransi), Tidak dapat dinilai.",kategori,TEXT,-,Restricted,GRC-F0062,Aktif,2026-11-06
+GRC-F0047,kapasitas_risiko_jt_idr,Kapasitas risiko,Risk capacity entitas pada tahun RKAP.,jt_idr,DECIMAL,jt IDR,Confidential,,Aktif,2026-11-06
+GRC-F0048,selera_risiko_jt_idr,Selera risiko,Risk appetite entitas pada tahun RKAP.,jt_idr,DECIMAL,jt IDR,Confidential,,Aktif,2026-11-06
+GRC-F0049,toleransi_risiko_jt_idr,Toleransi risiko,Risk tolerance entitas pada tahun RKAP.,jt_idr,DECIMAL,jt IDR,Confidential,,Aktif,2026-11-06
+GRC-F0050,limit_risiko_jt_idr,Limit risiko,Risk limit entitas pada tahun RKAP. Penyebut rasio dampak terhadap limit.,jt_idr,DECIMAL,jt IDR,Confidential,,Aktif,2026-11-06
+GRC-F0051,penilaian_jenis_kategori,Jenis penilaian,"INHEREN (awal tahun), TARGET (rencana residual per bulan), REALISASI (hasil per bulan).",kategori,TEXT,-,Public,,Aktif,2026-11-06
+GRC-F0052,dampak_jt_idr,Nilai dampak,Nilai dampak finansial risiko.,jt_idr,DECIMAL,jt IDR,Confidential,,Aktif,2026-11-06
+GRC-F0053,dampak_teks,Dampak kualitatif,Dampak non-finansial bila tidak berupa angka (mis. 'Tujuan strategis tertunda 6-9 bulan').,teks,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0054,dampak_thd_limit_rasio,Dampak terhadap limit,dampak_jt_idr / limit_risiko_jt_idr entitas yang sama (dihitung ulang ETL).,rasio,DECIMAL,rasio,Confidential,GRC-F0052,Aktif,2026-11-06
+GRC-F0055,dampak_thd_limit_sumber_rasio,Dampak terhadap limit (sumber),Nilai rasio seperti tertulis di sumber (untuk audit; dashboard memakai dampak_thd_limit_rasio).,rasio,DECIMAL,rasio,Confidential,,Aktif,2026-11-06
+GRC-F0056,kemungkinan_prob,Kemungkinan,Peluang terjadinya risiko 0-1.,prob,DECIMAL,prob 0-1,Restricted,,Aktif,2026-11-06
+GRC-F0057,eksposur_jt_idr,Eksposur risiko,Nilai eksposur = dampak x kemungkinan.,jt_idr,DECIMAL,jt IDR,Confidential,GRC-F0052,Aktif,2026-11-06
+GRC-F0058,biaya_pengendalian_jt_idr,Biaya pengendalian,INHEREN: anggaran biaya pengendalian. REALISASI: realisasi kumulatif s.d. bulan tsb.,jt_idr,DECIMAL,jt IDR,Confidential,,Aktif,2026-11-06
+GRC-F0059,biaya_pengendalian_rasio,Serapan biaya pengendalian,Realisasi biaya / anggaran biaya pengendalian.,rasio,DECIMAL,rasio,Confidential,GRC-F0058,Aktif,2026-11-06
+GRC-F0060,progres_rasio,Progres rencana,Persentase progres rencana pengendalian pada bulan tsb (0-1).,rasio,DECIMAL,rasio,Restricted,,Aktif,2026-11-06
+GRC-F0061,progres_realisasi_uraian,Realisasi pengendalian,Uraian realisasi kegiatan pengendalian pada bulan tsb.,uraian,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0062,aktual_nilai,Nilai aktual,Nilai aktual parameter pada bulan tsb (angka).,nilai,DECIMAL,sesuai jenis,Confidential,,Aktif,2026-11-06
+GRC-F0063,aktual_teks,Nilai aktual (teks),Nilai aktual bila bukan angka (mis. 'Level 0-1').,teks,TEXT,-,Restricted,,Aktif,2026-11-06
+GRC-F0064,inheren_dampak_jt_idr,Dampak inheren,Nilai dampak pada penilaian inheren.,jt_idr,DECIMAL,jt IDR,Confidential,GRC-F0052,Aktif,2026-11-06
+GRC-F0065,inheren_dampak_teks,Dampak inheren (kualitatif),Dampak inheren non-finansial.,teks,TEXT,-,Restricted,GRC-F0053,Aktif,2026-11-06
+GRC-F0066,inheren_dampak_thd_limit_rasio,Dampak inheren thd limit,Dampak inheren / limit entitas.,rasio,DECIMAL,rasio,Confidential,GRC-F0054,Aktif,2026-11-06
+GRC-F0067,inheren_dampak_skor,Skor dampak inheren,Skor dampak inheren 1-5.,skor,INT,skor 1-5,Restricted,GRC-F0027,Aktif,2026-11-06
+GRC-F0068,inheren_kemungkinan_prob,Kemungkinan inheren,Peluang inheren 0-1.,prob,DECIMAL,prob 0-1,Restricted,GRC-F0056,Aktif,2026-11-06
+GRC-F0069,inheren_kemungkinan_skor,Skor kemungkinan inheren,Skor kemungkinan inheren 1-5.,skor,INT,skor 1-5,Restricted,GRC-F0028,Aktif,2026-11-06
+GRC-F0070,inheren_skala_risiko_nilai,Skala risiko inheren,Skala risiko inheren 1-25.,nilai,INT,1-25,Restricted,GRC-F0029,Aktif,2026-11-06
+GRC-F0071,inheren_level_risiko_kategori,Level risiko inheren,Level risiko inheren.,kategori,TEXT,-,Restricted,GRC-F0030,Aktif,2026-11-06
+GRC-F0072,inheren_eksposur_jt_idr,Eksposur inheren,Eksposur risiko inheren.,jt_idr,DECIMAL,jt IDR,Confidential,GRC-F0057,Aktif,2026-11-06
+GRC-F0073,biaya_pengendalian_anggaran_jt_idr,Anggaran biaya pengendalian,Biaya pengendalian yang dianggarkan (penilaian inheren).,jt_idr,DECIMAL,jt IDR,Confidential,GRC-F0058,Aktif,2026-11-06
+GRC-F0074,target_akhir_skala_risiko_nilai,Target skala risiko Desember,Skala risiko residual yang ditargetkan pada Desember.,nilai,INT,1-25,Restricted,GRC-F0029,Aktif,2026-11-06
+GRC-F0075,target_akhir_level_risiko_kategori,Target level risiko Desember,Level risiko residual yang ditargetkan pada Desember.,kategori,TEXT,-,Restricted,GRC-F0030,Aktif,2026-11-06
+GRC-F0076,target_akhir_eksposur_jt_idr,Target eksposur Desember,Eksposur residual yang ditargetkan pada Desember.,jt_idr,DECIMAL,jt IDR,Confidential,GRC-F0057,Aktif,2026-11-06
+GRC-F0077,realisasi_akhir_periode_key,Periode realisasi terakhir,Bulan terakhir yang sudah ada realisasinya.,key,INT,YYYYMM,Public,CMN-F0013,Aktif,2026-11-06
+GRC-F0078,realisasi_akhir_skala_risiko_nilai,Skala risiko realisasi terakhir,Skala risiko pada realisasi terakhir.,nilai,INT,1-25,Restricted,GRC-F0029,Aktif,2026-11-06
+GRC-F0079,realisasi_akhir_level_risiko_kategori,Level risiko realisasi terakhir,Level risiko pada realisasi terakhir.,kategori,TEXT,-,Restricted,GRC-F0030,Aktif,2026-11-06
+GRC-F0080,realisasi_akhir_eksposur_jt_idr,Eksposur realisasi terakhir,Eksposur pada realisasi terakhir.,jt_idr,DECIMAL,jt IDR,Confidential,GRC-F0057,Aktif,2026-11-06
+GRC-F0081,biaya_pengendalian_realisasi_jt_idr,Realisasi biaya pengendalian,Realisasi biaya pengendalian kumulatif.,jt_idr,DECIMAL,jt IDR,Confidential,GRC-F0058,Aktif,2026-11-06
+GRC-F0082,biaya_pengendalian_realisasi_rasio,Serapan biaya pengendalian,Realisasi / anggaran biaya pengendalian.,rasio,DECIMAL,rasio,Confidential,GRC-F0059,Aktif,2026-11-06
+GRC-F0083,tren_kategori,Tren risiko,"Membaik, Tetap, atau Memburuk: skala realisasi terakhir dibanding inheren.",kategori,TEXT,-,Restricted,GRC-F0029,Aktif,2026-11-06
+GRC-F0084,penyebab_jml,Jumlah penyebab,Jumlah penyebab tercatat untuk risiko.,jml,INT,-,Restricted,GRC-F0016,Aktif,2026-11-06
+GRC-F0085,rencana_jml,Jumlah rencana,Jumlah rencana pengendalian untuk risiko.,jml,INT,-,Restricted,GRC-F0020,Aktif,2026-11-06
+GRC-F0086,rencana_berprogres_jml,Rencana berprogres,Jumlah rencana dengan progres > 0 pada periode mana pun.,jml,INT,-,Restricted,GRC-F0060,Aktif,2026-11-06
+GRC-F0087,target_dampak_jt_idr,Target dampak residual,Target nilai dampak residual pada bulan tsb.,jt_idr,DECIMAL,jt IDR,Confidential,GRC-F0052,Aktif,2026-11-06
+GRC-F0088,realisasi_dampak_jt_idr,Realisasi dampak,Realisasi nilai dampak pada bulan tsb.,jt_idr,DECIMAL,jt IDR,Confidential,GRC-F0052,Aktif,2026-11-06
+GRC-F0089,target_dampak_teks,Target dampak (kualitatif),Target dampak residual non-finansial.,teks,TEXT,-,Restricted,GRC-F0053,Aktif,2026-11-06
+GRC-F0090,realisasi_dampak_teks,Realisasi dampak (kualitatif),Realisasi dampak non-finansial.,teks,TEXT,-,Restricted,GRC-F0053,Aktif,2026-11-06
+GRC-F0091,target_eksposur_jt_idr,Target eksposur,Target eksposur residual pada bulan tsb.,jt_idr,DECIMAL,jt IDR,Confidential,GRC-F0057,Aktif,2026-11-06
+GRC-F0092,realisasi_eksposur_jt_idr,Realisasi eksposur,Realisasi eksposur pada bulan tsb.,jt_idr,DECIMAL,jt IDR,Confidential,GRC-F0057,Aktif,2026-11-06
+GRC-F0093,eksposur_deviasi_jt_idr,Deviasi eksposur,realisasi_eksposur_jt_idr - target_eksposur_jt_idr (positif = di atas target).,jt_idr,DECIMAL,jt IDR,Confidential,GRC-F0057,Aktif,2026-11-06
+GRC-F0094,target_skala_risiko_nilai,Target skala risiko,Target skala risiko pada bulan tsb.,nilai,INT,1-25,Restricted,GRC-F0029,Aktif,2026-11-06
+GRC-F0095,realisasi_skala_risiko_nilai,Realisasi skala risiko,Realisasi skala risiko pada bulan tsb.,nilai,INT,1-25,Restricted,GRC-F0029,Aktif,2026-11-06
+GRC-F0096,target_level_risiko_kategori,Target level risiko,Target level risiko pada bulan tsb.,kategori,TEXT,-,Restricted,GRC-F0030,Aktif,2026-11-06
+GRC-F0097,realisasi_level_risiko_kategori,Realisasi level risiko,Realisasi level risiko pada bulan tsb.,kategori,TEXT,-,Restricted,GRC-F0030,Aktif,2026-11-06
+GRC-F0098,realisasi_dampak_thd_limit_rasio,Realisasi dampak thd limit,Realisasi dampak / limit entitas.,rasio,DECIMAL,rasio,Confidential,GRC-F0054,Aktif,2026-11-06
+GRC-F0099,capaian_kategori,Capaian,"Sesuai target (skala realisasi <= target), Di atas target, atau Belum ada realisasi.",kategori,TEXT,-,Restricted,GRC-F0029,Aktif,2026-11-06
+GRC-F0100,posisi_kategori,Posisi pada peta,"Inheren, Target Desember, atau Realisasi terakhir.",kategori,TEXT,-,Public,,Aktif,2026-11-06
+GRC-F0101,progres_akhir_rasio,Progres terakhir,Progres rencana pada laporan terakhir.,rasio,DECIMAL,rasio,Restricted,GRC-F0060,Aktif,2026-11-06
+GRC-F0102,progres_akhir_periode_key,Periode progres terakhir,Bulan laporan progres terakhir.,key,INT,YYYYMM,Public,CMN-F0013,Aktif,2026-11-06
+GRC-F0103,progres_status_kategori,Status rencana,"Belum ada laporan, Belum mulai (0%), Berjalan, atau Selesai (100%).",kategori,TEXT,-,Restricted,GRC-F0060,Aktif,2026-11-06
+GRC-F0104,risiko_jml,Jumlah risiko,Jumlah risiko pada entitas/tahun.,jml,INT,-,Restricted,GRC-F0010,Aktif,2026-11-06
+GRC-F0105,risiko_high_jml,Jumlah risiko High,Jumlah risiko berlevel inheren High.,jml,INT,-,Restricted,GRC-F0030,Aktif,2026-11-06
+GRC-F0106,inheren_eksposur_total_jt_idr,Total eksposur inheren,Jumlah eksposur inheren seluruh risiko entitas.,jt_idr,DECIMAL,jt IDR,Confidential,GRC-F0057,Aktif,2026-11-06
+GRC-F0107,inheren_dampak_total_jt_idr,Total dampak inheren,Jumlah dampak inheren finansial seluruh risiko entitas.,jt_idr,DECIMAL,jt IDR,Confidential,GRC-F0052,Aktif,2026-11-06
+GRC-F0108,eksposur_thd_limit_rasio,Eksposur terhadap limit,Total eksposur inheren / limit risiko entitas.,rasio,DECIMAL,rasio,Confidential,GRC-F0057,Aktif,2026-11-06
+GRC-F0109,ambang_urutan_valid_flag,Urutan ambang valid,True bila limit <= selera <= toleransi <= kapasitas.,flag,BOOLEAN,-,Restricted,,Aktif,2026-11-06

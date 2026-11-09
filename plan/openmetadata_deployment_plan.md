@@ -2,7 +2,7 @@
 title: Rencana Deployment OpenMetadata — Tata Kelola Metadata ERM (Server Dev)
 tags: [data-governance, erm, openmetadata, docker-compose, ubuntu-server, opensearch, postgresql]
 dibuat: 2026-11-03
-status: Draft v1.0 — siap dieksekusi (fase 1)
+status: v1.1 — fase 1 berjalan, fase 3 dimuat 2026-11-04, fase 2 menunggu IDS + DNS (lihat §0)
 dasar:
   - "[[CONTEXT.md]]"
   - "[[docs/adr/0001-dg-permissions-enforced-leno-screen-rights-as-reference.md]]"
@@ -20,6 +20,27 @@ artefak: deploy/
 
 ---
 
+## 0. Status & Pekerjaan Tertunda (per 2026-11-06)
+
+| Fase | Status |
+| :-- | :-- |
+| 1 — Deploy | **Berjalan.** OM 2.0.7 sehat, gateway :80/:8585, login basic auth, backup harian 01:30 aktif. |
+| 3 — Workbook | **Dimuat 2026-11-04:** 18 tabel / 95 kolom, 58 istilah glosarium, 19 layar LenO, 29 lineage, 84 definisi test case, 68 team, policy `DG_UV_1`. 23 cacat dilaporkan. |
+| 2 — IDS | **Tertunda** — menunggu client IDS dan DNS. Skrip `enable-ids.sh` siap (dengan preflight). |
+
+| # | Pekerjaan tertunda | Pemilik | Status |
+| :-- | :-- | :-- | :-- |
+| P2-1 | Client IDS (confidential, redirect `http://dev-data.len.co.id/callback`) + konfirmasi redirect HTTP (V-4) | Tim IDS | Menunggu |
+| P2-2 | A record `dev-data.len.co.id` → `192.168.125.14` (2026-11-06 masih NXDOMAIN) | Tim jaringan | Menunggu |
+| P2-3 | Jalankan `enable-ids.sh`, uji login, nonaktifkan akun basic auth sementara | UV-3 | Setelah P2-1, P2-2 |
+| P3-1 | Buat ulang token admin pemuat — token lama kedaluwarsa 2026-11-05 (HTTP 401). Pilih masa berlaku 60–90 hari | UV-3 | Terbuka |
+| P3-2 | Perbaiki 23 cacat Workbook, lalu `reload-workbook.sh` | UG-1 / UV-1 | Terbuka |
+| P3-3 | Impor keanggotaan team dari CSV HR/IDS (`email, ORG_ID`) | HR / tim IDS | Terbuka |
+| P4-1 | Celah konteks: belum ada Domain, Data Product, Data Contract; test kualitas belum dijalankan (hanya definisi) | UV-1 | Terbuka |
+| DOC-2 | Buku panduan per peran (PDF + PPTX) — `docs/manuals/` | UV-3 | Selesai 2026-11-06 |
+
+---
+
 ## 1. Keputusan (hasil grilling 2026-11-03)
 
 | Area | Keputusan |
@@ -27,7 +48,7 @@ artefak: deploy/
 | Alat | OpenMetadata, fitur bawaan saja: beranda, Teams/Roles/Policies, kustomisasi logo/tema/teks, aset Tabel ERM. Tanpa aplikasi kustom. |
 | Hubungan dengan LenO | Terpisah, database sendiri, **tanpa koneksi** ke database LenO. |
 | Server | jitsi 192.168.125.14 (bersama, development). |
-| Akses | HTTP `0.0.0.0:8585`, tanpa TLS, jaringan internal saja. Pintu masuknya nginx `om-ui`, yang hanya berfungsi menyisipkan tema LenO. |
+| Akses | HTTP `0.0.0.0:8585`, tanpa TLS, jaringan internal saja. Pintu masuknya nginx `gateway` (port 80 dan 8585): landing page, sisip tema Len, nama merek. |
 | Login | Fase 1: basic auth sementara (admin UV-3). Fase 2: **IDS** (OIDC). Kunci identitas = email kantor. |
 | Admin | UV-3 IT Development. |
 | Teams | Direktorat › Divisi › Unit Kerja (45) dari `Master_Organization`; Seluruh Unit Kerja = root. Keanggotaan diimpor berkala dari daftar HR/IDS; satu Pengguna boleh di beberapa team. |
@@ -38,7 +59,7 @@ artefak: deploy/
 | Layar LenO | Aset Dashboard di service "LenO ERM"; lineage kolom → layar. |
 | Aturan kualitas | Definisi test case saja (tidak dijalankan). |
 | Bahasa konten | Bahasa Indonesia sesuai Workbook. |
-| Tampilan | **LenO Interface: warna + gaya header/sidebar** ([[leno_interface_theme.md]]). Disisipkan lewat CSS (`ui/leno-theme/leno.css`) oleh nginx `om-ui`, ditambah pengaturan tema bawaan OM (warna, logo). Menu tetap milik OM. Susunan menu LPMS dan pola menu terkunci **tidak** dipakai. |
+| Tampilan | **LenO Interface: warna + gaya header/sidebar** ([[leno_interface_theme.md]]). Disisipkan lewat CSS (`ui/leno-theme/leno.css`) oleh nginx `gateway`, ditambah pengaturan tema bawaan OM (warna, logo). Menu tetap milik OM. Susunan menu LPMS dan pola menu terkunci **tidak** dipakai. |
 | Backup | `pg_dump` harian lokal, retensi 14 hari. |
 
 ---
@@ -49,7 +70,7 @@ artefak: deploy/
 flowchart LR
   PC["Browser Pengguna (intranet)"] -- "HTTP :8585" --> UI
   subgraph jitsi["Server jitsi 192.168.125.14 — project compose 'openmetadata'"]
-    UI["om-ui (nginx)<br/>proxy + sisip leno.css"] --> OM["openmetadata-server 2.0.7<br/>(UI + API, admin :8586 internal)"]
+    UI["gateway (nginx)<br/>proxy + sisip leno.css"] --> OM["openmetadata-server 2.0.7<br/>(UI + API, admin :8586 internal)"]
     MIG["openmetadata-migrate<br/>(sekali jalan saat up)"] --> PG
     OM --> PG[("PostgreSQL 15<br/>openmetadata_db")]
     OM --> OS[("OpenSearch 3.2.0<br/>indeks pencarian")]
@@ -69,7 +90,7 @@ Aplikasi ERM LenO ditampilkan hanya sebagai konteks: **tidak ada panah ke LenO**
 | opensearch | `opensearchproject/opensearch:3.2.0` (heap 1 GB) | om-internal | — | 2 GB |
 | openmetadata-migrate | `docker.getcollate.io/openmetadata/server:2.0.7` | om-internal | — | — (sekali jalan) |
 | openmetadata-server | `docker.getcollate.io/openmetadata/server:2.0.7` (heap 1,5 GB) | om-internal, om-egress | — | 2,5 GB |
-| om-ui | `nginxinc/nginx-unprivileged:stable-alpine` | om-egress | **0.0.0.0:8585** | 128 MB |
+| gateway | `nginx:1.27-alpine` | om-egress | **0.0.0.0:80**, **0.0.0.0:8585** | 128 MB |
 
 - **Total batas memori ≈ 5,6 GB.** Jitsi memiliki ≈ 10 GiB tersedia.
 - **Subnet tetap:** `om-internal` 172.28.10.0/24 (tanpa rute keluar) dan `om-egress` 172.28.11.0/24. Keduanya tidak bertabrakan dengan network yang sudah ada (172.17–172.21, Podman 10.89.0.0/24, LAN 192.168.x).
@@ -82,7 +103,7 @@ Aplikasi ERM LenO ditampilkan hanya sebagai konteks: **tidak ada panah ke LenO**
 | Path | Fungsi |
 | :-- | :-- |
 | `compose.yaml` | 5 service, network bersubnet tetap, konfigurasi server (variabel sesuai `conf/openmetadata.yaml` 2.0.7) |
-| `ui/nginx.conf` | Proxy `om-ui` → OpenMetadata; menyisipkan `<link>` ke `leno.css` di setiap halaman HTML |
+| `gateway/nginx.conf` | Proxy `gateway` → OpenMetadata; landing page `/`, menyisipkan `<link>` ke `leno.css`, nama merek "Len Data Governance" |
 | `ui/leno-theme/leno.css` | Token warna LenO, font Poppins, gaya header merah & sidebar LPMS, tombol/kartu |
 | `scripts/fetch-ui-assets.sh` | Mengambil font Poppins (OFL) dan logo LenO ke `ui/leno-theme/` |
 | `.env.example` | Direktori, port, domain email, admin, image (dikunci digest) |
@@ -163,8 +184,8 @@ Start pertama memakan waktu beberapa menit. Tekan Ctrl+C setelah log server menu
    | Error | `#dc2626` |
    | Logo / monogram / favicon | URL aset logo LenO resmi (mintakan URL tetap ke pengelola aset LenO; sementara boleh `https://dev-lpms.len.co.id/images/leno-logo.png`) |
 
-   Pengaturan tema bawaan ini mewarnai komponen OM. Header merah, sidebar bergaya LPMS, dan font Poppins berasal dari `leno.css` yang disisipkan `om-ui`.
-5. Buka beberapa halaman (beranda, Explore, Glossary, Settings) dan periksa header & sidebar. Bila ada yang tidak berubah, sesuaikan selector di `leno.css` (V-8), naikkan `?v=` di `ui/nginx.conf`, lalu `sudo docker compose restart om-ui`.
+   Pengaturan tema bawaan ini mewarnai komponen OM. Header merah, sidebar bergaya LPMS, dan font Poppins berasal dari `leno.css` yang disisipkan `gateway`.
+5. Buka beberapa halaman (beranda, Explore, Glossary, Settings) dan periksa header & sidebar. Bila ada yang tidak berubah, sesuaikan selector di `leno.css` (V-8), lalu `sudo docker compose restart gateway`.
 
 **7. Backup & verifikasi**
 ```bash

@@ -85,6 +85,9 @@ services:
       - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./gateway/html:/usr/share/nginx/html:ro
       - ./ui/leno-theme:/usr/share/nginx/leno:ro
+      - ${OM_DATA_DIR:-/srv/openmetadata}/medallion/panel:/usr/share/nginx/unduh:ro     # panel Data Siap Pakai (Gold)
+      - ${OM_DATA_DIR:-/srv/openmetadata}/secrets/unduh.htpasswd:/etc/nginx/unduh.htpasswd:ro
+      - ${OM_DATA_DIR:-/srv/openmetadata}/secrets/unduh-grc.htpasswd:/etc/nginx/unduh-grc.htpasswd:ro   # E-GRC (Confidential)
     networks: [om-egress]
     mem_limit: 128m
 

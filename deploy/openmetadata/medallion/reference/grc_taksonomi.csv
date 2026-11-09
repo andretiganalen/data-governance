@@ -1,0 +1,9 @@
+taksonomi_key,taksonomi_nama,varian_sumber_uraian
+STR,Strategic Risk,Strategic Risk
+OPS,Operational Risk,Operational Risk
+FIN,Financial Risk,Financial Risk|Financial Risk (inc. Liquidity Risk, Insurance Risk)
+INV,Investment/Project Risk,Investment/Project Risk|Investment/ Project Risk
+MKT,Market Risk,Market Risk
+CRD,Credit/Counterparty Credit Risk,Credit/Counterparty Credit Risk
+REP,Reputational Risk,Reputational Risk
+RLC,"Regulatory, Legal & Compliance Risk","Regulatory, Legal & Compliance Risk|Regulatory, Legal, and Compliance Risk"
