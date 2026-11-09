@@ -1,7 +1,10 @@
-# Superset — modul Visualisasi Gold, Len Data Governance.
+# Superset — menu Visualisasi Gold di dalam OpenMetadata (http://<host>:8585/visualisasi/), Len Data Governance.
+# Tidak ada port terpisah: gateway nginx meneruskan /visualisasi/ ke kontainer superset:8088 (internal).
 # Rahasia dibaca dari environment (secrets/superset.env, tidak di git). Data dibaca dari Trino lakehouse;
-# basis data Postgres di stack hanya menyimpan metadata Superset (pengguna, grafik, dashboard).
+# Postgres di stack hanya menyimpan metadata Superset (pengguna, grafik, dashboard).
 import os
+
+APP_ROOT = os.environ.get("SUPERSET_APP_ROOT", "/visualisasi")
 
 SECRET_KEY = os.environ["SUPERSET_SECRET_KEY"]
 SQLALCHEMY_DATABASE_URI = (
@@ -9,21 +12,43 @@ SQLALCHEMY_DATABASE_URI = (
 )
 
 APP_NAME = "Len Data Governance · Visualisasi"
-APP_ICON = "/static/assets/images/len-logo.png"
-APP_ICON_WIDTH = 120
-LOGO_TARGET_PATH = "/superset/welcome/"
+APP_ICON = f"{APP_ROOT}/static/assets/images/len-logo.png"
+LOGO_TARGET_PATH = f"{APP_ROOT}/dashboard/list/"
 LOGO_TOOLTIP = "Len Data Governance"
-FAVICONS = [{"href": "/static/assets/images/len-logo.png"}]
+FAVICONS = [{"href": "/static/assets/images/len-logo.png"}]   # Superset menambahkan APP_ROOT sendiri
 
-# Diakses lewat gateway nginx (http://<host>:8088). TLS menyusul bersama IDS (fase 2).
+# Tema standar Len (plan/interface-menu.md): navy utama, merah aksen, biru tautan; hanya mode terang.
+THEME_DEFAULT = {
+    "algorithm": "default",
+    "token": {
+        "colorPrimary": "#194A80",
+        "colorLink": "#0562C9",
+        "colorError": "#DA0000",
+        "colorSuccess": "#1E7B34",
+        "colorWarning": "#F28C00",
+        "colorTextBase": "#3B3B3B",
+        "colorBgLayout": "#F5F6F8",
+        "borderRadius": 4,
+        "fontFamily": "Montserrat, 'Open Sans', 'Segoe UI', Arial, sans-serif",
+        "brandLogoUrl": f"{APP_ROOT}/static/assets/images/len-logo.png",
+        "brandLogoAlt": "Len Data Governance",
+        "brandLogoHref": f"{APP_ROOT}/dashboard/list/",
+        "brandLogoHeight": "28px",
+    },
+}
+THEME_DARK = None
+
+# Di belakang gateway nginx (:8585). TLS menyusul bersama IDS (fase 2).
 ENABLE_PROXY_FIX = True
+SESSION_COOKIE_NAME = "dg_visualisasi_session"   # beda dari cookie OpenMetadata di origin yang sama
+SESSION_COOKIE_PATH = APP_ROOT
 SESSION_COOKIE_SECURE = False
 SESSION_COOKIE_SAMESITE = "Lax"
 TALISMAN_ENABLED = False
 CONTENT_SECURITY_POLICY_WARNING = False
 
 FEATURE_FLAGS = {
-    "DASHBOARD_RBAC": True,          # akses dashboard per peran
+    "DASHBOARD_RBAC": True,
     "DRILL_TO_DETAIL": True,
     "DRILL_BY": True,
     "HORIZONTAL_FILTER_BAR": True,
@@ -39,7 +64,7 @@ SUPERSET_WEBSERVER_TIMEOUT = 300
 CACHE_CONFIG = {"CACHE_TYPE": "FileSystemCache", "CACHE_DIR": "/app/superset_home/cache", "CACHE_DEFAULT_TIMEOUT": 300}
 DATA_CACHE_CONFIG = {**CACHE_CONFIG, "CACHE_DEFAULT_TIMEOUT": 600}
 
-# Palet standar Len (plan/interface-menu.md) — skema warna bawaan untuk grafik baru.
+# Palet standar Len — skema warna bawaan untuk grafik baru.
 EXTRA_CATEGORICAL_COLOR_SCHEMES = [{
     "id": "lenDataGovernance",
     "description": "Len Data Governance",

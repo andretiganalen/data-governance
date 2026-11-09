@@ -7,11 +7,11 @@ Compose project `lendatagovernance` (live: `/opt/lendatagovernance/deploy`, data
 | http://dev-data.len.co.id | Landing page → "Masuk dengan IDS" → OpenMetadata (via gateway :80) |
 | http://192.168.125.14:8585 | OpenMetadata via the same gateway (LenO theme applied) |
 | http://127.0.0.1:8586/healthcheck | Admin/health (server-local only) |
-| http://192.168.125.14:8088 | Visualisasi Gold — Apache Superset (menu *Visualisasi* di halaman depan) |
+| http://192.168.125.14:8585/visualisasi/ | Visualisasi Gold — Apache Superset 6, menu *Visualisasi* di sidebar OpenMetadata (tidak ada port terpisah) |
 
 | Path | Content |
 |---|---|
-| `compose.yaml` | postgresql 15, opensearch 3.2.0, migrate, openmetadata-server, superset 4.1.2, gateway (nginx :80, :8585, :8088) |
+| `compose.yaml` | postgresql 15, opensearch 3.2.0, migrate, openmetadata-server, superset 6.0.0 (internal), gateway (nginx :80, :8585) |
 | `openmetadata.base.env` | Non-secret settings (git) |
 | `/srv/lendatagovernance/secrets/` | DB passwords, Fernet key, JWT keys, IDS client (NOT in git — back up to vault) |
 | `/srv/lendatagovernance/{postgres,opensearch,backup}` | Data |
@@ -85,13 +85,13 @@ Pasang: `sudo cp host/systemd/lendatagovernance-lakehouse-inbox.* /etc/systemd/s
 Penyuntingan langsung di tabel `silver_*`/`gold_*` akan tertimpa pada pemuatan berikutnya — perbaiki di sumber lalu unggah ulang.
 
 ## Visualisasi Gold — Apache Superset (`superset/`)
-Image `lendatagovernance/superset:4.1.2-dg1` (driver Trino + Postgres, palet Len). Metadata Superset (pengguna, grafik,
+Image `lendatagovernance/superset:6.0.0-dg1` (driver Trino + Postgres, tema & palet Len), berjalan di subpath `/visualisasi` (`SUPERSET_APP_ROOT`) di belakang gateway :8585 — port 8088 tidak dibuka. Menu *Visualisasi* di sidebar OpenMetadata disisipkan oleh `ui/leno-theme/leno-menu.js`. Metadata Superset (pengguna, grafik,
 dashboard) di database `superset` pada Postgres stack ini; **data** dibaca dari Trino (koneksi hanya baca, `allow_dml` mati).
 Rahasia: `/srv/lendatagovernance/secrets/superset.env` (`SUPERSET_SECRET_KEY`, `SUPERSET_DB_PASSWORD`, `SUPERSET_ADMIN_*`).
 ```bash
-docker compose build superset && docker compose up -d superset gateway
+docker compose build superset && docker compose up -d superset && docker compose up -d --force-recreate gateway   # nginx.conf adalah bind-mount berkas: rsync → gateway harus dibuat ulang
 /srv/lendatagovernance/medallion/.venv/bin/python scripts/superset-setup.py           # koneksi + dataset + 2 dashboard awal
 /srv/lendatagovernance/medallion/.venv/bin/python scripts/superset-setup.py --force   # buat ulang dashboard awal
 ```
-Dashboard awal: `/superset/dashboard/risiko-erm/` dan `/superset/dashboard/tata-kelola-data/`. Admin membuat grafik sendiri lewat
+Dashboard awal: `:8585/visualisasi/superset/dashboard/risiko-erm/` dan `:8585/visualisasi/superset/dashboard/tata-kelola-data/`. Skrip setup memakai admin awal atau akun Anda: `SUPERSET_USER=… SUPERSET_PASSWORD=…`. Admin membuat grafik sendiri lewat
 **Charts › + Chart** (tren waktu, histogram, donut, heatmap, dll.) atau **SQL Lab**.

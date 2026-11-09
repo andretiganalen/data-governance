@@ -9,6 +9,8 @@ Aman diulang: koneksi diperbarui, dataset yang sudah ada dilewati, dashboard han
 (pakai --force untuk membuat ulang dashboard awal; dashboard buatan admin lain tidak disentuh).
 
 Pemakaian (di server):  /srv/lendatagovernance/medallion/.venv/bin/python scripts/superset-setup.py [--force]
+  Akun: admin awal dari secrets/superset.env, atau akun Admin Superset Anda sendiri:
+  SUPERSET_USER=<username> SUPERSET_PASSWORD=<sandi> …/python scripts/superset-setup.py
 Kredensial: $DATA/secrets/superset.env dan $DATA/secrets/trino.env (tidak pernah di git).
 """
 from __future__ import annotations
@@ -24,7 +26,7 @@ from urllib.parse import quote
 import requests
 
 DATA = Path(os.environ.get("OM_DATA_DIR", "/srv/lendatagovernance"))
-BASE = os.environ.get("SUPERSET_URL", "http://127.0.0.1:8088")
+BASE = os.environ.get("SUPERSET_URL", "http://127.0.0.1:8585/visualisasi")
 DB_NAME = "Len Lakehouse (Trino)"
 SCHEMA = "medallion_repository"
 EXTRA_DATASETS = ["silver_dim_date", "silver_dim_organization", "silver_dim_erm_risk_matrix", "bronze_repository"]
@@ -40,7 +42,8 @@ class API:
         e = env("superset.env")
         self.s = requests.Session()
         r = self.s.post(f"{BASE}/api/v1/security/login", json={
-            "username": e.get("SUPERSET_ADMIN_USER", "admin"), "password": e["SUPERSET_ADMIN_PASSWORD"],
+            "username": os.environ.get("SUPERSET_USER") or e.get("SUPERSET_ADMIN_USER", "admin"),
+            "password": os.environ.get("SUPERSET_PASSWORD") or e["SUPERSET_ADMIN_PASSWORD"],
             "provider": "db", "refresh": True})
         r.raise_for_status()
         self.s.headers["Authorization"] = f"Bearer {r.json()['access_token']}"
