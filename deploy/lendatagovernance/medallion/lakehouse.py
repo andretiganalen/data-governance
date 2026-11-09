@@ -985,6 +985,15 @@ def status(tq: Trino) -> None:
         log(f"{t:55s} {counts[t]:7d}  {last.astimezone(timezone(timedelta(hours=7))).strftime('%Y-%m-%d %H:%M') if last else '-'}")
 
 
+def sync_openmetadata() -> None:
+    """Katalog :8585 ikut diperbarui (tabel, kolom, jumlah baris). Gagal sinkron tidak membatalkan pemuatan."""
+    try:
+        import om_trino
+        om_trino.main()
+    except (Exception, SystemExit) as e:  # noqa: BLE001 — token kedaluwarsa/OM mati: cukup diberi tahu
+        log(f"  ! sinkron OpenMetadata dilewati: {str(e)[:200]}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -1042,6 +1051,7 @@ def main() -> None:
             shutil.move(str(f), done / f"{now.strftime('%Y%m%d-%H%M%S')}__{f.name}")
     if a.cmd == "rebuild" or (new and not getattr(a, "no_rebuild", False)):
         rebuild(tq, schema, batch_id, now)
+        sync_openmetadata()
     elif files:
         log("Tidak ada berkas baru dari sumber yang dikenali — Silver/Gold tidak diubah.")
 
