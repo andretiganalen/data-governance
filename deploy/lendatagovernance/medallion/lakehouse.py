@@ -72,7 +72,7 @@ class Trino:
             auth=trino.auth.BasicAuthentication(env["TRINO_USER"], env["TRINO_PASSWORD"]),
             catalog=self.catalog, schema=self.schema, source="lendatagovernance-lakehouse")
 
-    RETRYABLE = ("ICEBERG_COMMIT_ERROR", "ICEBERG_CATALOG_ERROR")
+    RETRYABLE = ("ICEBERG_COMMIT_ERROR", "ICEBERG_CATALOG_ERROR", "Error processing metadata for table")
 
     def q(self, sql: str, attempts: int = 3) -> list:
         """Galat commit/katalog Lakekeeper yang sementara dicoba ulang (30 s, 60 s). Pernyataan yang gagal commit tidak

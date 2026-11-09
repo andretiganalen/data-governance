@@ -72,21 +72,29 @@ def main() -> None:
     tcomment = dict(tq.q(f"SELECT table_name, comment FROM system.metadata.table_comments "
                          f"WHERE catalog_name = '{tq.catalog}' AND schema_name = '{tq.schema}'"))
     names = sorted(cols)
-    counts = dict(tq.q(" UNION ALL ".join(f"SELECT '{t}', count(*) FROM {tq.fq(t)}" for t in names)))
+    counts: dict[str, int | None] = {}
+    for t in names:  # per tabel: satu tabel yang metadatanya rusak di Lakekeeper tidak menggagalkan semuanya
+        try:
+            counts[t] = tq.q(f"SELECT count(*) FROM {tq.fq(t)}", attempts=1)[0][0]
+        except Exception as e:  # noqa: BLE001
+            counts[t] = None
+            print(f"  ! {t}: jumlah baris tidak terbaca ({str(e)[:100]})")
     for t in names:
         desc = (tcomment.get(t) or "").strip()
-        desc = (desc + "\n\n" if desc else "") + f"Lapisan **{layer(t)}**. Jumlah baris di Trino: **{counts[t]:,}** (sinkron {stamp})."
+        n = f"**{counts[t]:,}**" if counts[t] is not None else "**tidak terbaca** (Lakekeeper gagal membaca metadata)"
+        desc = (desc + "\n\n" if desc else "") + f"Lapisan **{layer(t)}**. Jumlah baris di Trino: {n} (sinkron {stamp})."
         body = {"name": t, "databaseSchema": sch["fullyQualifiedName"], "tableType": "Iceberg", "description": desc,
                 "columns": [{"name": c, **om_type(dt), **({"description": cm} if cm else {})} for c, dt, cm in cols[t]]}
         tb = om.put("/v1/tables", body)
-        om.call("PUT", f"/v1/tables/{tb['id']}/tableProfile", {
-            "tableProfile": {"timestamp": int(now.timestamp() * 1000), "rowCount": counts[t], "columnCount": len(cols[t])}})
+        if counts[t] is not None:
+            om.call("PUT", f"/v1/tables/{tb['id']}/tableProfile", {
+                "tableProfile": {"timestamp": int(now.timestamp() * 1000), "rowCount": counts[t], "columnCount": len(cols[t])}})
     # tabel yang sudah hilang dari Trino → soft delete
     existing = om.get(f"/v1/tables?databaseSchema={q(sch['fullyQualifiedName'])}&limit=1000").get("data", [])
     gone = [x for x in existing if x["name"] not in cols]
     for x in gone:
         om.call("DELETE", f"/v1/tables/{x['id']}")
-    print(f"OpenMetadata ↔ Trino: {len(names)} tabel disinkron, {len(gone)} dihapus, {sum(counts.values()):,} baris ({stamp})")
+    print(f"OpenMetadata ↔ Trino: {len(names)} tabel disinkron, {len(gone)} dihapus, {sum(v for v in counts.values() if v):,} baris, {sum(1 for v in counts.values() if v is None)} tak terbaca ({stamp})")
 
 
 def defaultdict_list():
