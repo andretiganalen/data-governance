@@ -4,6 +4,15 @@
 - Masa pakai: dirancang untuk 10 tahun (2026–2036). Perubahan hanya lewat ADR baru yang menggantikan bagian tertentu.
 - Penegakan: `deploy/lendatagovernance/medallion/egrc.py` → `load_registry()` dan validasi keluaran. Build **gagal** bila standar dilanggar.
 
+> **Pembaruan 2026-11-09 — lakehouse Trino.** Sistem rekam data kini `lakekeeper.medallion_repository` (Trino, Iceberg),
+> bukan berkas CSV/XLSX di `/srv`. Atas keputusan pemilik (2026-11-09), tabel di lakehouse **mengikuti kerangka yang
+> sudah ada di skema itu**: nama tabel `bronze_* / silver_dim_* / silver_fact_* / gold_*` berbahasa Inggris, kolom
+> seperti `risk_id`, `company_id`, `fiscal_year`, kolom lineage `_file_id, _batch_id, _source_system, _source_file, _loaded_at`,
+> dan kode elemen `F0xx`/`X0xx` dari workbook di komentar kolom. Aturan bagian 2–4 di bawah (akhiran kelas, `field_id`
+> `<DOMAIN>-F<4 digit>`) tetap berlaku untuk keluaran berkas `egrc.py` dan `field_registry.csv`, tetapi **tidak** untuk
+> tabel lakehouse. Definisi tabel lakehouse: `deploy/lendatagovernance/medallion/schema/medallion_repository.sql`;
+> pemuat: `medallion/lakehouse.py`. ADR pengganti yang menyatukan keduanya perlu ditulis.
+
 ## Konteks
 Data akan datang dari banyak sistem (ERM, E-GRC, SDM, keuangan, …) selama bertahun-tahun, dikerjakan oleh orang yang berganti-ganti.
 Tanpa aturan tetap, kolom yang sama akan bernama berbeda, kode akan bertabrakan, dan dashboard rusak setiap kali sumber berubah.

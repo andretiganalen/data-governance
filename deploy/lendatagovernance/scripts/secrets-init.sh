@@ -32,6 +32,14 @@ ENV
   echo "created openmetadata.env"
 fi
 
+if [[ ! -f $SEC/superset.env ]]; then
+  SS_DB=$(rnd)
+  printf 'SUPERSET_SECRET_KEY=%s\nSUPERSET_DB_PASSWORD=%s\nSUPERSET_ADMIN_USER=admin\nSUPERSET_ADMIN_PASSWORD=%s\n' "$(rnd 48)" "$SS_DB" "$(rnd 16)" > "$SEC/superset.env"
+  grep -q '^SUPERSET_DB_PASSWORD=' "$SEC/postgres.env" || echo "SUPERSET_DB_PASSWORD=$SS_DB" >> "$SEC/postgres.env"
+  chmod 600 "$SEC/superset.env"
+  echo "created superset.env (admin password inside; hand it to the DG admin once)"
+fi
+
 if [[ ! -f $SEC/jwt/private_key.der ]]; then
   openssl genrsa -out "$SEC/jwt/private_key.pem" 2048 2>/dev/null
   openssl pkcs8 -topk8 -inform PEM -outform DER -in "$SEC/jwt/private_key.pem" -out "$SEC/jwt/private_key.der" -nocrypt

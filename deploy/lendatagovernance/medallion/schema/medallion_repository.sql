@@ -1,0 +1,1292 @@
+-- Skema lakekeeper.medallion_repository (sumber kebenaran). Dipakai oleh medallion/lakehouse.py:
+-- tabel yang dikelola loader direvisi (CREATE OR REPLACE) bila kolom/tipe di Trino berbeda dari berkas ini.
+-- Tabel bronze_<sumber>_<sheet> (baris mentah) dibuat dinamis oleh loader dan tidak dicantumkan di sini.
+
+CREATE TABLE bronze_meta_quarantine (
+   file_id varchar COMMENT 'relasi ke bronze_repository',
+   batch_id varchar COMMENT 'uuid batch ingestion',
+   source_system varchar COMMENT 'sumber data',
+   source_object varchar COMMENT 'objek sumber',
+   source_locator varchar COMMENT 'sheet/halaman/rentang tabel',
+   source_header varchar COMMENT 'nama header asli dari dokumen sumber',
+   normalized_header varchar COMMENT 'header setelah proses normalisasi',
+   suggested_field_id varchar COMMENT 'rekomendasi kode FIELD_ID terdekat',
+   suggestion_score double COMMENT 'skor kecocokan Levenshtein/Jaro (0.00 - 1.00)',
+   sample_values varchar COMMENT 'sampel maksimal 5 nilai data mentah',
+   review_status varchar COMMENT 'OPEN | APPROVED | REJECTED',
+   ingested_at timestamp(6) with time zone COMMENT 'waktu karantina'
+);
+
+CREATE TABLE bronze_repository (
+   file_id varchar COMMENT 'sha256[:16] pengenal unik file',
+   batch_id varchar COMMENT 'uuid batch ingestion run',
+   source_system varchar COMMENT 'DG_WORKBOOK | LENO_ERM | EGRC | SAP | FILE',
+   source_object varchar COMMENT 'nama entitas/tabel asal',
+   source_format varchar COMMENT 'db|xlsx|csv|gsheet|docx|pdf|pdf_ocr|json',
+   file_name varchar COMMENT 'nama berkas fisik/ekspor',
+   file_path varchar COMMENT 'lokasi penyimpanan staging',
+   file_size_bytes bigint COMMENT 'ukuran berkas dalam bytes',
+   file_checksum varchar COMMENT 'sha256 utuh integritas data',
+   row_count bigint COMMENT 'jumlah baris diekstrak',
+   header_mapped_count integer COMMENT 'jumlah header cocok kontrak',
+   header_quarantined_count integer COMMENT 'jumlah header masuk karantina',
+   target_bronze_table varchar COMMENT 'tabel tujuan di layer bronze',
+   ingestion_status varchar COMMENT 'SUCCESS | PARTIAL | FAILED',
+   is_processed_to_silver boolean COMMENT 'flag siap diproses ETL Silver',
+   contract_version varchar COMMENT 'versi kontrak aktif mis. v0.2',
+   ingested_at timestamp(6) with time zone COMMENT 'waktu pencatatan UTC'
+);
+
+CREATE TABLE gold_erm_audit_finding_linkage (
+   fiscal_year integer COMMENT 'Tahun fiskal RKAP',
+   company_id varchar COMMENT 'FK lakekeeper.medallion.silver_dim_company_information',
+   company_name varchar COMMENT 'Nama perusahaan',
+   company_acronym varchar COMMENT 'Singkatan (LEN, PINDAD, PAL, PTDI, DAHANA, …)',
+   holding_name varchar COMMENT 'DEFEND ID',
+   finding_date date,
+   date_key integer,
+   audit_finding_id varchar,
+   sumber_audit varchar COMMENT 'SPI | KAP | BPK | …',
+   risk_id varchar,
+   peristiwa_risiko varchar,
+   main_category varchar,
+   uraian_temuan varchar,
+   tingkat_temuan varchar,
+   status_tindak_lanjut varchar,
+   target_selesai date,
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Temuan audit yang dikaitkan ke risiko. Menunggu sumber data.';
+
+CREATE TABLE gold_erm_company_benchmark (
+   fiscal_year integer COMMENT 'Tahun fiskal RKAP',
+   company_id varchar COMMENT 'FK lakekeeper.medallion.silver_dim_company_information',
+   company_name varchar COMMENT 'Nama perusahaan',
+   company_acronym varchar COMMENT 'Singkatan (LEN, PINDAD, PAL, PTDI, DAHANA, …)',
+   holding_name varchar COMMENT 'DEFEND ID',
+   jumlah_risiko integer,
+   jumlah_risiko_high_inheren integer,
+   persen_risiko_high_inheren double COMMENT '0–100',
+   tingkat_risiko_inheren_rata2 double,
+   tingkat_risiko_realisasi_terakhir_rata2 double,
+   exposure_inheren_total double COMMENT 'IDR',
+   nilai_batasan_risiko double COMMENT 'IDR',
+   rasio_inheren_terhadap_batasan double,
+   biaya_pengendalian_total double COMMENT 'IDR',
+   jumlah_rencana_penanganan integer,
+   persen_rencana_ada_progres double COMMENT '0–100',
+   peringkat_exposure integer COMMENT '1 = eksposur inheren terbesar',
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Perbandingan antar perusahaan per tahun.';
+
+CREATE TABLE gold_erm_executive_summary_monthly (
+   fiscal_year integer COMMENT 'Tahun fiskal RKAP',
+   company_id varchar COMMENT 'FK lakekeeper.medallion.silver_dim_company_information',
+   company_name varchar COMMENT 'Nama perusahaan',
+   company_acronym varchar COMMENT 'Singkatan (LEN, PINDAD, PAL, PTDI, DAHANA, …)',
+   holding_name varchar COMMENT 'DEFEND ID',
+   period_date date COMMENT 'Tanggal pertama bulan periode (sumbu waktu grafik)',
+   date_key integer COMMENT 'yyyymmdd, FK silver_dim_date',
+   period_month integer COMMENT '1–12',
+   month_name varchar COMMENT 'Jan…Des',
+   quarter_label varchar COMMENT 'TW1…TW4',
+   jumlah_risiko integer,
+   jumlah_risiko_dilaporkan integer COMMENT 'risiko dengan realisasi bulan ini',
+   jumlah_low integer,
+   jumlah_low_to_moderate integer,
+   jumlah_moderate integer,
+   jumlah_moderate_to_high integer,
+   jumlah_high integer,
+   exposure_target_total double COMMENT 'IDR',
+   exposure_realisasi_total double COMMENT 'IDR',
+   nilai_batasan_risiko double COMMENT 'IDR',
+   rasio_realisasi_terhadap_batasan double,
+   jumlah_kri integer,
+   jumlah_kri_bahaya integer,
+   progres_penanganan_rata2 double COMMENT '0–1',
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Ringkasan eksekutif bulanan per perusahaan: sebaran level, eksposur vs batasan, KRI, progres.';
+
+CREATE TABLE gold_erm_governance_compliance (
+   fiscal_year integer COMMENT 'Tahun fiskal RKAP',
+   company_id varchar COMMENT 'FK lakekeeper.medallion.silver_dim_company_information',
+   company_name varchar COMMENT 'Nama perusahaan',
+   company_acronym varchar COMMENT 'Singkatan (LEN, PINDAD, PAL, PTDI, DAHANA, …)',
+   holding_name varchar COMMENT 'DEFEND ID',
+   jumlah_risiko integer,
+   persen_risiko_ada_penyebab double,
+   persen_risiko_ada_rencana double,
+   persen_rencana_ada_progres double,
+   persen_risiko_ada_target_residual double,
+   persen_risiko_ada_realisasi double,
+   skor_kepatuhan double COMMENT 'rata-rata lima persentase',
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Kepatuhan pengisian register risiko per perusahaan & tahun (kelengkapan, 0–100).';
+
+CREATE TABLE gold_erm_kri_monitoring_monthly (
+   fiscal_year integer COMMENT 'Tahun fiskal RKAP',
+   company_id varchar COMMENT 'FK lakekeeper.medallion.silver_dim_company_information',
+   company_name varchar COMMENT 'Nama perusahaan',
+   company_acronym varchar COMMENT 'Singkatan (LEN, PINDAD, PAL, PTDI, DAHANA, …)',
+   holding_name varchar COMMENT 'DEFEND ID',
+   period_date date COMMENT 'Tanggal pertama bulan periode (sumbu waktu grafik)',
+   date_key integer COMMENT 'yyyymmdd, FK silver_dim_date',
+   period_month integer COMMENT '1–12',
+   month_name varchar COMMENT 'Jan…Des',
+   quarter_label varchar COMMENT 'TW1…TW4',
+   company_is_assumed boolean COMMENT 'TRUE bila sumber tidak mencantumkan entitas (dianggap DEFEND ID)',
+   kri_id varchar COMMENT 'RP01…',
+   main_category varchar,
+   parameter_kri varchar,
+   target_formula_kri varchar,
+   arah_kri varchar,
+   risk_limit_kri double,
+   risk_appetite_range_kri varchar,
+   risk_tolerance_kri double,
+   actual_value_kri double,
+   actual_text_kri varchar,
+   status_kri varchar COMMENT 'Aman | Hati-hati | Bahaya | Tidak dapat dinilai',
+   is_bahaya boolean,
+   is_dinilai boolean,
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Pemantauan Key Risk Indicator bulanan: nilai aktual vs limit, selera, toleransi.';
+
+CREATE TABLE gold_erm_mitigation_progress_monthly (
+   fiscal_year integer COMMENT 'Tahun fiskal RKAP',
+   company_id varchar COMMENT 'FK lakekeeper.medallion.silver_dim_company_information',
+   company_name varchar COMMENT 'Nama perusahaan',
+   company_acronym varchar COMMENT 'Singkatan (LEN, PINDAD, PAL, PTDI, DAHANA, …)',
+   holding_name varchar COMMENT 'DEFEND ID',
+   period_date date COMMENT 'Tanggal pertama bulan periode (sumbu waktu grafik)',
+   date_key integer COMMENT 'yyyymmdd, FK silver_dim_date',
+   period_month integer COMMENT '1–12',
+   month_name varchar COMMENT 'Jan…Des',
+   quarter_label varchar COMMENT 'TW1…TW4',
+   risk_id varchar,
+   peristiwa_risiko varchar,
+   main_category varchar,
+   mitigation_plan_id varchar,
+   risk_cause_id varchar,
+   penyebab varchar,
+   rencana_penanganan varchar,
+   pic_fungsi varchar,
+   persentase_realisasi double COMMENT '0–1',
+   realisasi_penanganan varchar,
+   is_dilaporkan boolean,
+   status_progres varchar COMMENT 'Belum dilaporkan | Belum mulai | Berjalan | Selesai',
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Progres rencana penanganan risiko per bulan (12 bulan per rencana; is_dilaporkan = ada laporan).';
+
+CREATE TABLE gold_erm_risk_appetite_utilization (
+   fiscal_year integer COMMENT 'Tahun fiskal RKAP',
+   company_id varchar COMMENT 'FK lakekeeper.medallion.silver_dim_company_information',
+   company_name varchar COMMENT 'Nama perusahaan',
+   company_acronym varchar COMMENT 'Singkatan (LEN, PINDAD, PAL, PTDI, DAHANA, …)',
+   holding_name varchar COMMENT 'DEFEND ID',
+   period_date date COMMENT 'Tanggal pertama bulan periode (sumbu waktu grafik)',
+   date_key integer COMMENT 'yyyymmdd, FK silver_dim_date',
+   period_month integer COMMENT '1–12',
+   month_name varchar COMMENT 'Jan…Des',
+   quarter_label varchar COMMENT 'TW1…TW4',
+   nilai_kapasitas_risiko double COMMENT 'IDR',
+   nilai_selera_risiko double COMMENT 'IDR',
+   nilai_toleransi_risiko double COMMENT 'IDR',
+   nilai_batasan_risiko double COMMENT 'IDR (limit)',
+   exposure_inheren_total double COMMENT 'IDR',
+   exposure_target_total double COMMENT 'IDR',
+   exposure_realisasi_total double COMMENT 'IDR',
+   nilai_dampak_realisasi_total double COMMENT 'IDR',
+   rasio_realisasi_terhadap_batasan double,
+   rasio_realisasi_terhadap_selera double,
+   rasio_inheren_terhadap_batasan double,
+   status_utilisasi varchar COMMENT 'Dalam batasan | Dalam selera | Dalam toleransi | Melebihi toleransi | Melebihi kapasitas | Belum dilaporkan',
+   jumlah_risiko_dilaporkan integer,
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Pemakaian selera risiko bulanan: eksposur dibanding batasan, selera, toleransi, kapasitas.';
+
+CREATE TABLE gold_erm_risk_assessment_monthly (
+   fiscal_year integer COMMENT 'Tahun fiskal RKAP',
+   company_id varchar COMMENT 'FK lakekeeper.medallion.silver_dim_company_information',
+   company_name varchar COMMENT 'Nama perusahaan',
+   company_acronym varchar COMMENT 'Singkatan (LEN, PINDAD, PAL, PTDI, DAHANA, …)',
+   holding_name varchar COMMENT 'DEFEND ID',
+   period_date date COMMENT 'Tanggal pertama bulan periode (sumbu waktu grafik)',
+   date_key integer COMMENT 'yyyymmdd, FK silver_dim_date',
+   period_month integer COMMENT '1–12',
+   month_name varchar COMMENT 'Jan…Des',
+   quarter_label varchar COMMENT 'TW1…TW4',
+   risk_id varchar,
+   peristiwa_risiko varchar,
+   main_category varchar,
+   assessment_type varchar COMMENT 'INHEREN | TARGET_RESIDUAL | REALISASI',
+   skor_dampak integer,
+   skor_kemungkinan integer,
+   kemungkinan_pct double COMMENT '0–1',
+   tingkat_risiko integer COMMENT '1–25',
+   kategori_tingkat_risiko varchar COMMENT 'Low … High',
+   urutan_tingkat integer COMMENT '1=Low … 5=High (untuk urutan grafik)',
+   nilai_dampak double COMMENT 'IDR',
+   dampak_terhadap_limit double COMMENT 'rasio',
+   exposure_risiko double COMMENT 'IDR',
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Penilaian risiko bulanan (INHEREN, TARGET_RESIDUAL, REALISASI) per risiko — untuk tren waktu.';
+
+CREATE TABLE gold_erm_risk_heatmap_monthly (
+   fiscal_year integer COMMENT 'Tahun fiskal RKAP',
+   company_id varchar COMMENT 'FK lakekeeper.medallion.silver_dim_company_information',
+   company_name varchar COMMENT 'Nama perusahaan',
+   company_acronym varchar COMMENT 'Singkatan (LEN, PINDAD, PAL, PTDI, DAHANA, …)',
+   holding_name varchar COMMENT 'DEFEND ID',
+   period_date date COMMENT 'Tanggal pertama bulan periode (sumbu waktu grafik)',
+   date_key integer COMMENT 'yyyymmdd, FK silver_dim_date',
+   period_month integer COMMENT '1–12',
+   month_name varchar COMMENT 'Jan…Des',
+   quarter_label varchar COMMENT 'TW1…TW4',
+   assessment_type varchar,
+   skor_dampak integer COMMENT 'sumbu X',
+   skor_kemungkinan integer COMMENT 'sumbu Y',
+   tingkat_risiko integer,
+   kategori_tingkat_risiko varchar COMMENT 'Low … High',
+   urutan_tingkat integer COMMENT '1=Low … 5=High (untuk urutan grafik)',
+   warna_hex varchar COMMENT 'warna standar level',
+   jumlah_risiko integer,
+   daftar_risk_id varchar COMMENT 'dipisah koma',
+   total_exposure_risiko double COMMENT 'IDR',
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Peta risiko 5×5 per perusahaan, bulan, dan jenis penilaian: jumlah risiko per sel.';
+
+CREATE TABLE gold_erm_risk_loss_event (
+   fiscal_year integer COMMENT 'Tahun fiskal RKAP',
+   company_id varchar COMMENT 'FK lakekeeper.medallion.silver_dim_company_information',
+   company_name varchar COMMENT 'Nama perusahaan',
+   company_acronym varchar COMMENT 'Singkatan (LEN, PINDAD, PAL, PTDI, DAHANA, …)',
+   holding_name varchar COMMENT 'DEFEND ID',
+   event_date date,
+   date_key integer,
+   loss_event_id varchar,
+   risk_id varchar,
+   peristiwa_risiko varchar,
+   main_category varchar,
+   deskripsi_kejadian varchar,
+   nilai_kerugian double COMMENT 'IDR',
+   nilai_pemulihan double COMMENT 'IDR',
+   nilai_kerugian_bersih double COMMENT 'IDR',
+   status_kejadian varchar,
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Kejadian kerugian (loss event) terkait risiko. Menunggu sumber data.';
+
+CREATE TABLE gold_erm_risk_register (
+   fiscal_year integer COMMENT 'Tahun fiskal RKAP',
+   company_id varchar COMMENT 'FK lakekeeper.medallion.silver_dim_company_information',
+   company_name varchar COMMENT 'Nama perusahaan',
+   company_acronym varchar COMMENT 'Singkatan (LEN, PINDAD, PAL, PTDI, DAHANA, …)',
+   holding_name varchar COMMENT 'DEFEND ID',
+   risk_id varchar COMMENT 'Kode risiko E-GRC (RDF…/RLC…/RLN…)',
+   objective_id varchar COMMENT 'FK silver_dim_erm_objective',
+   nama_sasaran varchar COMMENT 'Tema sasaran strategis',
+   keterangan_sasaran varchar COMMENT 'Uraian sasaran',
+   main_category varchar COMMENT 'Taksonomi risiko',
+   peristiwa_risiko varchar COMMENT 'Uraian peristiwa risiko',
+   deskripsi_dampak varchar,
+   asumsi_dampak varchar,
+   skor_dampak_inheren integer COMMENT '1–5',
+   skor_kemungkinan_inheren integer COMMENT '1–5',
+   kemungkinan_pct_inheren double COMMENT 'probabilitas 0–1',
+   tingkat_risiko_inheren integer COMMENT 'skor dampak × kemungkinan (1–25)',
+   kategori_tingkat_risiko_inheren varchar COMMENT 'Low … High',
+   urutan_tingkat_inheren integer COMMENT '1–5',
+   nilai_dampak_inheren double COMMENT 'IDR',
+   dampak_terhadap_limit_inheren double COMMENT 'rasio',
+   exposure_risiko_inheren double COMMENT 'IDR',
+   biaya_pengendalian double COMMENT 'IDR',
+   periode_realisasi_terakhir date COMMENT 'bulan realisasi terakhir yang dilaporkan',
+   skor_dampak_realisasi integer,
+   skor_kemungkinan_realisasi integer,
+   tingkat_risiko_realisasi integer,
+   kategori_tingkat_risiko_realisasi varchar,
+   nilai_dampak_realisasi double COMMENT 'IDR',
+   exposure_risiko_realisasi double COMMENT 'IDR',
+   jumlah_penyebab integer,
+   jumlah_rencana_penanganan integer,
+   progres_penanganan_rata2 double COMMENT 'rata-rata progres terakhir, 0–1',
+   status_aktif varchar COMMENT 'Aktif',
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Register risiko per perusahaan & tahun: inheren, realisasi terakhir, penyebab, penanganan. Satu baris per risiko.';
+
+CREATE TABLE gold_erm_swot_matrix (
+   fiscal_year integer COMMENT 'Tahun fiskal RKAP',
+   company_id varchar COMMENT 'FK lakekeeper.medallion.silver_dim_company_information',
+   company_name varchar COMMENT 'Nama perusahaan',
+   company_acronym varchar COMMENT 'Singkatan (LEN, PINDAD, PAL, PTDI, DAHANA, …)',
+   holding_name varchar COMMENT 'DEFEND ID',
+   objective_id varchar,
+   nama_sasaran varchar,
+   swot_kuadran varchar COMMENT 'Kekuatan | Kelemahan | Peluang | Ancaman',
+   uraian varchar,
+   urutan integer,
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Matriks SWOT per sasaran. Menunggu sumber data (LenO ERM erm_analisaswot).';
+
+CREATE TABLE gold_meta_access_matrix (
+   access_id varchar,
+   screen varchar,
+   screen_label varchar,
+   field_id varchar,
+   column_name varchar,
+   org_id varchar,
+   unit_kerja varchar,
+   divisi varchar,
+   direktorat varchar,
+   classification varchar,
+   permission_category varchar,
+   permission_type varchar,
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Matriks hak akses per layar, kolom, dan unit kerja.';
+
+CREATE TABLE gold_meta_data_dictionary (
+   field_id varchar,
+   system_name varchar,
+   business_domain varchar,
+   dataset_name varchar,
+   table_name varchar,
+   column_name varchar,
+   business_term varchar,
+   definition varchar,
+   data_type varchar,
+   classification varchar,
+   owner_unit varchar,
+   steward_unit varchar,
+   user_units varchar,
+   dq_rule_count integer,
+   dq_rules varchar,
+   downstream_screen_count integer,
+   has_table boolean,
+   has_definition boolean,
+   has_classification boolean,
+   has_owner boolean,
+   completeness_pct double COMMENT '0–100, rata-rata 4 flag',
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Kamus data: satu baris per elemen data (FIELD_ID) dengan kelengkapan tata kelola.';
+
+CREATE TABLE gold_meta_dq_finding_snapshot (
+   snapshot_date date,
+   source_system varchar COMMENT 'DG_WORKBOOK | EGRC',
+   finding_code varchar,
+   finding_category varchar,
+   severity varchar,
+   sheet_name varchar,
+   affected_rows integer,
+   description varchar,
+   example varchar,
+   etl_action varchar,
+   follow_up_owner varchar,
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Temuan mutu data sumber per tanggal muat (riwayat). Satu snapshot per hari.';
+
+CREATE TABLE gold_meta_dq_rule (
+   field_id varchar,
+   column_name varchar,
+   business_term varchar,
+   rule varchar,
+   validation varchar,
+   test_type varchar,
+   execution_status varchar,
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Aturan mutu data per elemen data dan status eksekusinya.';
+
+CREATE TABLE gold_meta_glossary (
+   field_id varchar,
+   business_term varchar,
+   definition varchar,
+   definition_status varchar COMMENT 'Tersedia | Belum ada',
+   owner_unit varchar,
+   steward_unit varchar,
+   user_units varchar,
+   column_count integer,
+   screen_count integer,
+   classification varchar,
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Glosarium bisnis dengan status definisi dan pemakaian.';
+
+CREATE TABLE gold_meta_governance_kpi_snapshot (
+   snapshot_date date,
+   kpi_category varchar,
+   kpi_name varchar,
+   kpi_value double,
+   unit varchar,
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'KPI tata kelola per tanggal muat (riwayat, untuk tren). Satu snapshot per hari.';
+
+CREATE TABLE gold_meta_lineage (
+   lineage_id varchar,
+   system_name varchar,
+   business_domain varchar,
+   dataset_name varchar,
+   table_name varchar,
+   column_name varchar,
+   field_id varchar,
+   business_term varchar,
+   module varchar,
+   target_screen varchar,
+   target_label varchar,
+   asset_type varchar,
+   classification varchar,
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Lineage kolom → layar.';
+
+CREATE TABLE gold_meta_screen_summary (
+   module varchar,
+   screen varchar,
+   field_count integer,
+   source_tables varchar,
+   source_table_count integer,
+   source_datasets varchar,
+   highest_classification varchar,
+   units_can_view integer,
+   units_can_edit integer,
+   owner_unit varchar,
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Ringkasan per layar/dashboard LenO.';
+
+CREATE TABLE gold_meta_table_summary (
+   table_name varchar,
+   table_id varchar,
+   dataset_name varchar,
+   business_domain varchar,
+   system_name varchar,
+   column_count integer,
+   confidential_column_count integer,
+   highest_classification varchar,
+   owner_unit varchar,
+   downstream_screen_count integer,
+   definition_pct double COMMENT '0–100',
+   dq_rule_count integer,
+   _batch_id varchar COMMENT 'lineage: batch loader',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+)
+COMMENT 'Ringkasan per tabel sumber: kolom, sensitivitas, pemilik, layar hilir, % definisi.';
+
+CREATE TABLE silver_dim_company_hierarchy (
+   hierarchy_type varchar COMMENT 'REPORTING | LEGAL',
+   ancestor_company_id varchar,
+   descendant_company_id varchar,
+   depth integer,
+   is_direct_parent boolean,
+   relation_label varchar,
+   path_company_ids varchar,
+   relation_to_len varchar,
+   valid_from date,
+   valid_to date,
+   is_current boolean,
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_date (
+   date_key integer COMMENT 'PK yyyymmdd',
+   full_date date,
+   period_year integer,
+   period_quarter integer,
+   period_semester integer,
+   period_month integer,
+   month_name_id varchar COMMENT 'Januari…Desember',
+   month_short_id varchar COMMENT 'Jan…Des',
+   year_month varchar COMMENT 'yyyy-mm',
+   quarter_label varchar COMMENT 'TW1…TW4',
+   day_of_month integer,
+   day_of_week integer COMMENT '1=Senin',
+   day_name_id varchar,
+   week_of_year integer,
+   is_month_start boolean,
+   is_month_end boolean,
+   is_weekend boolean,
+   is_holiday_id boolean COMMENT 'libur nasional/cuti bersama',
+   fiscal_year integer,
+   rkap_label varchar COMMENT 'RKAP yyyy'
+);
+
+CREATE TABLE silver_dim_erm_control_adequacy (
+   control_adequacy_id varchar COMMENT 'PK turunan',
+   parameter_kecukupan varchar COMMENT 'F030 – COLUMN_NAME ''Parameter'' konteks kecukupan kontrol',
+   urutan_kecukupan integer COMMENT 'turunan untuk sortir',
+   valid_from date COMMENT 'SCD2',
+   valid_to date COMMENT 'SCD2 (9999-12-31 = aktif)',
+   is_current boolean COMMENT 'SCD2',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_erm_control_effectiveness (
+   control_effectiveness_id varchar COMMENT 'PK turunan',
+   parameter_efektivitas varchar COMMENT 'F029 – COLUMN_NAME ''Parameter'' konteks efektivitas kontrol',
+   urutan_efektivitas integer COMMENT 'turunan untuk sortir',
+   valid_from date COMMENT 'SCD2',
+   valid_to date COMMENT 'SCD2 (9999-12-31 = aktif)',
+   is_current boolean COMMENT 'SCD2',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_erm_impact_criteria_qualitative (
+   impact_criteria_qualitative_id varchar COMMENT 'PK turunan',
+   skor_dampak integer COMMENT 'F009 – rentang 1–5',
+   kategori_operasional_proyek varchar COMMENT 'F013 – COLUMN_NAME ''Kategori'' — konteks Operasional/Proyek',
+   kriteria_dampak_kualitatif varchar COMMENT 'F023 – COLUMN_NAME ''KriteriaDampak'' konteks kualitatif (konfirmasi K-14)',
+   tipe_risiko varchar COMMENT 'F024',
+   parameter_dampak_kualitatif varchar COMMENT 'F025 – COLUMN_NAME ''Parameter'' konteks dampak kualitatif',
+   valid_from date COMMENT 'SCD2',
+   valid_to date COMMENT 'SCD2 (9999-12-31 = aktif)',
+   is_current boolean COMMENT 'SCD2',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_erm_impact_criteria_quantitative (
+   impact_criteria_quantitative_id varchar COMMENT 'PK turunan',
+   skor_dampak integer COMMENT 'F009 – rentang 1–5',
+   kriteria_dampak_kuantitatif varchar COMMENT 'F019 – COLUMN_NAME ''KriteriaDampak'' konteks kuantitatif',
+   min_dampak bigint COMMENT 'F020 – baseline Integer; BIGINT agar aman untuk nilai rupiah',
+   max_dampak bigint COMMENT 'F021 – idem F020',
+   deskripsi_dampak varchar COMMENT 'F022',
+   currency_code varchar COMMENT 'default IDR',
+   valid_from date COMMENT 'SCD2',
+   valid_to date COMMENT 'SCD2 (9999-12-31 = aktif)',
+   is_current boolean COMMENT 'SCD2',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_erm_likelihood_criteria (
+   likelihood_criteria_id varchar COMMENT 'PK turunan',
+   kategori_operasional_proyek varchar COMMENT 'F013 – COLUMN_NAME ''Kategori'' — konteks Operasional/Proyek',
+   parameter_kemungkinan varchar COMMENT 'F026 – COLUMN_NAME ''Parameter'' konteks kemungkinan',
+   kriteria_kemungkinan varchar COMMENT 'F027 – COLUMN_NAME ''Kriteria'' konteks kemungkinan',
+   kriteria_dampak_kemungkinan varchar COMMENT 'F028 – COLUMN_NAME ''KriteriaDampak'' konteks kemungkinan (konfirmasi K-14)',
+   skor_kemungkinan integer COMMENT 'turunan bila tersedia di sumber',
+   valid_from date COMMENT 'SCD2',
+   valid_to date COMMENT 'SCD2 (9999-12-31 = aktif)',
+   is_current boolean COMMENT 'SCD2',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_erm_objective (
+   objective_id varchar COMMENT 'PK',
+   company_id varchar COMMENT 'F001 – FK silver_dim_company_information (label ''Perusahaan'')',
+   fiscal_year integer,
+   nama_sasaran varchar COMMENT 'F014',
+   keterangan_sasaran varchar COMMENT 'F031',
+   proses_bisnis varchar COMMENT 'F032',
+   input_proses varchar COMMENT 'F033',
+   output_proses varchar COMMENT 'F034',
+   stakeholders_terkait varchar COMMENT 'F035',
+   valid_from date COMMENT 'SCD2',
+   valid_to date COMMENT 'SCD2 (9999-12-31 = aktif)',
+   is_current boolean COMMENT 'SCD2',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_erm_objective_basis (
+   objective_basis_id varchar COMMENT 'PK turunan',
+   nama_sasaran varchar COMMENT 'F014',
+   valid_from date COMMENT 'SCD2',
+   valid_to date COMMENT 'SCD2 (9999-12-31 = aktif)',
+   is_current boolean COMMENT 'SCD2',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_erm_risk (
+   risk_id varchar COMMENT 'PK bisnis (LenO ID / E-GRC RDF…/RLC…/RLN…)',
+   company_id varchar COMMENT 'F001 – FK silver_dim_company_information (label ''Perusahaan'')',
+   divisi_id varchar COMMENT 'F003 – FK silver_dim_organization (level Divisi)',
+   org_id varchar COMMENT 'F004 – FK silver_dim_organization (Bagian = UNIT_KERJA / ORG_ID)',
+   objective_id varchar COMMENT 'FK silver_dim_erm_objective',
+   fiscal_year integer,
+   kategori_operasional_proyek varchar COMMENT 'F013 – konstanta per dataset sumber: erm_riskregister ∈ DS004 Operational Risk Register → ''Operasional''; ''Proyek'' hanya bila tabel DS005 Project Risk Register ditambahkan (konfirmasi K-14)',
+   main_category varchar COMMENT 'F006 – Master = teks; transaksi = lookup ke risk_taxonomy',
+   sub_category varchar COMMENT 'F007 – idem F006',
+   kriteria_dampak_kualitatif varchar COMMENT 'F023 – COLUMN_NAME ''KriteriaDampak'' konteks kualitatif (konfirmasi K-14)',
+   keterangan_sasaran varchar COMMENT 'F031',
+   peristiwa_risiko varchar COMMENT 'F036',
+   peluang_terjadi varchar COMMENT 'F037 – COLUMN_NAME ''Peluang'' = Kemungkinan terjadi (bukan SWOT)',
+   asumsi_dampak varchar COMMENT 'X004 – E-GRC: Asumsi Dampak',
+   valid_from date COMMENT 'SCD2',
+   valid_to date COMMENT 'SCD2 (9999-12-31 = aktif)',
+   is_current boolean COMMENT 'SCD2',
+   deskripsi_dampak varchar COMMENT 'F022 – E-GRC: Deskripsi Dampak',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_erm_risk_cause (
+   risk_cause_id varchar COMMENT 'PK',
+   risk_id varchar COMMENT 'FK',
+   divisi_id varchar COMMENT 'F003 – FK silver_dim_organization (level Divisi)',
+   cause_seq integer COMMENT 'urutan penyebab',
+   penyebab varchar COMMENT 'F038',
+   dampak varchar COMMENT 'F039',
+   valid_from date COMMENT 'SCD2',
+   valid_to date COMMENT 'SCD2 (9999-12-31 = aktif)',
+   is_current boolean COMMENT 'SCD2',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_erm_risk_matrix (
+   risk_matrix_id varchar COMMENT 'PK turunan',
+   kategori_operasional_proyek varchar COMMENT 'F013 – COLUMN_NAME ''Kategori'' — konteks Operasional/Proyek',
+   skor_dampak integer COMMENT 'F009 – rentang 1–5',
+   skor_kemungkinan integer COMMENT 'F010 – rentang 1–5',
+   tingkat_risiko integer COMMENT 'F011 – = skor_dampak × skor_kemungkinan (auto calculated)',
+   kategori_tingkat_risiko varchar COMMENT 'F012 – lookup matriks (Low … High)',
+   kategori_tingkat_risiko_color_hex varchar COMMENT 'turunan: warna standar level',
+   valid_from date COMMENT 'SCD2',
+   valid_to date COMMENT 'SCD2 (9999-12-31 = aktif)',
+   is_current boolean COMMENT 'SCD2',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_erm_risk_taxonomy (
+   risk_taxonomy_id varchar COMMENT 'PK turunan',
+   main_category varchar COMMENT 'F006 – Master = teks; transaksi = lookup ke risk_taxonomy',
+   sub_category varchar COMMENT 'F007 – idem F006',
+   definisi_kategori varchar COMMENT 'F008 – COLUMN_NAME ''Definisi'' konteks uraian kategori/taksonomi risiko',
+   valid_from date COMMENT 'SCD2',
+   valid_to date COMMENT 'SCD2 (9999-12-31 = aktif)',
+   is_current boolean COMMENT 'SCD2',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_fx_rate (
+   currency_code varchar COMMENT 'ISO 4217',
+   rate_date date,
+   fx_rate_to_idr double COMMENT '1 untuk IDR',
+   rate_source varchar COMMENT 'sumber kurs',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_meta_access (
+   access_id varchar COMMENT 'baseline header ''ACCESS_ID''',
+   lineage_id varchar COMMENT 'baseline header ''LINEAGE_ID''',
+   target_asset varchar COMMENT 'baseline header ''TARGET_ASSET''',
+   target_label varchar COMMENT 'baseline header ''TARGET_LABEL''',
+   field_id varchar COMMENT 'baseline header ''FIELD_ID''',
+   field_name varchar COMMENT 'baseline header ''FIELD_NAME''',
+   org_id varchar COMMENT 'baseline header ''ORG_ID''',
+   unit_kerja varchar COMMENT 'baseline header ''UNIT_KERJA''',
+   classification varchar COMMENT 'baseline header ''CLASSIFICATION''',
+   permission_category varchar COMMENT 'baseline header ''PERMISSION_CATEGORY''',
+   permission_type varchar COMMENT 'baseline header ''PERMISSION_TYPE''',
+   role_name varchar COMMENT 'baseline header ''ROLE_NAME''',
+   access_purpose varchar COMMENT 'baseline header ''ACCESS_PURPOSE''',
+   approval_status varchar COMMENT 'baseline header ''APPROVAL_STATUS''',
+   approver varchar COMMENT 'baseline header ''APPROVER''',
+   grant_date date COMMENT 'baseline header ''GRANT_DATE''',
+   review_date date COMMENT 'baseline header ''REVIEW_DATE''',
+   last_review_result varchar COMMENT 'baseline header ''LAST_REVIEW_RESULT''',
+   evidence varchar COMMENT 'baseline header ''EVIDENCE''',
+   exception_flag boolean COMMENT 'baseline header ''EXCEPTION_FLAG''',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_meta_data_domain (
+   data_domain_id varchar COMMENT 'baseline header ''DATA_DOMAIN_ID''',
+   data_domain varchar COMMENT 'baseline header ''DATA_DOMAIN''',
+   description varchar COMMENT 'baseline header ''DESCRIPTION''',
+   business_owner varchar COMMENT 'baseline header ''BUSINESS_OWNER''',
+   data_steward varchar COMMENT 'baseline header ''DATA_STEWARD''',
+   criticality varchar COMMENT 'baseline header ''CRITICALITY''',
+   classification varchar COMMENT 'baseline header ''CLASSIFICATION''',
+   system_count bigint COMMENT 'baseline header ''SYSTEM_COUNT''',
+   dataset_count bigint COMMENT 'baseline header ''DATASET_COUNT''',
+   table_count bigint COMMENT 'baseline header ''TABLE_COUNT''',
+   field_count bigint COMMENT 'baseline header ''FIELD_COUNT''',
+   dq_rule_count bigint COMMENT 'baseline header ''DQ_RULE_COUNT''',
+   dq_coverage double COMMENT 'baseline header ''DQ_COVERAGE''',
+   domain_status varchar COMMENT 'baseline header ''DOMAIN_STATUS''',
+   evidence varchar COMMENT 'baseline header ''EVIDENCE''',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_meta_dataset (
+   dataset_id varchar COMMENT 'baseline header ''DATASET_ID''',
+   dataset_name varchar COMMENT 'baseline header ''DATASET_NAME''',
+   business_dataset varchar COMMENT 'baseline header ''BUSINESS_DATASET''',
+   business_domain varchar COMMENT 'baseline header ''BUSINESS_DOMAIN''',
+   system_id varchar COMMENT 'baseline header ''SYSTEM_ID''',
+   system_name varchar COMMENT 'baseline header ''SYSTEM_NAME''',
+   data_domain_id varchar COMMENT 'baseline header ''DATA_DOMAIN_ID''',
+   data_domain varchar COMMENT 'baseline header ''DATA_DOMAIN''',
+   subdomain varchar COMMENT 'baseline header ''SUBDOMAIN''',
+   data_owner varchar COMMENT 'baseline header ''DATA_OWNER''',
+   data_steward varchar COMMENT 'baseline header ''DATA_STEWARD''',
+   criticality varchar COMMENT 'baseline header ''CRITICALITY''',
+   classification varchar COMMENT 'baseline header ''CLASSIFICATION''',
+   record_count bigint COMMENT 'baseline header ''RECORD_COUNT''',
+   data_asset_status varchar COMMENT 'baseline header ''DATA_ASSET_STATUS''',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_meta_dq_dimension (
+   dq_id varchar COMMENT 'baseline header ''DQ_ID''',
+   dimension varchar COMMENT 'baseline header ''DIMENSION''',
+   sub_dimension varchar COMMENT 'baseline header ''SUB_DIMENSION''',
+   definition varchar COMMENT 'baseline header ''DEFINITION''',
+   what_to_check varchar COMMENT 'baseline header ''WHAT_TO_CHECK''',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_meta_dq_rule (
+   field_id varchar COMMENT 'baseline header ''FIELD_ID''',
+   field_name varchar COMMENT 'baseline header ''FIELD_NAME''',
+   business_term varchar COMMENT 'baseline header ''BUSINESS_TERM''',
+   rule varchar COMMENT 'baseline header ''RULE''',
+   validation varchar COMMENT 'baseline header ''VALIDATION''',
+   dq_rule_id varchar COMMENT 'baseline header ''DQ_RULE_ID''',
+   dq_dimension varchar COMMENT 'baseline header ''DQ_DIMENSION''',
+   sub_dimension varchar COMMENT 'baseline header ''SUB_DIMENSION''',
+   target_table varchar COMMENT 'baseline header ''TARGET_TABLE''',
+   target_column varchar COMMENT 'baseline header ''TARGET_COLUMN''',
+   rule_type varchar COMMENT 'baseline header ''RULE_TYPE''',
+   threshold double COMMENT 'baseline header ''THRESHOLD''',
+   measurement_method varchar COMMENT 'baseline header ''MEASUREMENT_METHOD''',
+   result_value double COMMENT 'baseline header ''RESULT_VALUE''',
+   pass_fail varchar COMMENT 'baseline header ''PASS_FAIL''',
+   check_date date COMMENT 'baseline header ''CHECK_DATE''',
+   check_frequency varchar COMMENT 'baseline header ''CHECK_FREQUENCY''',
+   severity varchar COMMENT 'baseline header ''SEVERITY''',
+   evidence varchar COMMENT 'baseline header ''EVIDENCE''',
+   remediation_status varchar COMMENT 'baseline header ''REMEDIATION_STATUS''',
+   remediation_owner varchar COMMENT 'baseline header ''REMEDIATION_OWNER''',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_meta_field (
+   field_id varchar COMMENT 'baseline header ''FIELD_ID''',
+   table_id varchar COMMENT 'baseline header ''TABLE_ID''',
+   table_name varchar COMMENT 'baseline header ''TABLE_NAME''',
+   column_name varchar COMMENT 'baseline header ''COLUMN_NAME''',
+   data_dictionary_description varchar COMMENT 'baseline header ''DATA_DICTIONARY_DESCRIPTION''',
+   business_term varchar COMMENT 'baseline header ''BUSINESS_TERM''',
+   data_type varchar COMMENT 'baseline header ''DATA_TYPE''',
+   sensitive_flag boolean COMMENT 'baseline header ''SENSITIVE_FLAG''',
+   critical_data_element boolean COMMENT 'baseline header ''CRITICAL_DATA_ELEMENT''',
+   nullable_flag boolean COMMENT 'baseline header ''NULLABLE_FLAG''',
+   pk_flag boolean COMMENT 'baseline header ''PK_FLAG''',
+   fk_flag boolean COMMENT 'baseline header ''FK_FLAG''',
+   unique_flag boolean COMMENT 'baseline header ''UNIQUE_FLAG''',
+   length_bytes integer COMMENT 'baseline header ''LENGTH_BYTES''',
+   length integer COMMENT 'baseline header ''LENGTH''',
+   precision integer COMMENT 'baseline header ''PRECISION''',
+   scale integer COMMENT 'baseline header ''SCALE''',
+   default_value varchar COMMENT 'baseline header ''DEFAULT_VALUE''',
+   dq_dimension_primary varchar COMMENT 'baseline header ''DQ_DIMENSION_PRIMARY''',
+   dq_score double COMMENT 'baseline header ''DQ_SCORE''',
+   dq_status varchar COMMENT 'baseline header ''DQ_STATUS''',
+   metadata_status varchar COMMENT 'baseline header ''METADATA_STATUS''',
+   source_system varchar COMMENT 'baseline header ''SOURCE_SYSTEM''',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_meta_field_alias (
+   alias_id varchar COMMENT 'baseline header ''ALIAS_ID''',
+   field_id varchar COMMENT 'baseline header ''FIELD_ID''',
+   source_system varchar COMMENT 'baseline header ''SOURCE_SYSTEM''',
+   source_object varchar COMMENT 'baseline header ''SOURCE_OBJECT''',
+   source_header varchar COMMENT 'baseline header ''SOURCE_HEADER''',
+   normalized_header varchar COMMENT 'baseline header ''NORMALIZED_HEADER''',
+   match_rule varchar COMMENT 'baseline header ''MATCH_RULE''',
+   transform_rule varchar COMMENT 'baseline header ''TRANSFORM_RULE''',
+   alias_status varchar COMMENT 'baseline header ''ALIAS_STATUS''',
+   approved_by_role varchar COMMENT 'baseline header ''APPROVED_BY_ROLE''',
+   contract_version varchar COMMENT 'baseline header ''CONTRACT_VERSION''',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_meta_glossary (
+   field_id varchar COMMENT 'baseline header ''FIELD_ID''',
+   business_term varchar COMMENT 'baseline header ''BUSINESS_TERM''',
+   definisi varchar COMMENT 'baseline header ''DEFINISI''',
+   domain varchar COMMENT 'baseline header ''DOMAIN''',
+   subdomain varchar COMMENT 'baseline header ''SUBDOMAIN''',
+   owner varchar COMMENT 'baseline header ''OWNER''',
+   steward varchar COMMENT 'baseline header ''STEWARD''',
+   status varchar COMMENT 'baseline header ''STATUS''',
+   approval_date date COMMENT 'baseline header ''APPROVAL_DATE''',
+   source_reference varchar COMMENT 'baseline header ''SOURCE_REFERENCE''',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_meta_governance_assignment (
+   field_id varchar COMMENT 'baseline header ''FIELD_ID''',
+   field_name varchar COMMENT 'baseline header ''FIELD_NAME''',
+   business_term varchar COMMENT 'baseline header ''BUSINESS_TERM''',
+   role varchar COMMENT 'baseline header ''ROLE''',
+   org_id varchar COMMENT 'baseline header ''ORG_ID''',
+   unit_kerja varchar COMMENT 'baseline header ''UNIT KERJA''',
+   dataset_id varchar COMMENT 'baseline header ''DATASET_ID''',
+   data_domain varchar COMMENT 'baseline header ''DATA_DOMAIN''',
+   subdomain varchar COMMENT 'baseline header ''SUBDOMAIN''',
+   role_status varchar COMMENT 'baseline header ''ROLE_STATUS''',
+   assignment_date date COMMENT 'baseline header ''ASSIGNMENT_DATE''',
+   review_date date COMMENT 'baseline header ''REVIEW_DATE''',
+   evidence varchar COMMENT 'baseline header ''EVIDENCE''',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_meta_kpi (
+   kpi_id varchar COMMENT 'baseline header ''KPI_ID''',
+   kpi_name varchar COMMENT 'baseline header ''KPI_NAME''',
+   category varchar COMMENT 'baseline header ''CATEGORY''',
+   definition varchar COMMENT 'baseline header ''DEFINITION''',
+   formula varchar COMMENT 'baseline header ''FORMULA''',
+   target varchar COMMENT 'baseline header ''TARGET''',
+   frequency varchar COMMENT 'baseline header ''FREQUENCY''',
+   data_source varchar COMMENT 'baseline header ''DATA_SOURCE''',
+   owner varchar COMMENT 'baseline header ''OWNER''',
+   evidence varchar COMMENT 'baseline header ''EVIDENCE''',
+   status varchar COMMENT 'baseline header ''STATUS''',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_meta_library (
+   library_group varchar COMMENT 'baseline header ''LIBRARY_GROUP''',
+   item varchar COMMENT 'baseline header ''ITEM''',
+   deskripsi varchar COMMENT 'baseline header ''DESKRIPSI''',
+   permission_category varchar COMMENT 'baseline header ''PERMISSION_CATEGORY''',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_meta_lineage (
+   lineage_id varchar COMMENT 'baseline header ''LINEAGE_ID''',
+   system_id varchar COMMENT 'baseline header ''SYSTEM_ID''',
+   system_name varchar COMMENT 'baseline header ''SYSTEM_NAME''',
+   table_id varchar COMMENT 'baseline header ''TABLE_ID''',
+   table_name varchar COMMENT 'baseline header ''TABLE_NAME''',
+   field_id varchar COMMENT 'baseline header ''FIELD_ID''',
+   field_name varchar COMMENT 'baseline header ''FIELD_NAME''',
+   target_asset varchar COMMENT 'baseline header ''TARGET_ASSET''',
+   target_label varchar COMMENT 'baseline header ''TARGET_LABEL''',
+   asset_type varchar COMMENT 'baseline header ''ASSET_TYPE''',
+   source_system varchar COMMENT 'baseline header ''SOURCE_SYSTEM''',
+   source_database varchar COMMENT 'baseline header ''SOURCE_DATABASE''',
+   source_schema varchar COMMENT 'baseline header ''SOURCE_SCHEMA''',
+   source_table varchar COMMENT 'baseline header ''SOURCE_TABLE''',
+   source_column varchar COMMENT 'baseline header ''SOURCE_COLUMN''',
+   transformation_logic varchar COMMENT 'baseline header ''TRANSFORMATION_LOGIC''',
+   lineage_type varchar COMMENT 'baseline header ''LINEAGE_TYPE''',
+   target_system varchar COMMENT 'baseline header ''TARGET_SYSTEM''',
+   target_database varchar COMMENT 'baseline header ''TARGET_DATABASE''',
+   target_schema varchar COMMENT 'baseline header ''TARGET_SCHEMA''',
+   target_table varchar COMMENT 'baseline header ''TARGET_TABLE''',
+   target_column varchar COMMENT 'baseline header ''TARGET_COLUMN''',
+   confidence varchar COMMENT 'baseline header ''CONFIDENCE''',
+   evidence varchar COMMENT 'baseline header ''EVIDENCE''',
+   status varchar COMMENT 'baseline header ''STATUS''',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_meta_system (
+   system_id varchar COMMENT 'baseline header ''SYSTEM_ID''',
+   system_name varchar COMMENT 'baseline header ''SYSTEM_NAME''',
+   description varchar COMMENT 'baseline header ''DESCRIPTION''',
+   application_type varchar COMMENT 'baseline header ''APPLICATION_TYPE''',
+   lifecycle_status varchar COMMENT 'baseline header ''LIFECYCLE_STATUS''',
+   criticality varchar COMMENT 'baseline header ''CRITICALITY''',
+   business_owner varchar COMMENT 'baseline header ''BUSINESS_OWNER''',
+   data_owner varchar COMMENT 'baseline header ''DATA_OWNER''',
+   data_steward varchar COMMENT 'baseline header ''DATA_STEWARD''',
+   technical_owner varchar COMMENT 'baseline header ''TECHNICAL_OWNER''',
+   database_platform varchar COMMENT 'baseline header ''DATABASE_PLATFORM''',
+   data_classification varchar COMMENT 'baseline header ''DATA_CLASSIFICATION''',
+   dm_assessment_status varchar COMMENT 'baseline header ''DM_ASSESSMENT_STATUS''',
+   last_review_date date COMMENT 'baseline header ''LAST_REVIEW_DATE''',
+   evidence_source varchar COMMENT 'baseline header ''EVIDENCE_SOURCE''',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_meta_table (
+   table_id varchar COMMENT 'baseline header ''TABLE_ID''',
+   dataset_id varchar COMMENT 'baseline header ''DATASET_ID''',
+   dataset_name varchar COMMENT 'baseline header ''DATASET_NAME''',
+   table_name varchar COMMENT 'baseline header ''TABLE_NAME''',
+   object_type varchar COMMENT 'baseline header ''OBJECT_TYPE''',
+   database_name varchar COMMENT 'baseline header ''DATABASE_NAME''',
+   object_owner varchar COMMENT 'baseline header ''OBJECT_OWNER''',
+   row_count bigint COMMENT 'baseline header ''ROW_COUNT''',
+   sensitive_data_flag boolean COMMENT 'baseline header ''SENSITIVE_DATA_FLAG''',
+   critical_data_flag boolean COMMENT 'baseline header ''CRITICAL_DATA_FLAG''',
+   last_profile_date date COMMENT 'baseline header ''LAST_PROFILE_DATE''',
+   business_form_procedure varchar COMMENT 'baseline header ''BUSINESS_ FORM_PROCEDURE''',
+   source_system varchar COMMENT 'baseline header ''SOURCE_SYSTEM''',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_dim_organization (
+   org_id varchar COMMENT 'ORG_ID (PK bisnis)',
+   fungsi varchar COMMENT 'FUNGSI',
+   unit_kerja varchar COMMENT 'UNIT_KERJA = Bagian',
+   divisi_id varchar COMMENT 'turunan slug DIVISI',
+   divisi varchar COMMENT 'DIVISI',
+   direktorat_id varchar COMMENT 'turunan slug DIREKTORAT',
+   direktorat varchar COMMENT 'DIREKTORAT',
+   company_id varchar COMMENT 'default PT Len Industri (Persero)',
+   valid_from date COMMENT 'SCD2',
+   valid_to date COMMENT 'SCD2 (9999-12-31 = aktif)',
+   is_current boolean COMMENT 'SCD2',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_fact_erm_existing_control (
+   existing_control_id varchar COMMENT 'PK',
+   risk_id varchar COMMENT 'FK',
+   risk_cause_id varchar COMMENT 'FK',
+   company_id varchar COMMENT 'F001 – FK silver_dim_company_information (label ''Perusahaan'')',
+   period_year integer,
+   existing_control varchar COMMENT 'F045 – COLUMN_NAME ''Existing''',
+   parameter_efektivitas varchar COMMENT 'F029 – COLUMN_NAME ''Parameter'' konteks efektivitas kontrol',
+   parameter_kecukupan varchar COMMENT 'F030 – COLUMN_NAME ''Parameter'' konteks kecukupan kontrol',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_fact_erm_kri_monthly (
+   kri_id varchar COMMENT 'RP01…',
+   company_id varchar COMMENT 'F001 – FK silver_dim_company_information (label ''Perusahaan'')',
+   company_id_is_assumed boolean COMMENT 'sheet tanpa Entity → DEFEND ID',
+   risk_id varchar COMMENT 'FK – pemetaan KRI → risiko (tabel pemetaan disetujui Risk Management)',
+   org_id varchar COMMENT 'FK – unit pemilik KRI bila tersedia',
+   period_year integer,
+   period_month integer COMMENT '1–12',
+   date_key integer COMMENT 'yyyymmdd hari pertama bulan',
+   main_category varchar COMMENT 'F006 – Master = teks; transaksi = lookup ke risk_taxonomy',
+   parameter_kri varchar COMMENT 'X006 – E-GRC Risk Profile: Risk Parameter (KRI)',
+   target_formula_kri varchar COMMENT 'X007 – E-GRC Risk Profile: Target',
+   risk_limit_kri double COMMENT 'X008 – E-GRC Risk Profile: Risk Limit',
+   risk_appetite_range_kri varchar COMMENT 'X009 – E-GRC Risk Profile: Risk Appetite',
+   risk_tolerance_kri double COMMENT 'X010 – E-GRC Risk Profile: Risk Tolerance',
+   actual_value_kri double COMMENT 'X011 – E-GRC Risk Profile: Aktual <bulan>',
+   status_kri varchar COMMENT 'X012 – E-GRC Risk Profile: Status (Bahaya/Aman)',
+   actual_text_kri varchar COMMENT 'X011 – nilai aktual berupa teks bila bukan angka',
+   arah_kri varchar COMMENT 'E-GRC: arah parameter (makin tinggi makin buruk / makin baik)',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_fact_erm_mitigation_plan_monthly (
+   mitigation_plan_id varchar COMMENT 'PK rencana',
+   risk_id varchar COMMENT 'FK',
+   risk_cause_id varchar COMMENT 'FK bila ada',
+   company_id varchar COMMENT 'F001 – FK silver_dim_company_information (label ''Perusahaan'')',
+   period_year integer,
+   period_month integer COMMENT '1–12',
+   date_key integer COMMENT 'yyyymmdd hari pertama bulan',
+   rencana_penanganan varchar COMMENT 'F046',
+   target_waktu_penyelesaian date COMMENT 'F047 – ≥ tanggal mulai',
+   anggaran_penanganan decimal(20, 2) COMMENT 'F048 – + currency_code',
+   currency_code varchar,
+   fx_rate_to_idr double COMMENT 'dari silver_dim_fx_rate',
+   is_rencana_bulan boolean COMMENT 'F049–F060 – Bulan1…Bulan12 di-unpivot: 1 baris per bulan, period_month = N (Bulan1 = Januari)',
+   source_month_column varchar COMMENT 'Bulan1…Bulan12 (jejak header asli)',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_fact_erm_mitigation_realization (
+   mitigation_plan_id varchar COMMENT 'FK',
+   risk_id varchar COMMENT 'FK',
+   company_id varchar COMMENT 'F001 – FK silver_dim_company_information (label ''Perusahaan'')',
+   period_year integer,
+   period_month integer COMMENT '1–12',
+   date_key integer COMMENT 'yyyymmdd hari pertama bulan',
+   realisasi_penanganan varchar COMMENT 'F061',
+   persentase_realisasi decimal(9, 6) COMMENT 'F062 – disimpan fraksi 0–1',
+   penggunaan_anggaran decimal(20, 2) COMMENT 'F063 – + currency_code',
+   currency_code varchar,
+   fx_rate_to_idr double COMMENT 'dari silver_dim_fx_rate',
+   status_penanganan_risiko varchar COMMENT 'F064 – lookup',
+   dokumen_path varchar COMMENT 'F065 – BLOB → path evidence + dokumen_sha256',
+   dokumen_sha256 varchar COMMENT 'checksum dokumen',
+   alasan_tidak_direalisasikan varchar COMMENT 'F066',
+   persentase_biaya_pengendalian decimal(9, 6) COMMENT 'X005 – E-GRC: Realisasi % Biaya Pengendalian',
+   pic_fungsi varchar COMMENT 'X013 – E-GRC Pengendalian: PIC/Fungsi (kode fungsi, mis. MSC, BDGP)',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_fact_erm_risk_appetite (
+   company_id varchar COMMENT 'F001 – FK silver_dim_company_information (label ''Perusahaan'')',
+   period_year integer,
+   date_key integer COMMENT 'yyyy0101',
+   plan_label varchar COMMENT 'RKAP yyyy',
+   nilai_kapasitas_risiko decimal(20, 2) COMMENT 'F015 – + currency_code',
+   nilai_selera_risiko decimal(20, 2) COMMENT 'F016 – + currency_code',
+   nilai_toleransi_risiko decimal(20, 2) COMMENT 'F017 – + currency_code',
+   nilai_batasan_risiko decimal(20, 2) COMMENT 'F018 – + currency_code',
+   currency_code varchar COMMENT 'IDR/USD',
+   fx_rate_to_idr double COMMENT '1 untuk IDR',
+   amount_unit varchar COMMENT 'IDR | IDR_THOUSAND',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_fact_erm_risk_assessment (
+   risk_id varchar COMMENT 'FK',
+   company_id varchar COMMENT 'F001 – FK silver_dim_company_information (label ''Perusahaan'')',
+   assessment_type varchar COMMENT 'INHEREN | RESIDUAL | TARGET_RESIDUAL | REALISASI',
+   period_year integer,
+   period_month integer COMMENT '1–12',
+   date_key integer COMMENT 'yyyymmdd hari pertama bulan',
+   skor_dampak integer COMMENT 'F009 – rentang 1–5',
+   skor_kemungkinan integer COMMENT 'F010 – rentang 1–5',
+   tingkat_risiko integer COMMENT 'F011 – = skor_dampak × skor_kemungkinan (auto calculated)',
+   kategori_tingkat_risiko varchar COMMENT 'F012 – lookup matriks (Low … High)',
+   kriteria_dampak_kuantitatif varchar COMMENT 'F019 – COLUMN_NAME ''KriteriaDampak'' konteks kuantitatif',
+   min_dampak bigint COMMENT 'F020 – baseline Integer; BIGINT agar aman untuk nilai rupiah',
+   max_dampak bigint COMMENT 'F021 – idem F020',
+   deskripsi_dampak varchar COMMENT 'F022',
+   kriteria_dampak_kualitatif varchar COMMENT 'F023 – COLUMN_NAME ''KriteriaDampak'' konteks kualitatif (konfirmasi K-14)',
+   parameter_dampak_kualitatif varchar COMMENT 'F025 – COLUMN_NAME ''Parameter'' konteks dampak kualitatif',
+   parameter_kemungkinan varchar COMMENT 'F026 – COLUMN_NAME ''Parameter'' konteks kemungkinan',
+   kriteria_kemungkinan varchar COMMENT 'F027 – COLUMN_NAME ''Kriteria'' konteks kemungkinan',
+   kriteria_dampak_kemungkinan varchar COMMENT 'F028 – COLUMN_NAME ''KriteriaDampak'' konteks kemungkinan (konfirmasi K-14)',
+   tipe_risiko varchar COMMENT 'F024 – dari kriteria dampak kualitatif terpilih',
+   dampak_finansial decimal(20, 2) COMMENT 'F040 – + currency_code (residual)',
+   currency_code varchar,
+   fx_rate_to_idr double COMMENT 'dari silver_dim_fx_rate',
+   nilai_dampak decimal(20, 2) COMMENT 'X001 – E-GRC: Dampak Inheren / Target Dampak Residual / Realisasi Nilai Dampak',
+   dampak_terhadap_limit decimal(9, 6) COMMENT 'X002 – E-GRC: Dampak terhadap Limit (fraksi)',
+   exposure_risiko decimal(20, 2) COMMENT 'X003 – E-GRC: Exposure Risiko',
+   kemungkinan_pct decimal(9, 6) COMMENT 'X014 – E-GRC: Kemungkinan (probabilitas, fraksi 0–1)',
+   biaya_pengendalian decimal(20, 2) COMMENT 'E-GRC: Biaya Pengendalian (IDR, hanya baris INHEREN)',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_fact_erm_swot_analysis (
+   swot_id varchar COMMENT 'PK',
+   company_id varchar COMMENT 'F001 – FK silver_dim_company_information (label ''Perusahaan'')',
+   objective_id varchar COMMENT 'FK bila ada',
+   period_year integer,
+   swot_kekuatan varchar COMMENT 'F041 – COLUMN_NAME ''Kekuatan'' konteks SWOT',
+   swot_kelemahan varchar COMMENT 'F042 – konteks SWOT',
+   swot_peluang varchar COMMENT 'F043 – COLUMN_NAME ''Peluang'' konteks SWOT (opportunity)',
+   swot_ancaman varchar COMMENT 'F044 – konteks SWOT',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_fact_meta_baseline_correction (
+   correction_id varchar COMMENT 'baseline header ''CORRECTION_ID''',
+   baseline_file varchar COMMENT 'baseline header ''BASELINE_FILE''',
+   baseline_sha256 varchar COMMENT 'baseline header ''BASELINE_SHA256''',
+   sheet_name varchar COMMENT 'baseline header ''SHEET_NAME''',
+   cell_range varchar COMMENT 'baseline header ''CELL_RANGE''',
+   issue_type varchar COMMENT 'baseline header ''ISSUE_TYPE''',
+   original_formula varchar COMMENT 'baseline header ''ORIGINAL_FORMULA''',
+   original_value varchar COMMENT 'baseline header ''ORIGINAL_VALUE''',
+   proposed_formula varchar COMMENT 'baseline header ''PROPOSED_FORMULA''',
+   proposed_value varchar COMMENT 'baseline header ''PROPOSED_VALUE''',
+   rule_id varchar COMMENT 'baseline header ''RULE_ID''',
+   decision varchar COMMENT 'baseline header ''DECISION''',
+   decision_role varchar COMMENT 'baseline header ''DECISION_ROLE''',
+   derived_file varchar COMMENT 'baseline header ''DERIVED_FILE''',
+   note varchar COMMENT 'baseline header ''NOTE''',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
+
+CREATE TABLE silver_fact_meta_dq_result (
+   dq_assessment_id varchar COMMENT 'baseline header ''DQ_ASSESSMENT_ID''',
+   data_domain varchar COMMENT 'baseline header ''DATA_DOMAIN''',
+   system_id varchar COMMENT 'baseline header ''SYSTEM_ID''',
+   table_id varchar COMMENT 'baseline header ''TABLE_ID''',
+   field_id varchar COMMENT 'baseline header ''FIELD_ID''',
+   table_name varchar COMMENT 'baseline header ''TABLE_NAME''',
+   field_name varchar COMMENT 'baseline header ''FIELD_NAME''',
+   dq_dimension varchar COMMENT 'baseline header ''DQ_DIMENSION''',
+   dq_sub_dimension varchar COMMENT 'baseline header ''DQ_SUB_DIMENSION''',
+   rule_id varchar COMMENT 'baseline header ''RULE_ID''',
+   total_records bigint COMMENT 'baseline header ''TOTAL_RECORDS''',
+   failed_records bigint COMMENT 'baseline header ''FAILED_RECORDS''',
+   pass_rate double COMMENT 'baseline header ''PASS_RATE''',
+   threshold double COMMENT 'baseline header ''THRESHOLD''',
+   status varchar COMMENT 'baseline header ''STATUS''',
+   severity varchar COMMENT 'baseline header ''SEVERITY''',
+   check_date date COMMENT 'baseline header ''CHECK_DATE''',
+   evidence varchar COMMENT 'baseline header ''EVIDENCE''',
+   remediation_owner varchar COMMENT 'baseline header ''REMEDIATION_OWNER''',
+   remediation_status varchar COMMENT 'baseline header ''REMEDIATION_STATUS''',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_ERM | EGRC | FILE',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+);
