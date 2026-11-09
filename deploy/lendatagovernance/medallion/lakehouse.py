@@ -72,7 +72,7 @@ class Trino:
             auth=trino.auth.BasicAuthentication(env["TRINO_USER"], env["TRINO_PASSWORD"]),
             catalog=self.catalog, schema=self.schema, source="lendatagovernance-lakehouse")
 
-    RETRYABLE = ("ICEBERG_COMMIT_ERROR", "ICEBERG_CATALOG_ERROR", "Error processing metadata for table")
+    RETRYABLE = ("ICEBERG_COMMIT_ERROR", "ICEBERG_CATALOG_ERROR", "Error processing metadata for table", "Failed to open input stream")
 
     def q(self, sql: str, attempts: int = 3) -> list:
         """Galat commit/katalog Lakekeeper yang sementara dicoba ulang (30 s, 60 s). Pernyataan yang gagal commit tidak
@@ -973,16 +973,16 @@ def ensure_base(tq: Trino, schema: dict) -> None:
 
 
 def status(tq: Trino) -> None:
-    names = sorted(tq.tables())
-    union = " UNION ALL ".join(f"SELECT '{t}', count(*) FROM {tq.fq(t)}" for t in names)
-    counts = dict(tq.q(union))
-    log(f"{'tabel':55s} {'baris':>7s}  snapshot terakhir (WIB)")
-    for t in names:
+    """Per tabel, tanpa coba ulang: tabel yang sesaat tak terbaca oleh Lakekeeper ditandai, sisanya tetap tampil."""
+    log(f"{'tabel':55s} {'baris':>9s}  snapshot terakhir (WIB)")
+    for t in sorted(tq.tables()):
         try:
-            last = tq.q(f'SELECT max(committed_at) FROM {tq.catalog}.{tq.schema}."{t}$snapshots"')[0][0]
-        except Exception:  # noqa: BLE001
-            last = None
-        log(f"{t:55s} {counts[t]:7d}  {last.astimezone(timezone(timedelta(hours=7))).strftime('%Y-%m-%d %H:%M') if last else '-'}")
+            n = f"{tq.q(f'SELECT count(*) FROM {tq.fq(t)}', attempts=1)[0][0]:9d}"
+            last = tq.q(f'SELECT max(committed_at) FROM {tq.catalog}.{tq.schema}."{t}$snapshots"', attempts=1)[0][0]
+            when = last.astimezone(timezone(timedelta(hours=7))).strftime("%Y-%m-%d %H:%M") if last else "-"
+        except Exception as e:  # noqa: BLE001
+            n, when = "    galat", f"tak terbaca: {str(e)[:70]}"
+        log(f"{t:55s} {n}  {when}")
 
 
 def sync_openmetadata() -> None:
