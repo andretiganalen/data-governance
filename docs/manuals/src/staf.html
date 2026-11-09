@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Manual Staf Data Governance dan Pimpinan — Len Data Governance</title>
+<link rel="stylesheet" href="base.css">
+<style>
+/* Manual Staf & Pimpinan: buku pegangan formal — pita kiri, nomor bab persegi, kartu indikator. */
+html{font-size:9.8pt}
+.cover{background:#fff}
+.cover .rail{position:absolute;left:0;top:0;bottom:0;width:62mm;background:var(--navy)}
+.cover .rail i{position:absolute;left:62mm;top:0;bottom:0;width:2.2mm;background:var(--red)}
+.cover img{position:absolute;left:76mm;top:22mm;height:14mm}
+.cover .t{position:absolute;left:76mm;right:18mm;top:84mm}
+.cover .t .k{font:600 10pt 'Open Sans';color:var(--red);letter-spacing:1px}
+.cover .t h1{font-size:28pt;margin:4mm 0;letter-spacing:-.6px;color:var(--navy)}
+.cover .t p{font-size:11.5pt;color:var(--ink);margin:0}
+.cover .who{position:absolute;left:76mm;right:18mm;top:160mm;font-size:10pt}
+.cover .who div{border-top:1px solid var(--soft);padding:3mm 0;display:grid;grid-template-columns:42mm 1fr}
+.cover .who b{color:var(--navy)}
+.cover .rail .v{position:absolute;left:12mm;bottom:20mm;color:#fff;font-size:9pt;line-height:1.6}
+.cover .rail .v b{display:block;font:700 20pt Montserrat;letter-spacing:-.4px}
+h2{display:flex;gap:4mm;align-items:center;font-size:17pt;margin:0 0 5mm;padding-bottom:3mm;border-bottom:1px solid var(--soft)}
+h2 b{background:var(--navy);color:#fff;font-size:13pt;width:10mm;height:10mm;display:grid;place-items:center;flex:none}
+h3{font-size:11.5pt;margin:5mm 0 2mm;color:var(--navy)}
+.lead{font-size:10.5pt;color:var(--ink)}
+table.t{font-size:8.8pt;margin:2mm 0 4mm}
+table.t th{background:var(--navy50);color:var(--navy);font:600 8.5pt 'Open Sans';text-align:left;padding:2mm 2.5mm;border-bottom:2px solid var(--navy)}
+table.t td{border-bottom:1px solid var(--soft);padding:2mm 2.5mm;vertical-align:top}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm;margin:3mm 0 5mm}
+.kpis div{border:1px solid var(--soft);border-top:3px solid var(--navy);padding:3mm 4mm}
+.kpis b{display:block;font:700 20pt Montserrat;color:var(--navy);letter-spacing:-.5px;line-height:1.1}
+.kpis div>span{font-size:8.5pt}
+.kpis div.pct{border-top-color:var(--ok)}.kpis div.pct b{color:var(--ok)}
+.kpis div.zero{border-top-color:var(--warn)}.kpis div.zero b{color:var(--warn)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:6mm}
+.panel{border:1px solid var(--soft);padding:3mm 5mm 4mm}
+.panel h3{margin-top:1mm}
+.panel ul{margin:0;padding-left:5mm}.panel li{margin-bottom:1.5mm}
+.panel.ok{border-left:3px solid var(--ok)}.panel.na{border-left:3px solid #9a9a9a}
+.proc{border:1px solid var(--soft);margin:0 0 4mm;break-inside:avoid}
+.proc .h{display:grid;grid-template-columns:14mm 1fr auto;align-items:center;background:var(--navy50);padding:2mm 4mm}
+.proc .h b{font:700 11pt Montserrat;color:var(--red)}.proc .h h4{margin:0;font-size:10.5pt}
+.proc .h span{font-size:8pt;color:var(--muted)}
+.proc .b{display:grid;grid-template-columns:1.35fr 1fr;gap:5mm;padding:2.5mm 4mm 3mm}
+.proc ol{margin:0;padding-left:4.5mm}.proc li{margin-bottom:1mm}
+.proc .r{font-size:8.8pt;border-left:2px solid var(--soft);padding-left:4mm}
+.proc .r p{margin:0 0 1.5mm}
+.note{background:var(--bg);border-left:3px solid var(--blue);padding:3mm 4mm;margin:3mm 0;font-size:9pt}
+.quote{border:1px dashed var(--line);padding:3mm 4mm;margin:2mm 0;font-size:9pt;background:#fff}
+.quote b{color:var(--navy)}
+.ds td:first-child{font-weight:600;color:var(--ink);width:44mm}
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="rail"><i></i><div class="v"><b data-v="rilis"></b><span data-v="tanggal"></span></div></div>
+  <img src="img/len-logo.png" alt="Len">
+  <div class="t">
+    <div class="k">LEN DATA GOVERNANCE</div>
+    <h1>Manual Staf Data Governance dan Pimpinan</h1>
+    <p>Mengelola keterangan data agar setiap pengguna mendapat jawaban yang benar, dan menyiapkan data siap pakai untuk dashboard.</p>
+  </div>
+  <div class="who">
+    <div><b>Staf Data Governance</b><span>UV-1: mengelola glosarium, pemilik, klasifikasi, alur data, aturan mutu, permintaan pengguna</span></div>
+    <div><b>Pemilik &amp; Steward</b><span>Unit pemilik data (mis. UG-1) dan unit pengelola: memastikan isi benar dan menyetujui perubahan</span></div>
+    <div><b>Pimpinan</b><span>Ringkasan kematangan tata kelola dan arahan yang dibutuhkan (Bab 1)</span></div>
+  </div>
+</section>
+
+<!-- 1. Pimpinan -->
+<section>
+  <h2><b>1</b>Ringkasan untuk Pimpinan</h2>
+  <p class="lead">Katalog data perusahaan saat ini mencakup aplikasi <b>ERM (manajemen risiko)</b> di LenO. Angka di bawah dihitung dari rilis data <b data-v="rilis"></b>.</p>
+  <div class="kpis">
+    <div><b data-kpi="Tabel"></b><span>tabel tercatat</span></div>
+    <div><b data-kpi="Elemen data (kolom)"></b><span>elemen data (kolom)</span></div>
+    <div><b data-kpi="Layar/dashboard LenO"></b><span>layar aplikasi terpetakan</span></div>
+    <div><b data-kpi="Istilah glosarium"></b><span>istilah bisnis</span></div>
+    <div class="pct"><b><span data-kpi="Kolom dengan definisi"></span>%</b><span>kolom punya definisi</span></div>
+    <div class="pct"><b><span data-kpi="Kolom dengan klasifikasi sensitivitas"></span>%</b><span>kolom berlabel sensitivitas</span></div>
+    <div class="pct"><b><span data-kpi="Kolom dengan unit pemilik"></span>%</b><span>kolom punya unit pemilik</span></div>
+    <div class="zero"><b data-kpi="Aturan yang sudah dijalankan"></b><span>dari <span data-kpi="Aturan mutu"></span> aturan mutu sudah diperiksa hasilnya</span></div>
+  </div>
+  <h3>Pertanyaan yang sudah dan belum bisa dijawab bagi pengguna</h3>
+  <table class="t" id="tbl-q9"><tr><th style="width:8mm">#</th><th>Pertanyaan pengguna</th><th style="width:26mm">Saat ini</th></tr></table>
+  <div class="keep"><h3>Arahan yang dibutuhkan dari Pimpinan</h3>
+  <table class="t">
+    <tr><th style="width:56mm">Arahan</th><th>Alasan</th></tr>
+    <tr><td>Tetapkan unit pemilik untuk <b>produk data</b> per domain (Risiko, SDM, Keuangan)</td><td>Pengguna bertanya "siapa pemilik produk data ini". Tanpa penetapan, jawabannya masih per tabel.</td></tr>
+    <tr><td>Wajibkan <b>kontrak data</b> untuk data yang dipakai lintas unit</td><td>Pengguna perlu kepastian tentang isi, mutu minimal, dan jadwal pembaruan.</td></tr>
+    <tr><td>Tetapkan <b>siapa yang berwenang menyertifikasi</b> data (Gold, Silver, Bronze)</td><td>Sertifikasi memberi tanda "data ini boleh dipakai untuk keputusan".</td></tr>
+    <tr><td>Wajibkan <b>pencatatan dashboard</b> manajemen di katalog</td><td>Supaya dampak perubahan data ke laporan pimpinan bisa dilacak.</td></tr>
+    <tr><td>Tetapkan <b>tenggat penyelesaian definisi</b> istilah yang masih kosong</td><td>Ada <span data-v="gold.glosarium_belum_ada.length"></span> elemen data yang belum punya definisi (Lampiran A).</td></tr>
+  </table></div>
+</section>
+
+<!-- 2. Peran & hak -->
+<section class="pb">
+  <h2><b>2</b>Peran dan hak akses Anda</h2>
+  <p class="lead">Hak di katalog mengikuti peran. Hak Staf Data Governance berlaku untuk akun yang menjadi anggota <b>tim UV-1</b>.
+  Jika tombol ubah tidak muncul di akun Anda, minta Administrator menambahkan akun Anda ke tim UV-1.</p>
+  <table class="t">
+    <tr><th>Tindakan</th><th style="width:22mm">Pengguna</th><th style="width:24mm">Pemilik data<br>(untuk asetnya)</th><th style="width:22mm">Staf DG (UV-1)</th><th style="width:22mm">Administrator</th></tr>
+    <tr><td>Mencari dan melihat semua keterangan data</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td></tr>
+    <tr><td>Bertanya, berdiskusi, mengajukan permintaan</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td></tr>
+    <tr><td>Mengubah deskripsi aset dan kolom</td><td>— <sup>1</sup></td><td>✔</td><td>✔</td><td>✔</td></tr>
+    <tr><td>Membuat dan mengubah istilah glosarium</td><td>—</td><td>✔ <sup>2</sup></td><td>✔</td><td>✔</td></tr>
+    <tr><td>Menetapkan pemilik, steward, dan pengguna istilah</td><td>—</td><td>✔ <sup>2</sup></td><td>✔</td><td>✔</td></tr>
+    <tr><td>Memberi label sensitivitas, Tier, dan sertifikasi</td><td>— <sup>1</sup></td><td>✔</td><td>✔</td><td>✔</td></tr>
+    <tr><td>Mengubah alur data (lineage)</td><td>—</td><td>✔</td><td>✔</td><td>✔</td></tr>
+    <tr><td>Membuat dan mengubah aturan mutu</td><td>—</td><td>✔</td><td>✔</td><td>✔</td></tr>
+    <tr><td>Menyetujui atau menolak permintaan atas aset</td><td>—</td><td>✔</td><td>✔ <sup>3</sup></td><td>✔</td></tr>
+    <tr><td>Mengunduh data siap pakai (panel)</td><td>—</td><td>melalui Staf</td><td>✔ <sup>4</sup></td><td>✔</td></tr>
+    <tr><td>Membuat akun, mengatur tim dan peran</td><td>—</td><td>—</td><td>—</td><td>✔</td></tr>
+  </table>
+  <p style="font-size:8.5pt;color:var(--muted)"><sup>1</sup> Pengguna diarahkan untuk mengajukan permintaan, bukan mengubah sendiri. Bila pengguna mengubah langsung,
+  Staf meninjau perubahan itu di riwayat aset (Prosedur S1). <sup>2</sup> Untuk istilah yang dimiliki unitnya.
+  <sup>3</sup> Untuk permintaan yang ditugaskan kepada Staf. <sup>4</sup> Dengan akun panel yang diberikan Administrator.</p>
+
+  <div class="keep"><h3>Yang sudah bisa dan belum bisa dilakukan Staf</h3>
+  <div class="cols">
+    <div class="panel ok"><h3>Sudah bisa</h3><ul>
+      <li>Melengkapi definisi istilah dan deskripsi kolom</li>
+      <li>Menetapkan unit pemilik, steward, dan pengguna</li>
+      <li>Memberi label sensitivitas (Restricted, Confidential) dan PII</li>
+      <li>Memperbaiki alur data dari tabel ke layar</li>
+      <li>Menulis aturan mutu per kolom</li>
+      <li>Memberi Tier dan sertifikasi</li>
+      <li>Menanggapi permintaan pengguna dan mencatat keputusan</li>
+      <li>Mengunduh data siap pakai untuk dashboard</li>
+    </ul></div>
+    <div class="panel na"><h3>Belum bisa</h3><ul>
+      <li>Menjalankan pemeriksaan mutu dan melihat hasilnya</li>
+      <li>Menampilkan kesegaran data (waktu pembaruan terakhir)</li>
+      <li>Membuat kontrak data</li>
+      <li>Membentuk domain dan produk data</li>
+      <li>Melihat isi transaksi data dari katalog</li>
+      <li>Menautkan dokumen kebijakan dan standar ke aset</li>
+    </ul></div>
+  </div></div>
+</section>
+
+<!-- 3. Prosedur -->
+<section class="pb" id="prosedur">
+  <h2><b>3</b>Prosedur kerja Staf</h2>
+  <p class="lead">Setiap prosedur ditulis dari sudut pandang pengguna: apa yang mereka tanyakan, dan apa yang Staf kerjakan supaya jawabannya tersedia di katalog.</p>
+</section>
+
+<!-- 4. Data siap pakai -->
+<section class="pb">
+  <h2><b>4</b>Data siap pakai untuk dashboard</h2>
+  <p class="lead">Data siap pakai (lapisan <b>Gold</b>) adalah data yang sudah dibersihkan, diberi nama kolom yang konsisten, dan bisa langsung dipakai
+  di Excel, Power BI, atau Looker Studio. Setiap rilis diberi nomor <b>YYMMDD CC</b> dan rilis lama tetap tersimpan.</p>
+  <h3>Yang sudah ada sampai rilis <span data-v="rilis"></span></h3>
+  <table class="t ds" id="tbl-gold"><tr><th>Dataset</th><th>Isi</th><th style="width:16mm;text-align:right">Baris</th></tr></table>
+  <div class="keep"><h3>Yang belum ada</h3>
+  <table class="t">
+    <tr><th style="width:56mm">Data</th><th>Keterangan</th></tr>
+    <tr><td>Isi transaksi ERM (risiko, mitigasi, realisasi per unit)</td><td><span class="chip na">Belum bisa</span> Rilis ini memuat keterangan tata kelola, bukan isi transaksi.</td></tr>
+    <tr id="row-nodata"><td>Data karyawan dan struktur organisasi dari sistem SDM</td><td><span class="chip no">Belum ada</span> Dataset tercatat di workbook tetapi belum punya tabel sumber.</td></tr>
+    <tr><td>Hasil pemeriksaan mutu dan kesegaran data</td><td><span class="chip na">Belum bisa</span></td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h3>Cara mengunduh</h3>
+  <ol>
+    <li>Buka <b data-v="panel"></b> dari jaringan kantor.</li>
+    <li>Masuk dengan <b>akun panel</b> yang diberikan Administrator. Akun ini berbeda dari akun katalog dan tidak boleh dipinjamkan.</li>
+    <li>Klik <b>Unduh semua (XLSX)</b> untuk satu berkas berisi semua dataset, atau klik <b>CSV</b> per dataset.</li>
+    <li>Nama berkas memuat nomor rilis, misalnya <i><span data-v="rilis"></span> Data Siap Pakai (Gold).xlsx</i>. Simpan nomor ini di dashboard Anda sebagai sumber.</li>
+  </ol>
+  <h3>Usulan dashboard dan cara menghubungkan tabelnya</h3>
+  <table class="t">
+    <tr><th style="width:44mm">Dashboard</th><th>Dataset yang dipakai</th><th style="width:44mm">Kunci penghubung</th></tr>
+    <tr><td><b>Kematangan Tata Kelola</b><br>untuk pimpinan</td><td>kpi_tata_kelola (kartu angka), ringkasan_tabel (% definisi per tabel)</td><td>tabel</td></tr>
+    <tr><td><b>Peta Sensitivitas</b></td><td>kamus_data (sensitivitas per kolom), organisasi</td><td>field_id; unit_pemilik → org_id</td></tr>
+    <tr><td><b>Siapa Memakai Data</b></td><td>hak_akses (unit × layar × izin), organisasi (direktorat, divisi)</td><td>org_id</td></tr>
+    <tr><td><b>Dampak Perubahan</b></td><td>lineage (kolom → layar), ringkasan_layar</td><td>field_id, layar</td></tr>
+    <tr><td><b>Kesiapan Mutu</b></td><td>aturan_mutu (otomatis atau deskriptif), kamus_data</td><td>field_id</td></tr>
+  </table>
+  <div class="note"><b>Excel:</b> buka XLSX. Setiap sheet sudah punya filter dan baris judul yang dibekukan.
+  <b>Power BI:</b> <i>Get Data › Excel</i>, centang semua sheet kecuali <i>Info</i>, lalu buat relasi lewat kunci di atas.
+  Bila memakai CSV, pilih encoding <b>UTF-8</b>.</div>
+</section>
+
+<!-- 5. Pesan standar -->
+<section class="pb">
+  <h2><b>5</b>Menjawab pengguna: pesan standar</h2>
+  <p class="lead">Gunakan pesan ini di <span class="ui">Activity Feeds &amp; Tasks</span> saat jawaban belum tersedia. Sampaikan saja statusnya
+  (<b>Belum ada</b> atau <b>Belum bisa</b>) tanpa uraian teknis.</p>
+  <div class="quote"><b>Kontrak data</b> — "Kontrak data untuk tabel ini belum ada. Kebutuhan Anda kami catat dan teruskan ke pemilik data, <i>@unit pemilik</i>."</div>
+  <div class="quote"><b>Hasil uji dan kesegaran</b> — "Aturan mutu tabel ini sudah tercatat di tab Data Observability. Hasil pemeriksaannya belum bisa ditampilkan.
+    Untuk keputusan penting, mohon konfirmasi ke <i>@unit pemilik</i>."</div>
+  <div class="quote"><b>Definisi kosong</b> — "Definisi istilah ini belum ada. Kami lengkapi bersama <i>@unit pemilik</i> paling lambat <i>tanggal</i>."</div>
+  <div class="quote"><b>Data siap pakai</b> — "Data untuk dashboard tersedia pada rilis <i>YYMMDD CC</i>. Berkasnya kami kirim, atau Anda bisa meminta akun panel ke Administrator."</div>
+  <div class="quote"><b>Isi data</b> — "Katalog memuat keterangan data, bukan isinya. Isi data dibuka di aplikasi asal sesuai hak akses unit Anda."</div>
+
+  <h3>Lampiran A — Elemen data yang belum punya definisi</h3>
+  <table class="t" id="tbl-nodef"><tr><th style="width:20mm">Elemen</th><th>Istilah</th></tr></table>
+  <h3>Lampiran B — Perbaikan isi workbook yang menjadi tanggung jawab Staf dan Pemilik</h3>
+  <table class="t" id="tbl-cacat"><tr><th>Jenis perbaikan</th><th style="width:16mm;text-align:right">Jumlah</th><th>Yang dilakukan</th></tr></table>
+  <p style="font-size:8.5pt;color:var(--muted)">Setelah workbook diperbaiki, kirim berkasnya ke Administrator untuk dimuat ulang. Hasilnya tampil di katalog dan di rilis data berikutnya.</p>
+</section>
+
+<script src="build/data.js"></script>
+<script src="common.js"></script>
+<script>
+window.render = (R) => {
+  const e = R.live.entitas, has = (n) => n > 0;
+  const S = (ok, a = 'Sudah bisa', b = 'Belum bisa') => (ok ? a : b);
+  const q9 = [
+    ['Apa arti metrik ini dan bagaimana menghitungnya?', 'Sudah bisa', 'sebagian: rumus metrik belum dicatat'],
+    ['Dataset mana yang mengisi dashboard ini?', S(has(e.lineage_edge)), 'layar aplikasi ERM'],
+    ['Siapa pemilik produk data ini?', 'Sudah bisa', 'per tabel; produk data belum dibentuk'],
+    ['Kontrak data apa yang berlaku?', S(has(e.kontrak_data)), ''],
+    ['Apakah data ini segar, teruji, tersertifikasi, dan terpercaya?', S(has(e.hasil_uji)), 'aturan mutu tercatat, hasil belum'],
+    ['Apa yang terdampak bila kolom ini berubah?', S(has(e.lineage_edge)), 'layar aplikasi ERM'],
+    ['Kolom mana yang berisi informasi sensitif?', 'Sudah bisa', ''],
+    ['Istilah, kebijakan, standar, dan konsep apa yang berlaku?', 'Sudah bisa', 'sebagian: dokumen kebijakan belum ditautkan'],
+    ['Keputusan, asumsi, insiden, percakapan apa yang tercatat?', 'Sudah bisa', S(has(e.percakapan), '', 'fitur siap, catatan belum ada')],
+  ];
+  const t = document.getElementById('tbl-q9');
+  q9.forEach(([q, s, n], i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i + 1}</td><td>${q}${n ? `<br><span style="color:var(--muted);font-size:8.3pt">${n}</span>` : ''}</td><td>${chip(s)}</td>`;
+    t.appendChild(tr);
+  });
+
+  const P = [
+    ['S1', 'Menanggapi permintaan dan perubahan dari pengguna', 'harian',
+     ['Buka <span class="ui">Tasks</span> di halaman beranda. Saring permintaan yang ditugaskan ke Anda atau ke unit pemilik.',
+      'Buka asetnya, lalu periksa usulan pengguna (deskripsi atau tag).',
+      'Bila usulan benar, terima. Bila tidak, tolak dan beri alasan singkat.',
+      'Periksa juga riwayat perubahan aset (<span class="ui">Activity Feeds &amp; Tasks</span>). Perubahan langsung oleh pengguna dikonfirmasi ke pemilik data atau dikembalikan.'],
+     'Pengguna mendapat jawaban di tempat yang sama dengan pertanyaannya.', 'Permintaan selesai paling lambat 5 hari kerja.'],
+    ['S2', 'Melengkapi definisi istilah dan rumus metrik', 'per permintaan / mingguan',
+     ['Buka <span class="ui">Govern</span> › <span class="ui">Glossary</span> › <b>ERM</b>, atau buka istilah dari kolom.',
+      'Klik ikon ubah pada deskripsi. Tulis definisi dalam satu atau dua kalimat bahasa bisnis.',
+      'Untuk angka hasil hitungan, tambahkan baris <b>Cara menghitung:</b> beserta rumus dan satuannya.',
+      'Untuk istilah baru, gunakan <span class="ui">Add</span> › <b>Glossary Term</b>, lalu isi <span class="ui">Owners</span> dan <span class="ui">Reviewers</span>.'],
+     'Pertanyaan 1 terjawab lengkap.', 'Definisi disetujui unit pemilik istilah.'],
+    ['S3', 'Menetapkan pemilik, steward, dan pengguna', 'saat ada aset baru',
+     ['Buka asetnya. Di panel kanan, ubah <span class="ui">Owners</span> lalu pilih tim unit kerja (mis. UG-1).',
+      'Pada istilah, isi <span class="ui">Reviewers</span> dengan steward bisnis.',
+      'Di <span class="ui">Custom Properties</span>, isi <b>Data Steward</b> dan <b>Data User</b> sesuai workbook.'],
+     'Pertanyaan 3 terjawab: pengguna tahu harus bertanya ke siapa.', 'Pakai tim unit kerja, bukan nama orang.'],
+    ['S4', 'Memberi label sensitivitas', 'saat ada kolom baru / perubahan',
+     ['Buka tabel, tab <span class="ui">Schema</span>. Di kolom <span class="ui">Tags</span>, klik ubah.',
+      'Pilih <b>Sensitivitas.Public</b>, <b>Restricted</b>, <b>Confidential</b>, atau <b>StrictlyConfidential</b>.',
+      'Tambahkan <b>PII.Sensitive</b> untuk data pribadi.',
+      'Bila ada dua klasifikasi berbeda untuk satu elemen, pakai yang paling ketat dan catat alasannya.'],
+     'Pertanyaan 7 terjawab.', 'Keputusan klasifikasi ada di Pemilik data.'],
+    ['S5', 'Memelihara alur data (lineage)', 'saat layar atau tabel berubah',
+     ['Buka tabel atau layar, lalu tab <span class="ui">Lineage</span>, lalu mode ubah.',
+      'Tarik hubungan dari tabel sumber ke layar, lalu pilih kolom yang mengalir.',
+      'Untuk dashboard di luar aplikasi ERM, minta Administrator mencatat dashboardnya dulu.'],
+     'Pertanyaan 2 dan 6 terjawab.', 'Periksa ulang setiap ada rilis aplikasi sumber.'],
+    ['S6', 'Menulis aturan mutu', 'saat aturan bisnis berubah',
+     ['Buka tabel, tab <span class="ui">Data Observability</span>, lalu <span class="ui">Add</span> › <b>Test case</b>.',
+      'Pilih kolom dan jenis uji, misalnya <i>Not Null</i> atau rentang nilai. Tulis aturan bisnisnya di deskripsi.',
+      'Aturan yang tidak bisa diuji otomatis (Lookup, validasi silang) ditulis di deskripsi kolom.'],
+     'Pertanyaan 5: pengguna tahu aturan yang berlaku.', 'Hasil pemeriksaan: <b>Belum bisa</b>.'],
+    ['S7', 'Memberi Tier dan sertifikasi', 'setelah pemilik memverifikasi',
+     ['Buka tabel. Atur <span class="ui">Tier</span>: Tier1 untuk data kritikal, Tier2 untuk data penting.',
+      'Atur <span class="ui">Certification</span> hanya setelah pemilik data menyatakan data layak: <b>Gold</b> untuk keputusan pimpinan, <b>Silver</b> untuk operasional, <b>Bronze</b> untuk eksplorasi.',
+      'Catat dasar sertifikasi sebagai <b>KEPUTUSAN:</b> di <span class="ui">Activity Feeds &amp; Tasks</span>.'],
+     'Pertanyaan 5: tanda "terpercaya".', 'Ikuti arahan Pimpinan tentang siapa yang berwenang.'],
+    ['S8', 'Mencatat keputusan, asumsi, dan insiden', 'setiap kejadian',
+     ['Buka aset terkait, tab <span class="ui">Activity Feeds &amp; Tasks</span>, lalu tulis pesan baru.',
+      'Awali dengan <b>KEPUTUSAN:</b>, <b>ASUMSI:</b>, atau <b>INSIDEN:</b>. Tulis tanggal, isi, dan dampaknya.',
+      'Sebut unit terkait dengan <b>@</b>.'],
+     'Pertanyaan 9 terjawab.', 'Satu catatan untuk satu pokok bahasan.'],
+    ['S9', 'Memperbarui workbook governance', 'per siklus perubahan',
+     ['Perbaiki isi workbook (Lampiran B): definisi, tabel, klasifikasi, kolom kembar.',
+      'Simpan dengan nama versi baru, misalnya <i>YYMMDD Rev.x</i>.',
+      'Kirim ke Administrator untuk dimuat ulang. Periksa hasilnya di katalog.'],
+     'Semua jawaban konsisten dengan sumber resmi.', 'Workbook tetap menjadi sumber kebenaran.'],
+    ['S10', 'Menyiapkan data untuk dashboard', 'per permintaan',
+     ['Pastikan rilis terbaru di panel sudah memuat perbaikan terakhir. Bila belum, minta Administrator membuat rilis baru.',
+      'Unduh XLSX atau CSV yang dibutuhkan (Bab 4).',
+      'Kirim ke peminta dengan menyebut nomor rilis.'],
+     'Pengguna mendapat data rapi tanpa menyusun ulang.', 'Tidak meneruskan akun panel.'],
+  ];
+  const sec = document.getElementById('prosedur');
+  for (const [n, title, when, steps, out, rule] of P) {
+    const d = document.createElement('div');
+    d.className = 'proc';
+    d.innerHTML = `<div class="h"><b>${n}</b><h4>${title}</h4><span>${when}</span></div><div class="b">
+      <ol>${steps.map((s) => `<li>${s}</li>`).join('')}</ol>
+      <div class="r"><p><b>Hasil bagi pengguna</b><br>${out}</p><p><b>Ketentuan</b><br>${rule}</p></div></div>`;
+    sec.appendChild(d);
+  }
+
+  const g = document.getElementById('tbl-gold');
+  for (const d of R.gold.gold) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${esc(d.nama)}<br><span style="color:var(--muted);font-weight:400;font-size:8pt">${esc(d.file)}</span></td>
+      <td>${esc(d.isi)}<br><i style="color:var(--blue)">Menjawab: ${esc(d.menjawab)}</i></td><td style="text-align:right">${fmt(d.baris)}</td>`;
+    g.appendChild(tr);
+  }
+  const none = R.dataset.filter((d) => d.status !== 'Tersedia').map((d) => d.dataset);
+  if (none.length) document.querySelector('#row-nodata td').textContent = none.join(', ');
+  else document.getElementById('row-nodata').remove();
+
+  const nd = document.getElementById('tbl-nodef');
+  for (const x of R.gold.glosarium_belum_ada) {
+    const [id, ...rest] = x.split(' ');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${esc(id)}</td><td>${esc(rest.join(' '))}</td>`;
+    nd.appendChild(tr);
+  }
+  const what = {
+    'Glosarium kosong': 'Tulis istilah dan definisi di sheet Business_Glossary',
+    'Tabel Not Found': 'Isi TABLE_ID yang benar di Database_Object, atau tandai elemen sebagai non-tabel',
+    'Tanpa klasifikasi': 'Tambahkan baris di Data_Security_Access dengan klasifikasinya',
+    'Kolom kembar': 'Satu kolom harus satu elemen data: gabungkan atau ganti nama kolom',
+    'Konflik klasifikasi': 'Putuskan satu klasifikasi untuk elemen tersebut',
+    'Lineage tanpa kolom': 'Perbaiki nama kolom sumber di Data_Flow_Lineage',
+  };
+  const c = document.getElementById('tbl-cacat');
+  for (const [k, v] of Object.entries(R.live.cacat)) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${esc(k)}</td><td style="text-align:right">${v}</td><td>${what[k] || ''}</td>`;
+    c.appendChild(tr);
+  }
+};
+</script>
+</body>
+</html>

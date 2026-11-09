@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Manual Pengguna — Len Data Governance</title>
+<link rel="stylesheet" href="base.css">
+<style>
+/* Manual Pengguna: ramah, huruf besar, kartu pertanyaan. */
+html{font-size:10.5pt}
+.cover{background:#fff}
+.cover .band{position:absolute;inset:0 0 auto 0;height:118mm;background:var(--navy)}
+.cover .band svg{position:absolute;right:-10mm;top:12mm;opacity:.16}
+.cover img{position:absolute;left:20mm;top:18mm;height:15mm;background:#fff;padding:2mm 3mm}
+.cover .t{position:absolute;left:20mm;right:20mm;top:58mm;color:#fff}
+.cover .t .k{font:600 11pt 'Open Sans';letter-spacing:.5px;opacity:.85}
+.cover .t h1{color:#fff;font-size:34pt;margin:4mm 0 3mm;letter-spacing:-.8px}
+.cover .t p{font-size:13pt;margin:0;max-width:150mm;opacity:.95}
+.cover .qs{position:absolute;left:20mm;right:20mm;top:132mm;display:grid;grid-template-columns:1fr 1fr;gap:4mm 8mm}
+.cover .qs div{border-left:3px solid var(--red);padding:1mm 0 1mm 4mm;font-size:10.5pt;color:var(--ink)}
+.cover .meta{position:absolute;left:20mm;bottom:18mm;font-size:9.5pt;color:var(--muted)}
+.cover .meta b{color:var(--navy);font-size:12pt}
+h2{font-size:20pt;color:var(--navy);margin:0 0 4mm;letter-spacing:-.4px}
+h2 small{display:block;font:600 9pt 'Open Sans';color:var(--red);letter-spacing:.6px;text-transform:uppercase;margin-bottom:1mm}
+h3{font-size:12.5pt;margin:5mm 0 2mm}
+.lead{font-size:11.5pt;color:var(--ink);margin:0 0 5mm}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:5mm;margin:4mm 0 6mm}
+.steps div{background:var(--navy50);padding:5mm;border-top:3px solid var(--navy)}
+.steps>div>b{display:block;font-size:22pt;color:var(--navy);line-height:1}
+.steps p b{white-space:nowrap}
+.steps h4{margin:2mm 0 1mm;font-size:11pt}
+.steps p{margin:0;font-size:9.5pt}
+.find{display:grid;grid-template-columns:repeat(2,1fr);gap:3mm 6mm;margin:3mm 0}
+.find>div{display:flex;gap:3mm;align-items:flex-start;font-size:9.5pt}
+.find svg{flex:none;width:9mm;height:9mm}
+.box{border:1px solid var(--soft);padding:4mm 5mm;margin:4mm 0;background:#fff}
+.box.tip{border-left:3px solid var(--blue);background:#f4f8fd}
+.box.warn{border-left:3px solid var(--warn);background:#fdf8f0}
+.legend{display:flex;gap:6mm;flex-wrap:wrap;margin:2mm 0 4mm;font-size:9.5pt}
+.legend span{display:flex;gap:2mm;align-items:center}
+table.t{font-size:9pt;margin:2mm 0 4mm}
+table.t th{background:var(--navy);color:#fff;font:600 8.5pt 'Open Sans';text-align:left;padding:2mm 2.5mm}
+table.t td{border-bottom:1px solid var(--soft);padding:2mm 2.5mm;vertical-align:top}
+.q{border:1px solid var(--soft);margin:0 0 5mm;break-inside:avoid;background:#fff}
+.q .h{display:flex;gap:4mm;align-items:center;background:var(--navy50);padding:3mm 5mm;border-bottom:1px solid #d8e3ef}
+.q .h b{font:700 15pt Montserrat;color:#fff;background:var(--navy);width:11mm;height:11mm;display:grid;place-items:center;flex:none}
+.q .h h3{margin:0;font-size:12pt}
+.q .b{padding:3mm 5mm 4mm;display:grid;grid-template-columns:1.25fr 1fr;gap:6mm}
+.q .st{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:2mm 5mm;font-size:9pt;align-items:center}
+.q ol{margin:0;padding-left:5mm}.q li{margin:0 0 1.2mm}
+.q .ex{font-size:9pt;background:var(--bg);padding:3mm 4mm;border-left:3px solid var(--red)}
+.q .ex p{margin:0 0 1.5mm}
+.can{display:grid;grid-template-columns:1fr 1fr;gap:6mm}
+.can h3{display:flex;gap:2mm;align-items:center}
+.can ul{padding-left:5mm;margin:0}.can li{margin-bottom:2mm}
+.faq dt{font-weight:700;color:var(--ink);margin-top:3mm}.faq dd{margin:1mm 0 0}
+figure{margin:3mm 0}figcaption{font-size:8.5pt;color:var(--muted);margin-top:1mm}
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="band"><svg width="140mm" height="110mm" viewBox="0 0 140 110"><g fill="none" stroke="#fff" stroke-width="1.2">
+    <circle cx="52" cy="46" r="26"/><line x1="71" y1="65" x2="100" y2="94" stroke-width="6"/><circle cx="52" cy="46" r="14"/></g></svg></div>
+  <img src="img/len-logo.png" alt="Len">
+  <div class="t">
+    <div class="k">LEN DATA GOVERNANCE</div>
+    <h1>Manual Pengguna</h1>
+    <p>Cara menemukan data perusahaan, memahami artinya, mengetahui pemilik dan pemakainya, serta mengajukan pertanyaan.</p>
+  </div>
+  <div class="qs">
+    <div>Apa arti istilah atau angka ini?</div><div>Data ini milik siapa?</div>
+    <div>Layar ini diisi dari data mana?</div><div>Kolom mana yang sensitif?</div>
+    <div>Apa yang terdampak bila kolom berubah?</div><div>Apakah data ini bisa dipercaya?</div>
+  </div>
+  <div class="meta"><b>Rilis <span data-v="rilis"></span></b><br><span data-v="tanggal"></span> · Untuk seluruh karyawan pengguna data</div>
+</section>
+
+<!-- 1. Mulai -->
+<section>
+  <h2><small>Bagian 1</small>Mulai dalam tiga langkah</h2>
+  <p class="lead">Len Data Governance adalah <b>katalog data perusahaan</b>: tempat mencari tahu data apa yang ada, apa artinya,
+  siapa pemiliknya, dari mana asalnya, dan siapa yang memakainya. Katalog berisi <i>keterangan tentang data</i>, bukan isi datanya.</p>
+  <div class="steps">
+    <div><b>1</b><h4>Buka alamat</h4><p>Di browser komputer kantor, buka <b data-v="alamat"></b>. Hanya bisa dibuka dari jaringan kantor.</p></div>
+    <div><b>2</b><h4>Masuk</h4><p>Klik tombol <span class="ui">Masuk</span>, lalu isi email dan kata sandi akun Anda.</p></div>
+    <div><b>3</b><h4>Cari</h4><p>Ketik kata kunci di kotak pencarian paling atas, misalnya <i>risk register</i> atau <i>skala risiko</i>.</p></div>
+  </div>
+  <div class="box tip"><b>Belum punya akun atau lupa kata sandi?</b> Hubungi Staf Data Governance (unit UV-1). Jangan memakai akun milik orang lain.</div>
+
+  <h3>Yang bisa Anda temukan</h3>
+  <div class="find">
+    <div><svg viewBox="0 0 24 24" fill="none" stroke="#194A80" stroke-width="1.8"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg><div><b>Arti data</b><br>Definisi istilah bisnis dan kolom.</div></div>
+    <div><svg viewBox="0 0 24 24" fill="none" stroke="#194A80" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><div><b>Pemilik</b><br>Unit kerja pemilik dan pengelola data.</div></div>
+    <div><svg viewBox="0 0 24 24" fill="none" stroke="#194A80" stroke-width="1.8"><circle cx="5" cy="12" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="M7.5 12H12l4.5-6M12 12l4.5 6"/></svg><div><b>Asal dan alur</b><br>Tabel sumber dan layar yang memakainya.</div></div>
+    <div><svg viewBox="0 0 24 24" fill="none" stroke="#194A80" stroke-width="1.8"><rect x="5" y="10" width="14" height="10"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><div><b>Sensitivitas</b><br>Kolom Restricted dan Confidential.</div></div>
+    <div><svg viewBox="0 0 24 24" fill="none" stroke="#194A80" stroke-width="1.8"><circle cx="8" cy="9" r="3"/><circle cx="17" cy="9" r="3"/><path d="M2 20c.8-3 3-4.5 6-4.5S13.2 17 14 20M13 15.6c1-.7 2.4-1.1 4-1.1 3 0 5.2 1.5 6 4.5"/></svg><div><b>Siapa memakai</b><br>Unit pengguna dan hak aksesnya.</div></div>
+    <div><svg viewBox="0 0 24 24" fill="none" stroke="#194A80" stroke-width="1.8"><path d="M12 3l7 3v6c0 4-3 7.5-7 9-4-1.5-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg><div><b>Mutu</b><br>Aturan kualitas yang berlaku.</div></div>
+  </div>
+</section>
+
+<!-- 2. Kenali layar -->
+<section class="pb">
+  <h2><small>Bagian 2</small>Kenali layar</h2>
+  <p class="lead">Tampilan katalog berbahasa Inggris. Nama tombol ditulis seperti di layar, misalnya <span class="ui">Lineage</span>.</p>
+  <figure>
+  <svg viewBox="0 0 640 380" width="100%" font-family="Open Sans, Arial" font-size="10">
+    <rect x="0" y="0" width="640" height="380" fill="#F5F6F8" stroke="#C4C4C4"/>
+    <rect x="0" y="0" width="640" height="34" fill="#fff"/><line x1="0" y1="34" x2="640" y2="34" stroke="#E6E6E6"/>
+    <text x="14" y="21" font-weight="700" fill="#194A80" font-size="11">Len Data Governance</text>
+    <rect x="190" y="8" width="270" height="18" fill="#F5F6F8" stroke="#C4C4C4"/><text x="198" y="21" fill="#838282">Search…</text>
+    <circle cx="600" cy="17" r="8" fill="#194A80"/>
+    <rect x="0" y="34" width="110" height="346" fill="#fff"/><line x1="110" y1="34" x2="110" y2="380" stroke="#E6E6E6"/>
+    <g fill="#515151"><text x="14" y="58">Home</text><text x="14" y="80" fill="#194A80" font-weight="600">Explore</text>
+      <text x="14" y="102">Lineage</text><text x="14" y="124">Observability</text><text x="14" y="146">Insights</text>
+      <text x="14" y="168">Domains</text><text x="14" y="190">Govern</text><text x="24" y="208" font-size="9">Glossary</text>
+      <text x="24" y="224" font-size="9">Classification</text></g>
+    <rect x="3" y="70" width="3" height="14" fill="#DA0000"/>
+    <rect x="124" y="46" width="356" height="56" fill="#fff" stroke="#E6E6E6"/>
+    <text x="136" y="66" font-weight="700" fill="#3B3B3B" font-size="12">erm_riskregister</text>
+    <text x="136" y="84" fill="#838282">LenO_ERM › ERM › erm</text>
+    <rect x="400" y="56" width="66" height="18" fill="#fff" stroke="#194A80"/><text x="416" y="69" fill="#194A80">Follow</text>
+    <g fill="#515151"><text x="136" y="120" fill="#194A80" font-weight="600">Schema</text><text x="190" y="120">Activity Feeds &amp; Tasks</text>
+      <text x="315" y="120">Data Observability</text><text x="420" y="120">Lineage</text></g>
+    <rect x="136" y="124" width="40" height="2" fill="#DA0000"/>
+    <rect x="124" y="132" width="356" height="236" fill="#fff" stroke="#E6E6E6"/>
+    <g fill="#515151"><text x="136" y="150" font-weight="600">Name</text><text x="250" y="150" font-weight="600">Description</text><text x="400" y="150" font-weight="600">Tags</text></g>
+    <g fill="#515151"><text x="136" y="174">MainCategory</text><text x="250" y="174">Elemen Data: F006 …</text>
+      <rect x="400" y="164" width="66" height="14" fill="#EEF3F9"/><text x="404" y="175" font-size="8">Restricted</text>
+      <text x="136" y="198">SkalaRisiko</text><text x="250" y="198">Nilai risiko yang …</text>
+      <rect x="400" y="188" width="66" height="14" fill="#EEF3F9"/><text x="404" y="199" font-size="8">Restricted</text></g>
+    <rect x="490" y="46" width="138" height="322" fill="#fff" stroke="#E6E6E6"/>
+    <g fill="#3B3B3B" font-weight="600"><text x="500" y="66">Owners</text><text x="500" y="116">Tier</text><text x="500" y="160">Tags</text><text x="500" y="204">Glossary Terms</text></g>
+    <g fill="#515151"><text x="500" y="84">UG-1 Risk Management</text><text x="500" y="134">—</text><text x="500" y="178">Sensitivitas…</text><text x="500" y="222">ERM.F006 …</text></g>
+    <g font-family="Montserrat, Arial" font-weight="700" font-size="11" fill="#fff">
+      <circle cx="470" cy="17" r="9" fill="#DA0000"/><text x="466" y="21">1</text>
+      <circle cx="100" cy="80" r="9" fill="#DA0000"/><text x="96" y="84">2</text>
+      <circle cx="388" cy="64" r="9" fill="#DA0000"/><text x="384" y="68">3</text>
+      <circle cx="476" cy="116" r="9" fill="#DA0000"/><text x="472" y="120">4</text>
+      <circle cx="470" cy="184" r="9" fill="#DA0000"/><text x="466" y="188">5</text>
+      <circle cx="618" cy="66" r="9" fill="#DA0000"/><text x="614" y="70">6</text></g>
+  </svg>
+  <figcaption>Gambar sederhana halaman tabel. Tampilan sebenarnya bisa sedikit berbeda.</figcaption>
+  </figure>
+  <table class="t">
+    <tr><th style="width:8mm">#</th><th style="width:42mm">Bagian</th><th>Gunanya</th></tr>
+    <tr><td>1</td><td>Kotak pencarian</td><td>Cari tabel, layar (dashboard), istilah, atau kolom. Hasil dikelompokkan per jenis: <span class="ui">Tables</span>, <span class="ui">Dashboards</span>, <span class="ui">Glossary Terms</span>, dan seterusnya.</td></tr>
+    <tr><td>2</td><td>Menu kiri</td><td><span class="ui">Explore</span> untuk menjelajah semua data. <span class="ui">Govern</span> berisi <span class="ui">Glossary</span> (kamus istilah) dan <span class="ui">Classification</span> (label sensitivitas).</td></tr>
+    <tr><td>3</td><td><span class="ui">Follow</span></td><td>Ikuti aset ini agar Anda mendapat kabar bila ada perubahan atau diskusi.</td></tr>
+    <tr><td>4</td><td>Tab halaman</td><td><span class="ui">Schema</span> berisi daftar kolom. <span class="ui">Activity Feeds &amp; Tasks</span> berisi diskusi dan permintaan. <span class="ui">Data Observability</span> berisi aturan mutu. <span class="ui">Lineage</span> berisi asal dan alur data.</td></tr>
+    <tr><td>5</td><td>Kolom <span class="ui">Tags</span></td><td>Label sensitivitas per kolom (Restricted, Confidential) dan penanda data pribadi (PII).</td></tr>
+    <tr><td>6</td><td>Panel kanan</td><td><span class="ui">Owners</span> berisi unit pemilik. <span class="ui">Tier</span> menunjukkan tingkat kepentingan. Di sini juga ada <span class="ui">Tags</span> dan <span class="ui">Glossary Terms</span>.</td></tr>
+  </table>
+</section>
+
+<!-- 3. Data apa yang ada -->
+<section class="pb">
+  <h2><small>Bagian 3</small>Data apa yang sudah ada?</h2>
+  <p class="lead">Arti tanda status di manual ini:</p>
+  <div class="legend">
+    <span><span class="chip ok">Tersedia</span> sudah bisa Anda lihat</span>
+    <span><span class="chip no">Belum ada</span> fiturnya ada, isinya belum diisi</span>
+    <span><span class="chip na">Belum bisa</span> belum dapat dilakukan</span>
+  </div>
+  <table class="t" id="tbl-dataset">
+    <tr><th style="width:40mm">Kelompok data</th><th style="width:20mm">Status</th><th>Dipakai di</th><th style="width:34mm">Pemilik</th><th style="width:44mm">Pengguna (unit kerja)</th></tr>
+  </table>
+  <div class="box tip">Isi transaksinya, misalnya daftar risiko per unit, tetap dibuka di aplikasi asalnya (LenO). Hak membuka data di aplikasi
+    asal diatur oleh aplikasi tersebut, bukan oleh katalog.</div>
+  <h3>Cara melihat siapa yang memakai suatu data</h3>
+  <ol>
+    <li>Buka tabelnya, lalu lihat <span class="ui">Owners</span> di panel kanan. Itu unit pemilik data.</li>
+    <li>Buka tab <span class="ui">Lineage</span> untuk melihat layar aplikasi yang memakai tabel tersebut.</li>
+    <li>Buka layar (dashboard) yang dimaksud. Di <span class="ui">Custom Properties</span> tercantum <b>Hak Akses LenO</b>: unit mana yang boleh melihat, mencari, atau mengubah.</li>
+  </ol>
+</section>
+
+<!-- 4. Sembilan pertanyaan -->
+<section class="pb" id="pertanyaan">
+  <h2><small>Bagian 4</small>Menjawab pertanyaan Anda</h2>
+  <p class="lead">Setiap kartu memuat status jawaban saat ini, langkah mencarinya, dan apa yang bisa Anda lakukan bila jawabannya belum ada.</p>
+</section>
+
+<!-- 5. Bisa & tidak bisa -->
+<section class="pb">
+  <h2><small>Bagian 5</small>Yang bisa Anda lakukan</h2>
+  <div class="can">
+    <div>
+      <h3><span class="chip ok">Bisa</span> sendiri</h3>
+      <ul>
+        <li>Mencari dan membaca keterangan semua data di katalog.</li>
+        <li>Mengikuti aset (<span class="ui">Follow</span>) agar mendapat kabar perubahan.</li>
+        <li>Bertanya dan berdiskusi di tab <span class="ui">Activity Feeds &amp; Tasks</span>, juga menyebut rekan dengan <b>@nama</b>.</li>
+        <li>Mengajukan perbaikan: <span class="ui">Request description</span> untuk deskripsi, <span class="ui">Request Tags</span> untuk label.</li>
+        <li>Memantau permintaan Anda di <span class="ui">Tasks</span>.</li>
+      </ul>
+    </div>
+    <div>
+      <h3><span class="chip info">Melalui</span> Staf Data Governance</h3>
+      <ul>
+        <li>Mengubah definisi resmi, pemilik, klasifikasi sensitivitas, atau alur data.</li>
+        <li>Mendapat akun atau mengubah hak akses.</li>
+        <li>Mendapat <b>data siap pakai</b> untuk dashboard (Excel atau CSV).</li>
+        <li>Membuka isi data di aplikasi asal: ikuti hak akses aplikasi tersebut.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="box warn"><b>Aturan penting.</b> Keterangan di katalog menjadi acuan resmi. Jika Anda menemukan keterangan yang keliru,
+    <b>ajukan sebagai permintaan</b>, jangan diubah sendiri, walaupun tombol ubah terlihat. Dengan begitu pemilik data bisa memeriksa
+    dan menyetujuinya, dan riwayatnya tercatat.</div>
+
+  <h3>Tips pencarian</h3>
+  <ul>
+    <li>Cari dengan nama bisnis (<i>Skala Risiko</i>) atau nama teknis kolom (<i>SkalaRisiko</i>). Keduanya bisa.</li>
+    <li>Di <span class="ui">Explore</span>, pakai <span class="ui">Filters</span> di kiri: <b>Owners</b> untuk unit pemilik, <b>Tag</b> untuk sensitivitas, <b>Tier</b> untuk tingkat kepentingan.</li>
+    <li>Nama layar aplikasi ERM diawali modulnya: <i>Master Data</i>, <i>Perencanaan Resiko</i>, <i>Risiko Utama</i>, <i>Pelaporan Resiko</i>.</li>
+  </ul>
+
+  <h3>Tanya-jawab singkat</h3>
+  <dl class="faq">
+    <dt>Mengapa saya tidak melihat angka atau isi datanya?</dt>
+    <dd>Katalog hanya menyimpan keterangan tentang data. Angka dan isinya ada di aplikasi asal.</dd>
+    <dt>Status "Belum ada" artinya data itu tidak ada?</dt>
+    <dd>Bukan. Fiturnya sudah ada tetapi keterangannya belum diisi oleh Staf Data Governance. Anda bisa memintanya lewat <span class="ui">Request description</span> atau diskusi.</dd>
+    <dt>Berapa lama permintaan saya diproses?</dt>
+    <dd>Permintaan masuk ke unit pemilik data. Pantau statusnya di <span class="ui">Tasks</span>. Bila mendesak, hubungi Staf Data Governance.</dd>
+    <dt>Bolehkah saya menyalin keterangan kolom Confidential ke dokumen lain?</dt>
+    <dd>Keterangan (nama dan definisi) boleh dipakai untuk keperluan kerja. <b>Isi</b> data Confidential hanya untuk unit yang berhak.</dd>
+  </dl>
+  <div class="box tip"><b>Bantuan:</b> Staf Data Governance (UV-1). Tulis pertanyaan Anda di tab <span class="ui">Activity Feeds &amp; Tasks</span>
+    pada aset terkait, atau hubungi unit UV-1 langsung.</div>
+</section>
+
+<script src="build/data.js"></script>
+<script src="common.js"></script>
+<script>
+window.render = (R) => {
+  const e = R.live.entitas;
+  const has = (n) => n > 0;
+  // Tabel kelompok data
+  const t = document.getElementById('tbl-dataset');
+  for (const d of R.dataset) {
+    const tr = document.createElement('tr');
+    const layar = d.layar.length ? `${d.layar.length} layar aplikasi ${esc(d.sistem)}` : '—';
+    tr.innerHTML = `<td><b>${esc(d.dataset)}</b><br><span style="color:var(--muted)">${esc(d.domain)}</span></td>
+      <td>${chip(d.status)}</td><td>${d.status === 'Tersedia' ? layar + `<br><span style="color:var(--muted)">${d.tabel.length} tabel</span>` : 'Belum tercatat di katalog'}</td>
+      <td>${esc(d.pemilik.join(', ') || '—')}</td><td>${esc(d.pengguna.join(', ') || '—')}</td>`;
+    t.appendChild(tr);
+  }
+  const S = (ok, a = 'Tersedia', b = 'Belum ada') => (ok ? a : b);
+  const Q = [
+    { q: 'Apa arti metrik ini dan bagaimana menghitungnya?',
+      st: [['Arti istilah bisnis', 'Tersedia'], ['Rumus perhitungan metrik', S(has(e.metrik))]],
+      steps: ['Ketik nama istilah di kotak pencarian, misalnya <i>Skala Risiko</i>.',
+              'Pilih hasil di kelompok <span class="ui">Glossary Terms</span>.',
+              'Baca definisinya. <span class="ui">Owners</span> menunjukkan unit pemilik istilah, dan <span class="ui">Reviewers</span> pengelolanya.',
+              'Buka tab <span class="ui">Assets</span> untuk melihat kolom yang memakai istilah ini.',
+              'Atau buka menu <span class="ui">Govern</span> › <span class="ui">Glossary</span> › <b>ERM</b> untuk melihat semua istilah.'],
+      ex: '<p><b>Skala Risiko</b>: "Nilai risiko yang diperoleh dari hasil kombinasi antara Skala Dampak dan Skala Kemungkinan."</p><p>Pemilik: UG-1 Risk Management.</p>',
+      no: `Sebagian kecil kolom belum punya definisi (${fmt(R.gold.glosarium_belum_ada.length)} istilah). Rumus resmi metrik belum dicatat. Mintalah lewat <span class="ui">Request description</span>.` },
+    { q: 'Dataset mana yang mengisi dashboard ini?',
+      st: [['Tabel sumber untuk layar aplikasi ERM', S(has(e.lineage_edge))], ['Dashboard di luar aplikasi ERM', S(e.dashboard > kpi('Layar/dashboard LenO'))]],
+      steps: ['Cari nama layarnya, misalnya <i>Perencanaan Risiko</i>.',
+              'Pilih hasil di kelompok <span class="ui">Dashboards</span>.',
+              'Buka tab <span class="ui">Lineage</span>. Tabel sumber tampil di sebelah kiri layar.',
+              'Klik sebuah tabel untuk melihat kolom yang mengalir ke layar. Aktifkan <span class="ui">Column Level Lineage</span> bila tersedia.'],
+      ex: '<p>Layar <b>Perencanaan Resiko - Risk Register - Perencanaan Risiko</b> diisi oleh 6 tabel, antara lain erm_riskregister, erm_riskinherent, dan erm_rencanamitigasi.</p>',
+      no: 'Dashboard yang dibuat di luar aplikasi ERM, misalnya laporan Excel atau Power BI, belum tercatat. Sampaikan nama dashboard Anda ke Staf Data Governance agar dicatat.' },
+    { q: 'Siapa pemilik produk data ini?',
+      st: [['Pemilik tabel dan istilah', 'Tersedia'], ['Produk data', S(has(e.produk_data))]],
+      steps: ['Buka tabel, layar, atau istilah yang dimaksud.',
+              'Lihat <span class="ui">Owners</span> di panel kanan. Itu unit kerja pemilik data.',
+              'Pada istilah glosarium, <span class="ui">Reviewers</span> dan <span class="ui">Custom Properties</span> › <b>Data Steward</b> menunjukkan unit pengelola.'],
+      ex: '<p>Tabel <b>erm_riskregister</b> dimiliki oleh <b>UG-1 Risk Management</b>.</p>',
+      no: 'Data belum dikelompokkan menjadi <i>produk data</i>. Untuk sementara, pemilik tabel adalah pemilik datanya.' },
+    { q: 'Kontrak data apa yang berlaku?',
+      st: [['Kontrak data', S(has(e.kontrak_data))]],
+      steps: ['Buka tabel yang dimaksud.',
+              'Buka tab <span class="ui">Data Contract</span>. Bila tidak ada isinya, kontrak belum dibuat.',
+              'Sebagai acuan sementara, lihat aturan mutu di tab <span class="ui">Data Observability</span> dan sensitivitas di kolom <span class="ui">Tags</span>.'],
+      ex: '<p>Kontrak data berisi janji tertulis tentang data: kolom apa saja, mutu minimal, dan seberapa sering diperbarui.</p>',
+      no: 'Kontrak data belum dibuat. Bila pekerjaan Anda bergantung pada suatu tabel, sampaikan kebutuhan Anda ke pemilik datanya.' },
+    { q: 'Apakah data ini segar, teruji, tersertifikasi, dan terpercaya?',
+      st: [['Aturan mutu', S(has(e.test_case))], ['Hasil uji mutu', S(has(e.hasil_uji), 'Tersedia', 'Belum bisa')],
+           ['Kesegaran (kapan terakhir diperbarui)', S(has(e.pipeline), 'Tersedia', 'Belum bisa')],
+           ['Sertifikasi', S(has(R.live.sertifikasi_terpasang))], ['Tier (tingkat kepentingan)', S(Object.keys(R.live.tag).some((k) => k.startsWith('Tier.')), 'Tersedia untuk sebagian tabel')]],
+      steps: ['Buka tabel yang dimaksud.',
+              'Lihat <span class="ui">Tier</span> dan <span class="ui">Certification</span> di bagian atas atau di panel kanan.',
+              'Buka tab <span class="ui">Data Observability</span> untuk membaca aturan mutu per kolom, misalnya <i>Wajib terisi</i>.',
+              'Baca deskripsi kolom. Aturan mutu juga tertulis di sana.'],
+      ex: '<p>Kolom <b>MainCategory</b> punya aturan "Wajib terisi (Not Null)".</p>',
+      no: 'Hasil pemeriksaan mutu dan waktu pembaruan terakhir belum bisa ditampilkan. Sertifikasi belum diberikan. Untuk keputusan penting, pastikan dulu ke pemilik data.' },
+    { q: 'Dashboard, pipeline, atau model ML mana yang terdampak bila kolom ini berubah?',
+      st: [['Layar aplikasi yang terdampak', S(has(e.lineage_edge))], ['Pipeline dan model ML', S(has(e.pipeline) || has(e.model_ml))]],
+      steps: ['Buka tabel yang kolomnya akan berubah.',
+              'Buka tab <span class="ui">Lineage</span>. Semua yang ada di sebelah kanan (<span class="ui">Downstream</span>) memakai tabel ini.',
+              'Pakai <span class="ui">Impact Analysis</span> untuk melihat daftar aset terdampak.',
+              'Beri tahu pemilik layar yang terdampak melalui <span class="ui">Activity Feeds &amp; Tasks</span>.'],
+      ex: '<p>Perubahan pada <b>erm_riskregister</b> berdampak ke beberapa layar di modul <i>Risiko Utama</i> dan <i>Perencanaan Resiko</i>.</p>',
+      no: 'Pipeline data dan model ML belum tercatat, jadi hanya layar aplikasi ERM yang terlihat.' },
+    { q: 'Kolom mana yang berisi informasi sensitif?',
+      st: [['Label sensitivitas per kolom', 'Tersedia']],
+      steps: ['Buka tabel, lalu lihat kolom <span class="ui">Tags</span> di tab <span class="ui">Schema</span>.',
+              'Label <b>Sensitivitas.Confidential</b> berarti paling sensitif. <b>Sensitivitas.Restricted</b> berarti terbatas untuk unit tertentu.',
+              'Label <b>PII.Sensitive</b> menandai data pribadi.',
+              'Untuk melihat semuanya: buka <span class="ui">Explore</span>, lalu di <span class="ui">Filters</span> pilih <b>Tag</b> › <i>Sensitivitas.Confidential</i>.'],
+      ex: `<p>Contoh kolom Confidential: <b>NilaiSeleraRisiko</b> dan <b>NilaiToleransiRisiko</b> (erm_penerimaanrisiko), serta <b>DampakFinansial</b> (erm_riskresidual). Ada ${fmt(kpi('Kolom Confidential atau lebih tinggi'))} kolom Confidential.</p>`,
+      no: 'Beberapa kolom belum berlabel. Bila Anda ragu, perlakukan sebagai Restricted dan tanyakan ke pemilik data.' },
+    { q: 'Istilah glosarium, kebijakan, standar, dan konsep bisnis apa yang berlaku?',
+      st: [['Istilah glosarium', 'Tersedia'], ['Klasifikasi sensitivitas', 'Tersedia'], ['Dokumen kebijakan dan standar', 'Belum ada']],
+      steps: ['Buka aset, lalu lihat <span class="ui">Glossary Terms</span> dan <span class="ui">Tags</span> di panel kanan atau pada setiap kolom.',
+              'Klik sebuah istilah untuk membaca definisinya.',
+              'Daftar lengkap ada di <span class="ui">Govern</span> › <span class="ui">Glossary</span> dan <span class="ui">Govern</span> › <span class="ui">Classification</span>.'],
+      ex: '<p>Kolom <b>MainCategory</b> memakai istilah <b>Kategori/Taksonomi Risiko</b> dan berlabel <b>Restricted</b>.</p>',
+      no: 'Dokumen kebijakan dan standar tertulis belum ditautkan ke katalog. Tanyakan ke Staf Data Governance.' },
+    { q: 'Keputusan, asumsi, insiden, atau percakapan apa yang sudah tercatat?',
+      st: [['Fitur catatan dan diskusi', 'Tersedia'], ['Catatan yang sudah ada', S(has(e.percakapan))]],
+      steps: ['Buka aset, lalu tab <span class="ui">Activity Feeds &amp; Tasks</span>.',
+              'Baca diskusi, permintaan, dan riwayat perubahan aset tersebut.',
+              'Untuk mencatat sesuatu, tulis pesan baru dan awali dengan <b>KEPUTUSAN:</b>, <b>ASUMSI:</b>, atau <b>INSIDEN:</b> supaya mudah dicari.',
+              'Sebut pemilik data dengan <b>@</b> agar ia mendapat pemberitahuan.'],
+      ex: '<p><b>ASUMSI:</b> Nilai pada kolom ini dalam satuan rupiah. @UG-1 mohon konfirmasi.</p>',
+      no: 'Belum ada catatan yang tersimpan. Catatan pertama bisa dimulai oleh siapa pun yang bekerja dengan data tersebut.' },
+  ];
+  const sec = document.getElementById('pertanyaan');
+  Q.forEach((x, i) => {
+    const d = document.createElement('div');
+    d.className = 'q';
+    d.innerHTML = `<div class="h"><b>${i + 1}</b><h3>${x.q}</h3></div><div class="b">
+      <div class="st">${x.st.map(([a, s]) => `<span>${chip(s)} ${a}</span>`).join('')}</div>
+      <div><ol>${x.steps.map((s) => `<li>${s}</li>`).join('')}</ol></div>
+      <div class="ex"><p style="font-weight:700;color:var(--ink)">Contoh</p>${x.ex}
+      <p style="font-weight:700;color:var(--ink);margin-top:2mm">Jika belum tersedia</p><p>${x.no}</p></div></div>`;
+    sec.appendChild(d);
+  });
+};
+</script>
+</body>
+</html>

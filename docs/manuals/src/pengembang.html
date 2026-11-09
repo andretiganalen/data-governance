@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Manual Pengembang — Len Data Governance</title>
+<link rel="stylesheet" href="base.css">
+<style>
+/* Manual Pengembang: teknis & padat — sampul gelap bergrid, penomoran §, blok kode, tabel rapat. */
+html{font-size:9.2pt}
+.cover{background:#0f2c4d;color:#fff}
+.cover .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:8mm 8mm}
+.cover .t{position:absolute;left:20mm;right:20mm;top:70mm}
+.cover .t .k{font:600 9.5pt 'DejaVu Sans Mono',monospace;color:#9fc0e6}
+.cover .t h1{color:#fff;font-size:32pt;margin:3mm 0 4mm;letter-spacing:-.8px}
+.cover .t p{font-size:11pt;color:#d5e2f1;max-width:150mm;margin:0}
+.cover .t i{display:block;width:24mm;height:2mm;background:var(--red);margin-top:8mm}
+.cover pre{position:absolute;left:20mm;right:20mm;bottom:22mm;margin:0;font-size:8.5pt;color:#cfe0f3;line-height:1.7;
+  border-top:1px solid rgba(255,255,255,.2);padding-top:5mm;white-space:pre-wrap}
+.cover img{position:absolute;right:20mm;top:20mm;height:12mm;background:#fff;padding:2mm 3mm}
+h2{font-size:15pt;margin:0 0 4mm;color:var(--navy);border-bottom:2px solid var(--navy);padding-bottom:2mm}
+h2 span{font:700 11pt 'DejaVu Sans Mono',monospace;color:var(--red);margin-right:3mm}
+h3{font-size:10.5pt;margin:5mm 0 2mm}
+p{margin:0 0 2.5mm}
+table.t{font-size:8.2pt;margin:1.5mm 0 4mm}
+table.t th{background:#22303f;color:#fff;font:600 7.8pt 'Open Sans';text-align:left;padding:1.6mm 2mm}
+table.t td{border-bottom:1px solid var(--soft);padding:1.6mm 2mm;vertical-align:top}
+table.t tr:nth-child(even) td{background:#fafbfc}
+table.t td:first-child{white-space:nowrap}
+table.t td.n{text-align:right;font-family:'DejaVu Sans Mono',monospace;white-space:nowrap}
+pre.c{background:#1d2733;color:#e3ecf5;font-size:7.8pt;line-height:1.5;padding:3mm 4mm;margin:1.5mm 0 3.5mm;white-space:pre-wrap;break-inside:avoid}
+pre.c .cm{color:#8ea6bf}
+code{font-size:8pt;background:#eef1f4;padding:0 1.2mm}
+.sev{font:700 7.5pt 'Open Sans';padding:0 2mm;color:#fff;border-radius:2px}
+.sev.h{background:var(--red)}.sev.m{background:var(--warn)}.sev.l{background:#6b7785}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+.card{border:1px solid var(--soft);padding:3mm 4mm}
+.card h4{margin:0 0 1.5mm;font-size:9.5pt;color:var(--navy)}
+.stat{display:grid;grid-template-columns:repeat(5,1fr);gap:2.5mm;margin:2mm 0 4mm}
+.stat div{border:1px solid var(--soft);padding:2mm 3mm}
+.stat b{display:block;font:700 13pt Montserrat;color:var(--ink)}
+.stat span{font-size:7.6pt;color:var(--muted)}
+.road{display:grid;grid-template-columns:repeat(5,1fr);gap:2mm;margin:2mm 0 4mm}
+.road div{border-top:4px solid var(--navy);background:var(--navy50);padding:2.5mm 3mm;font-size:8pt}
+.road div:first-child{border-top-color:var(--red)}
+.road b{display:block;color:var(--navy);font-size:9pt;margin-bottom:1mm}
+.road ul{margin:0;padding-left:3.5mm}
+.toc{columns:2;font-size:9pt;margin:2mm 0}.toc div{break-inside:avoid;margin-bottom:1mm}
+.toc span{font-family:'DejaVu Sans Mono',monospace;color:var(--red);margin-right:2mm}
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="grid"></div>
+  <img src="img/len-logo.png" alt="Len">
+  <div class="t">
+    <div class="k">LEN DATA GOVERNANCE · OPENMETADATA <span data-v="live.versi_om"></span></div>
+    <h1>Manual Pengembang</h1>
+    <p>Status pengembangan rinci, model akses, tindak lanjut untuk kebutuhan Staf dan Pengguna, arah pengembangan,
+    serta operasi Medallion dan panel Data Siap Pakai.</p><i></i>
+  </div>
+  <pre id="cover-pre"></pre>
+</section>
+
+<section>
+  <h2><span>§0</span>Isi dan cara membaca</h2>
+  <div class="toc">
+    <div><span>§1</span>Status pengembangan (data langsung dari server)</div>
+    <div><span>§2</span>Model akses dan kapabilitas</div>
+    <div><span>§3</span>Tindak lanjut untuk kebutuhan Staf DG</div>
+    <div><span>§4</span>Tindak lanjut untuk kebutuhan Pengguna (9 pertanyaan)</div>
+    <div><span>§5</span>Arah pengembangan menuju full-power</div>
+    <div><span>§6</span>Medallion dan panel Data Siap Pakai</div>
+    <div><span>§7</span>Rilis dokumen dan data (YYMMDD CC)</div>
+    <div><span>§8</span>Runbook operasi</div>
+  </div>
+  <p>Semua angka di manual ini diambil otomatis oleh <code>docs/manuals/src/rilis.py</code> saat rilis
+  (<span data-v="live.diambil"></span>) dari basis data katalog, status kontainer, berkas rahasia (hanya metadata, tanpa nilai), dan manifest rilis Gold.
+  Manual Staf dan Manual Pengguna sengaja <b>tidak</b> memuat isi manual ini. Status pengembangan hanya ada di sini.</p>
+  <p>Konvensi: <span class="sev h">TINGGI</span> menghambat kebutuhan pengguna atau membuka risiko akses.
+  <span class="sev m">SEDANG</span> mengurangi kualitas jawaban. <span class="sev l">RENDAH</span> berupa perapian.</p>
+
+  <h2 style="margin-top:6mm"><span>§1</span>Status pengembangan</h2>
+  <h3>1.1 Fase</h3>
+  <table class="t" id="tbl-fase"><tr><th style="width:26mm">Fase</th><th style="width:22mm">Status</th><th>Keterangan</th><th style="width:30mm">Penanggung jawab</th></tr></table>
+  <h3>1.2 Runtime</h3>
+  <table class="t" id="tbl-runtime"><tr><th style="width:40mm">Komponen</th><th>Status</th></tr></table>
+  <h3>1.3 Isi katalog</h3>
+  <div class="stat" id="stat"></div>
+  <table class="t" id="tbl-kosong"><tr><th style="width:40mm">Entitas belum terisi</th><th style="width:12mm">Jumlah</th><th>Dampak ke pengguna</th></tr></table>
+  <h3>1.4 Cacat workbook (dimuat <span data-v="live.laporan_cacat"></span>)</h3>
+  <table class="t" id="tbl-cacat"><tr><th>Kategori</th><th style="width:14mm">Jumlah</th><th>Tindak lanjut</th></tr></table>
+</section>
+
+<section class="pb">
+  <h2><span>§2</span>Model akses dan kapabilitas</h2>
+  <p>Penegakan akses memakai kebijakan OpenMetadata (ADR 0001: hak DG-* workbook menjadi policy). Hak layar LenO (DA-, DM-, A-, W-)
+  disimpan sebagai referensi di custom property <code>hakAksesLenO</code> dan <b>tidak</b> ditegakkan oleh katalog.</p>
+  <h3>2.1 Penugasan peran saat ini</h3>
+  <table class="t" id="tbl-peran"><tr><th style="width:40mm">Subjek</th><th style="width:40mm">Role / Policy</th><th>Efek</th></tr></table>
+  <h3>2.2 Aturan kebijakan yang berlaku</h3>
+  <table class="t" id="tbl-rules"><tr><th style="width:30mm">Policy</th><th style="width:52mm">Rule</th><th style="width:16mm">Resource</th><th>Operasi</th><th style="width:16mm">Kondisi</th></tr></table>
+  <h3>2.3 Temuan akses</h3>
+  <table class="t" id="tbl-temuan"><tr><th style="width:8mm">ID</th><th style="width:14mm">Tingkat</th><th>Temuan</th><th>Tindakan</th></tr></table>
+  <h3>2.4 Matriks kapabilitas target per persona</h3>
+  <table class="t">
+    <tr><th>Kapabilitas</th><th>Pengguna</th><th>Pemilik/Steward</th><th>Staf DG (UV-1)</th><th>Pengembang/Admin (UV-3)</th><th>Mekanisme</th></tr>
+    <tr><td>Lihat, cari, ikuti, diskusi</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>OrganizationPolicy ViewAll</td></tr>
+    <tr><td>Ajukan permintaan (Task)</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>DataConsumerPolicy Create/EditTask</td></tr>
+    <tr><td>Ubah deskripsi, tag, tier, sertifikasi</td><td><b>✘ (target)</b></td><td>aset miliknya</td><td>✔</td><td>✔</td><td>pangkas DataConsumerPolicy-EditRule</td></tr>
+    <tr><td>Glosarium, owner, steward, lineage, DQ</td><td>✘</td><td>aset miliknya</td><td>✔</td><td>✔</td><td>DG_UV_1, Owner-Rule</td></tr>
+    <tr><td>Hapus aset</td><td>✘</td><td><b>✘ (target)</b></td><td>✘</td><td>✔</td><td>deny Delete pada Owner-Rule</td></tr>
+    <tr><td>Jalankan uji / profiler</td><td>✘</td><td>✘</td><td>✔ (target)</td><td>✔</td><td>Trigger + pipeline ingestion</td></tr>
+    <tr><td>Domain, produk data, kontrak</td><td>✘</td><td>usul</td><td>✔ (target)</td><td>✔</td><td>perluas DG_UV_1</td></tr>
+    <tr><td>Unduh Gold (panel)</td><td>via Staf</td><td>via Staf</td><td>✔</td><td>✔</td><td>htpasswd per orang → SSO</td></tr>
+    <tr><td>Akun, tim, peran, setelan</td><td>✘</td><td>✘</td><td>✘</td><td>✔</td><td>admin principal</td></tr>
+  </table>
+</section>
+
+<section class="pb">
+  <h2><span>§3</span>Tindak lanjut untuk kebutuhan Staf DG</h2>
+  <p>Kolom "Belum bisa" di Manual Staf diturunkan dari tabel ini. Saat sebuah butir selesai, ubah juga statusnya di Manual Staf (<code>staf.html</code>), lalu buat rilis baru.</p>
+  <table class="t">
+    <tr><th style="width:12mm">ID</th><th style="width:44mm">Kebutuhan Staf</th><th>Pekerjaan pengembang</th><th style="width:22mm">Bergantung</th><th style="width:13mm">Tingkat</th></tr>
+    <tr><td>ST-1</td><td>Akun Staf benar-benar memegang hak UV-1</td><td>Impor keanggotaan tim dari CSV HR/IDS (email, ORG_ID) lalu tambahkan anggota UV-1. Sementara itu, tambahkan Staf secara manual di Settings › Teams › UV-1.</td><td>P3-3, IDS</td><td><span class="sev h">TINGGI</span></td></tr>
+    <tr><td>ST-2</td><td>Menjalankan pemeriksaan mutu dan melihat hasilnya</td><td>Buat koneksi DB ERM (user read-only), jalankan ingestion metadata, lalu test suite terjadwal untuk <span data-v="live.entitas.test_case"></span> test case. Beri DG_UV_1 operasi <code>Trigger</code>.</td><td>Akses DB ERM</td><td><span class="sev h">TINGGI</span></td></tr>
+    <tr><td>ST-3</td><td>Kesegaran data</td><td>Profiler terjadwal dan uji freshness pada kolom waktu pembaruan. Tampilkan di Data Observability.</td><td>ST-2</td><td><span class="sev m">SEDANG</span></td></tr>
+    <tr><td>ST-4</td><td>Membuat kontrak data</td><td>Aktifkan Data Contract (bot <code>datacontractvalidationapplicationbot</code> sudah ada). Buat template dari aturan mutu workbook. Beri DG_UV_1 hak kontrak.</td><td>ST-2</td><td><span class="sev m">SEDANG</span></td></tr>
+    <tr><td>ST-5</td><td>Domain dan produk data</td><td>Perluas loader: Domain dari <code>BUSINESS_DOMAIN</code>, Data Product dari <code>Business_Dataset</code>, owner dari Data Owner. Beri DG_UV_1 hak EditAll pada domain/dataProduct.</td><td>—</td><td><span class="sev m">SEDANG</span></td></tr>
+    <tr><td>ST-6</td><td>Menautkan dokumen kebijakan</td><td>Custom property <code>dokumenKebijakan</code> (tipe URL/markdown) pada table, glossaryTerm, dan dataProduct.</td><td>—</td><td><span class="sev l">RENDAH</span></td></tr>
+    <tr><td>ST-7</td><td>Data siap pakai yang selalu terbaru</td><td>Panel /unduh/ <b>sudah tersedia</b> (§6). Berikutnya: rilis otomatis setelah workbook dimuat ulang, dan akun panel per orang.</td><td>—</td><td><span class="sev l">RENDAH</span></td></tr>
+    <tr><td>ST-8</td><td>Workbook dimuat ulang setelah perbaikan</td><td>Buat ulang token loader (sekarang <span id="tok"></span>), jalankan <code>reload-workbook.sh</code>, lalu buat rilis baru.</td><td>P3-1</td><td><span class="sev h">TINGGI</span></td></tr>
+  </table>
+</section>
+
+<section>
+  <h2><span>§4</span>Tindak lanjut untuk kebutuhan Pengguna</h2>
+  <p>Status per pertanyaan ini identik dengan yang tampil di Manual Pengguna (dihitung dari data yang sama).</p>
+  <table class="t" id="tbl-q9"><tr><th style="width:6mm">#</th><th style="width:48mm">Pertanyaan</th><th style="width:26mm">Status</th><th>Pekerjaan pengembang</th></tr></table>
+</section>
+
+<section class="pb">
+  <h2><span>§5</span>Arah pengembangan menuju full-power</h2>
+  <p>Target: setiap pertanyaan pengguna terjawab dari data hidup (bukan hanya workbook), mutu dan kesegaran dipantau otomatis,
+  data siap pakai diterbitkan dari data transaksi nyata, dan akses mengikuti identitas perusahaan (IDS).</p>
+  <div class="road">
+    <div><b>T0 · Fondasi aman</b><ul><li>IDS SSO (P2)</li><li>Matikan self-signup</li><li>Pangkas kebijakan (§2.3)</li><li>Keanggotaan tim</li><li>Token loader 60–90 hari</li></ul></div>
+    <div><b>T1 · Sumber nyata</b><ul><li>Konektor DB ERM (read-only)</li><li>Ingestion metadata terjadwal</li><li>Lineage dan usage otomatis</li><li>Workbook menjadi pelengkap</li></ul></div>
+    <div><b>T2 · Mutu dan kesegaran</b><ul><li>Test suite terjadwal</li><li>Profiler dan freshness</li><li>Alerts (email/Teams)</li><li>Incident Manager</li></ul></div>
+    <div><b>T3 · Produk dan kontrak</b><ul><li>Domain dan Data Product</li><li>Data Contract + validasi</li><li>Alur sertifikasi (governance workflow)</li><li>Metric dengan rumus</li></ul></div>
+    <div><b>T4 · Medallion nyata dan AI</b><ul><li>ERM → Bronze/Silver/Gold di skema gudang</li><li>Panel lewat SSO dan API</li><li>MCP dan auto-klasifikasi</li><li>Data Insights</li></ul></div>
+  </div>
+  <figure class="keep" style="margin:0">
+  <svg viewBox="0 0 700 250" width="100%" font-family="Open Sans, Arial" font-size="10">
+    <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#54595F"/></marker></defs>
+    <g stroke="#C4C4C4" fill="#fff"><rect x="10" y="20" width="110" height="44"/><rect x="10" y="80" width="110" height="44"/><rect x="10" y="140" width="110" height="44" stroke-dasharray="4 3"/></g>
+    <g fill="#3B3B3B"><text x="20" y="38" font-weight="600">Workbook</text><text x="20" y="54" fill="#838282">governance (.xlsx)</text>
+      <text x="20" y="98" font-weight="600">DB ERM (LenO)</text><text x="20" y="114" fill="#838282">T1 · read-only</text>
+      <text x="20" y="158" font-weight="600">Sistem SDM / lain</text><text x="20" y="174" fill="#838282">T4</text></g>
+    <g fill="#EEF3F9" stroke="#194A80"><rect x="160" y="20" width="100" height="164"/><rect x="275" y="20" width="100" height="164"/><rect x="390" y="20" width="100" height="164"/></g>
+    <g font-weight="700" fill="#194A80" font-size="11"><text x="168" y="40">Bronze</text><text x="283" y="40">Silver</text><text x="398" y="40">Gold</text></g>
+    <g fill="#515151" font-size="8.5"><text x="168" y="60">salinan apa adanya</text><text x="168" y="74">per sheet / tabel</text>
+      <text x="283" y="60">rapi, tanpa duplikat</text><text x="283" y="74">catatan_mutu</text><text x="283" y="88">cek referensi</text>
+      <text x="398" y="60">gabungan siap pakai</text><text x="398" y="74">kolom berbahasa</text><text x="398" y="88">Indonesia</text><text x="398" y="102">CSV · XLSX</text></g>
+    <g fill="#fff" stroke="#DA0000"><rect x="530" y="20" width="160" height="44"/><rect x="530" y="80" width="160" height="44"/><rect x="530" y="140" width="160" height="44"/></g>
+    <g fill="#3B3B3B"><text x="540" y="38" font-weight="600">Panel /unduh/</text><text x="540" y="54" fill="#838282">rilis YYMMDD CC</text>
+      <text x="540" y="98" font-weight="600">Dashboard</text><text x="540" y="114" fill="#838282">Excel · Power BI · Looker</text>
+      <text x="540" y="158" font-weight="600">Katalog (OpenMetadata)</text><text x="540" y="174" fill="#838282">metadata tiap lapisan + lineage</text></g>
+    <g stroke="#54595F" marker-end="url(#a)" fill="none"><path d="M120 42H158"/><path d="M120 102H158" stroke-dasharray="4 3"/><path d="M120 162H158" stroke-dasharray="4 3"/>
+      <path d="M260 100H273"/><path d="M375 100H388"/><path d="M490 42H528"/><path d="M490 102H528"/><path d="M490 162H528" stroke-dasharray="4 3"/></g>
+    <text x="10" y="212" fill="#54595F" font-size="9">Garis penuh: sudah berjalan (rilis <tspan font-weight="700" id="svg-rel"></tspan>). Garis putus-putus: target T1–T4.</text>
+    <text x="10" y="228" fill="#54595F" font-size="9">Workbook saat ini juga dimuat langsung ke katalog oleh loader/om_loader.py (tidak lewat Medallion).</text>
+  </svg>
+  </figure>
+  <h3>Kapabilitas OpenMetadata 2.0.7 yang sudah terpasang tetapi belum dipakai</h3>
+  <table class="t">
+    <tr><th style="width:52mm">Kapabilitas</th><th>Bukti di server</th><th style="width:30mm">Dipakai untuk</th></tr>
+    <tr><td>Governance workflow (persetujuan)</td><td>tabel <code>act_*</code> (Flowable), 1 workflowDefinition</td><td>Q5 sertifikasi, ST-4</td></tr>
+    <tr><td>Data Contract + validasi</td><td>bot <code>datacontractvalidationapplicationbot</code>, tabel <code>data_contract_entity</code></td><td>Q4</td></tr>
+    <tr><td>Auto-klasifikasi PII</td><td>bot <code>autoclassification-bot</code></td><td>Q7 setelah T1</td></tr>
+    <tr><td>MCP (akses asisten AI ke katalog)</td><td>bot <code>mcpapplicationbot</code></td><td>Q1–Q9 lewat chat</td></tr>
+    <tr><td>Data Insights</td><td>bot <code>datainsightsapplicationbot</code></td><td>KPI kepemilikan dan deskripsi</td></tr>
+  </table>
+</section>
+
+<section class="pb">
+  <h2><span>§6</span>Medallion dan panel Data Siap Pakai</h2>
+  <div class="grid2">
+    <div class="card"><h4>Lokasi</h4>
+      <p><code>deploy/openmetadata/medallion/build_medallion.py</code>: Bronze → Silver → Gold (stdlib + openpyxl).<br>
+      Bronze/Silver: <code>/srv/openmetadata/medallion/work/&lt;rid&gt;/</code>. Hanya di server, tidak disajikan.<br>
+      Gold + panel: <code>/srv/openmetadata/medallion/panel/</code>, di-mount <i>read-only</i> ke gateway sebagai <code>/unduh/</code>.</p></div>
+    <div class="card"><h4>Akses panel</h4>
+      <p>nginx <code>auth_basic</code>. Hash di <code>/srv/openmetadata/secrets/unduh.htpasswd</code>. Saat ini ada
+      <b data-v="live.panel_akun"></b> akun. Satu akun untuk satu orang:
+      <code>scripts/panel-account.sh &lt;user&gt;</code>. Kata sandi hanya tampil sekali.
+      Target T4: SSO IDS (oauth2-proxy) menggantikan basic auth.</p></div>
+  </div>
+  <h3>Aturan Silver</h3>
+  <table class="t">
+    <tr><th style="width:52mm">Aturan</th><th>Catatan rilis ini</th></tr>
+    <tr><td>Trim spasi, rapikan spasi ganda</td><td>semua sheet kecuali Library</td></tr>
+    <tr><td>Placeholder <code>0</code>, <code>Not Found</code>, <code>-</code>, <code>n/a</code> menjadi kosong</td><td>mis. SYSTEM_NAME "0", TABLE_NAME "Not Found"</td></tr>
+    <tr><td>Hapus baris kembar identik</td><td>—</td></tr>
+    <tr><td>Kolom <code>catatan_mutu</code> untuk referensi rusak</td><td id="silver-notes"></td></tr>
+  </table>
+  <h3>Dataset Gold rilis <span data-v="rilis"></span></h3>
+  <table class="t" id="tbl-gold"><tr><th style="width:38mm">Berkas</th><th class="n" style="width:12mm">Baris</th><th>Kolom</th></tr></table>
+  <h3>Menambah dataset Gold</h3>
+  <p>Tambahkan entri di <code>GOLD_INFO</code> (nama, isi, pertanyaan yang dijawab) dan bangun barisnya di fungsi <code>gold()</code>.
+  Panel, XLSX, manifest, dan Manual Staf Bab 4 mengikuti otomatis pada rilis berikutnya. Saat T1 berjalan, tambahkan dataset dari data transaksi
+  dengan pola yang sama: Bronze = ekstrak mentah, Silver = tipe dan referensi diperiksa, Gold = model bintang untuk dashboard.</p>
+</section>
+
+<section>
+  <h2><span>§7</span>Rilis dokumen dan data (YYMMDD CC)</h2>
+  <p>Satu perintah menghasilkan rilis Gold dan tiga manual dengan nomor yang sama. <b>CC</b> adalah iterasi global: nilai CC tertinggi
+  dari PDF di <code>docs/manuals/</code> dan dari folder rilis panel, ditambah 1. Rilis lama tidak pernah ditimpa: build berhenti bila folder rilis sudah ada.</p>
+<pre class="c"><span class="cm"># lihat nomor rilis berikutnya</span>
+python3 docs/manuals/src/rilis.py --dry-run
+<span class="cm"># rilis: Gold → panel /unduh/, status langsung, 3 PDF "YYMMDD CC [Nama Dokumen].pdf", indeks docs/manuals/README.md</span>
+python3 docs/manuals/src/rilis.py [--workbook "templates/&lt;workbook&gt;.xlsx"]</pre>
+  <table class="t">
+    <tr><th style="width:52mm">Berkas sumber</th><th>Isi</th></tr>
+    <tr><td><code>src/pengembang.html</code></td><td>manual ini: status, akses, tindak lanjut, arah, operasi</td></tr>
+    <tr><td><code>src/staf.html</code></td><td>Staf DG dan Pimpinan: hanya Sudah bisa / Belum bisa, prosedur, data siap pakai. Tanpa status aplikasi.</td></tr>
+    <tr><td><code>src/pengguna.html</code></td><td>Pengguna: cara pakai dan 9 pertanyaan dengan Tersedia / Belum ada / Belum bisa. Tanpa detail aplikasi atau port.</td></tr>
+    <tr><td><code>src/base.css</code>, <code>common.js</code>, <code>fonts/</code>, <code>img/</code></td><td>dasar bersama. Angka diisi dari <code>build/data.js</code> (dibuat saat rilis).</td></tr>
+  </table>
+  <p><b>Batas isi per audiens:</b> nama orang, port, alamat kontainer, nama berkas rahasia, dan status fase hanya boleh ada di Manual Pengembang.
+  Repo ini publik: PDF yang memuat alamat server internal sebaiknya tidak di-commit tanpa keputusan pemilik.</p>
+</section>
+
+<section class="pb">
+  <h2><span>§8</span>Runbook operasi</h2>
+  <p>Semua perintah dijalankan dari salinan live <code>/opt/openmetadata/deploy</code> (project compose <code>openmetadata</code>). Ubah di repo, lalu salin ke salinan live.</p>
+<pre class="c"><span class="cm"># kesehatan</span>
+sudo docker compose -p openmetadata ps ; scripts/verify.sh
+curl -s http://127.0.0.1/_gateway/health
+<span class="cm"># mulai / henti / log</span>
+sudo docker compose -p openmetadata up -d ; sudo docker compose -p openmetadata stop
+sudo docker compose -p openmetadata logs -f --tail=200 openmetadata-server
+<span class="cm"># terapkan perubahan gateway (nginx.conf, tema, mount panel)</span>
+sudo docker compose -p openmetadata up -d gateway ; sudo docker compose -p openmetadata exec gateway nginx -t
+<span class="cm"># backup (timer harian 01:30 → /srv/openmetadata/backup) dan pemulihan</span>
+sudo scripts/backup.sh
+sudo docker compose -p openmetadata stop openmetadata-server
+sudo docker compose -p openmetadata exec -T postgresql pg_restore -U postgres -d openmetadata_db --clean --if-exists \
+  &lt; /srv/openmetadata/backup/openmetadata_db-&lt;waktu&gt;.dump      <span class="cm"># butuh openmetadata.env + jwt/ yang sama</span>
+sudo docker compose -p openmetadata start openmetadata-server   <span class="cm"># lalu Settings › Applications › Search Indexing › Run</span>
+<span class="cm"># token loader: UI › Settings › Bots/Users › admin › Access Token (60–90 hari) → OM_TOKEN di secrets/loader.env</span>
+scripts/reload-workbook.sh "templates/&lt;workbook&gt;.xlsx"       <span class="cm"># muat ulang + selisih cacat</span>
+<span class="cm"># akun panel /unduh/</span>
+scripts/panel-account.sh &lt;user&gt; ; scripts/panel-account.sh --remove &lt;user&gt;
+<span class="cm"># fase 2: IDS (butuh client IDS + DNS dev-data.len.co.id)</span>
+scripts/enable-ids.sh</pre>
+  <h3>Gangguan umum</h3>
+  <table class="t">
+    <tr><th style="width:56mm">Gejala</th><th>Penyebab dan tindakan</th></tr>
+    <tr><td>Halaman "sedang memulai" (502/503)</td><td>Server OM belum sehat. Cek <code>ps</code>/<code>logs</code>. OpenSearch butuh RAM: lihat <code>mem_limit</code>.</td></tr>
+    <tr><td>Loader: HTTP 401 "Expired token!"</td><td>Token kedaluwarsa. Buat token baru (ST-8).</td></tr>
+    <tr><td>/unduh/ meminta login terus</td><td>Akun belum ada atau hash salah. Jalankan ulang <code>panel-account.sh</code>. Periksa mount <code>unduh.htpasswd</code>.</td></tr>
+    <tr><td>/unduh/ 404</td><td>Belum ada rilis atau mount panel belum aktif. Jalankan <code>rilis.py</code>, lalu <code>up -d gateway</code>.</td></tr>
+    <tr><td>Tema atau nama Len hilang</td><td>Mount <code>./ui/leno-theme</code> atau <code>sub_filter</code> gateway berubah. Cek <code>nginx -t</code>.</td></tr>
+  </table>
+</section>
+
+<script src="build/data.js"></script>
+<script src="common.js"></script>
+<script>
+window.render = (R) => {
+  const L = R.live, e = L.entitas, has = (n) => n > 0;
+  const row = (id, cells) => { const tr = document.createElement('tr'); tr.innerHTML = cells.map((c) => `<td>${c}</td>`).join(''); document.getElementById(id).appendChild(tr); };
+  const sev = (s) => `<span class="sev ${s[0].toLowerCase()}">${s}</span>`;
+  const tokenTxt = L.token_loader_aktif ? `aktif s.d. ${L.token_loader_kedaluwarsa}` : `kedaluwarsa ${L.token_loader_kedaluwarsa}`;
+  document.getElementById('tok').textContent = tokenTxt;
+  document.getElementById('svg-rel').textContent = R.rilis;
+  document.getElementById('cover-pre').textContent =
+    `rilis      ${R.rilis}  (${R.tanggal})\nkatalog    ${L.versi_om} · auth ${L.auth.provider} · self-signup ${L.auth.self_signup}\n` +
+    `gold       ${R.gold.gold.length} dataset · ${R.gold.gold.reduce((a, d) => a + d.baris, 0).toLocaleString('id-ID')} baris · panel /unduh/\n` +
+    `diambil    ${L.diambil}`;
+
+  const auth = L.auth.provider === 'basic';
+  [['Fase 1 · Katalog', 'Berjalan', `OpenMetadata ${L.versi_om}, login ${L.auth.provider}, gateway + tema Len, backup harian (${L.jumlah_backup} dump, terakhir ${L.backup_terakhir}).`, 'UV-3'],
+   ['Fase 2 · IDS SSO', auth ? 'Terblokir' : 'Selesai', auth ? `Menunggu client IDS (P2-1) dan DNS dev-data.len.co.id (${L.dns}) (P2-2). Setelah itu jalankan enable-ids.sh (P2-3).` : 'IDS aktif.', 'Tim IDS, Tim Jaringan, UV-3'],
+   ['Fase 3 · Workbook', 'Dimuat, ada cacat', `${e.tabel} tabel, ${e.kolom_katalog} kolom, ${e.dashboard} layar, ${e.istilah_glosarium} istilah, ${e.test_case} test case. ${Object.values(L.cacat).reduce((a, b) => a + b, 0)} cacat. Token loader ${tokenTxt}.`, 'UG-1 / UV-1, UV-3'],
+   ['Fase 3b · Medallion', 'Berjalan', `Rilis ${R.rilis}: ${R.gold.gold.length} dataset Gold, panel /unduh/ dengan login (${L.panel_akun} akun).`, 'UV-3'],
+   ['Fase 4 · Konteks lengkap', has(e.domain) || has(e.kontrak_data) ? 'Berjalan' : 'Belum mulai', `Domain ${e.domain}, produk data ${e.produk_data}, kontrak ${e.kontrak_data}, hasil uji ${e.hasil_uji}, pipeline ${e.pipeline}, metrik ${e.metrik}.`, 'UV-1, UV-3'],
+  ].forEach(([f, s, k, o]) => row('tbl-fase', [`<b>${f}</b>`, chip(s), k, o]));
+
+  L.layanan.forEach((x) => row('tbl-runtime', [`<code>${esc(x.nama)}</code>`, esc(x.status)]));
+  row('tbl-runtime', ['Autentikasi', `${esc(L.auth.provider)} · self-signup <b>${esc(L.auth.self_signup)}</b>`]);
+  row('tbl-runtime', ['DNS dev-data.len.co.id', esc(L.dns)]);
+  row('tbl-runtime', ['Token loader', esc(tokenTxt)]);
+  row('tbl-runtime', ['Akun manusia', `${L.akun.manusia} (admin ${L.akun.admin}, non-admin ${L.akun.non_admin})`]);
+
+  const st = document.getElementById('stat');
+  [['tabel', 'tabel'], ['kolom_katalog', 'kolom'], ['dashboard', 'layar LenO'], ['istilah_glosarium', 'istilah'], ['test_case', 'test case'],
+   ['lineage_edge', 'relasi lineage'], ['tim', 'tim'], ['hasil_uji', 'hasil uji'], ['kontrak_data', 'kontrak data'], ['produk_data', 'produk data']]
+    .forEach(([k, l]) => { st.insertAdjacentHTML('beforeend', `<div><b>${fmt(e[k])}</b><span>${l}</span></div>`); });
+  [['kontrak_data', 'Q4 tidak terjawab'], ['produk_data', 'Q3 hanya per tabel'], ['domain', 'pengelompokan bisnis tidak ada'],
+   ['hasil_uji', 'Q5 "teruji" tidak terjawab'], ['pipeline', 'Q5 kesegaran, Q6 pipeline'], ['model_ml', 'Q6 model ML'],
+   ['metrik', 'Q1 rumus metrik'], ['percakapan', 'Q9 belum ada catatan'], ['pengumuman', '—']]
+    .filter(([k]) => e[k] === 0).forEach(([k, d]) => row('tbl-kosong', [`<code>${k}</code>`, '0', d]));
+  if (L.sertifikasi_terpasang === 0) row('tbl-kosong', ['<code>sertifikasi</code>', '0', 'Q5 "tersertifikasi" tidak terjawab']);
+
+  const fix = { 'Glosarium kosong': 'UG-1 isi Business_Glossary', 'Tabel Not Found': 'UV-1: tabel SDM (DS001/DS002) belum punya sistem; daftarkan atau keluarkan',
+    'Tanpa klasifikasi': 'UG-1 tambah Data_Security_Access', 'Kolom kembar': 'UV-1 pecah elemen per kolom atau ganti nama kolom',
+    'Konflik klasifikasi': 'UG-1 putuskan (dipakai: terketat)', 'Lineage tanpa kolom': 'perbaiki FIELD_NAME' };
+  Object.entries(L.cacat).forEach(([k, v]) => row('tbl-cacat', [k, `<span style="font-family:monospace">${v}</span>`, fix[k] || '']));
+
+  L.peran_tim.forEach(([t, r]) => row('tbl-peran', [`tim <code>${esc(t)}</code>`, `<code>${esc(r)}</code>`,
+    t === 'Organization' ? 'default untuk semua akun' : `${L.anggota_uv1} anggota`]));
+  row('tbl-peran', ['tim <code>Organization</code>', '<code>OrganizationPolicy</code>', 'ViewAll; owner → All; tanpa owner → EditOwners']);
+  row('tbl-peran', ['akun admin', 'admin principal', `${L.akun.admin} akun manusia`]);
+  Object.entries(L.kebijakan).forEach(([p, rs]) => rs.forEach((r) =>
+    row('tbl-rules', [`<code>${esc(p)}</code>`, esc(r.rule), esc(r.resource), esc(r.operasi), esc(r.kondisi)])));
+
+  const T = [];
+  if (L.auth.self_signup === 'true') T.push(['TINGGI', 'Self-signup aktif pada login basic. Siapa pun di jaringan bisa mendaftar dan langsung mendapat DataConsumer.', '<code>AUTHENTICATION_ENABLE_SELF_SIGNUP=false</code> di secrets/openmetadata.env, lalu restart server. Akun dibuat Admin sampai IDS aktif.']);
+  T.push(['TINGGI', 'DataConsumerPolicy-EditRule memberi semua akun EditDescription, EditTags, EditTier, EditCertification, EditGlossaryTerms. Pengguna bisa mengubah keterangan resmi tanpa persetujuan.', 'Sisakan ViewAll + Task. Perubahan lewat Request description/tags yang disetujui pemilik.']);
+  T.push(['TINGGI', 'OrganizationPolicy-Owner-Rule: isOwner() → All. Setelah keanggotaan tim diimpor, semua anggota tim pemilik (mis. UG-1) bisa menghapus aset.', 'Ganti dengan Edit* untuk owner, lalu tambah rule deny Delete untuk non-admin.']);
+  T.push(['SEDANG', 'OrganizationPolicy-NoOwner-Rule: siapa pun boleh mengklaim kepemilikan aset yang belum punya owner. Aset baru dari ingestion (T1) akan terdampak.', 'Batasi ke tim UV-1, atau tetapkan owner otomatis saat ingestion.']);
+  if (L.anggota_uv1 === 0) T.push(['TINGGI', 'Tim UV-1 belum punya anggota, sehingga hak DG_UV_1 tidak dipakai siapa pun.', 'ST-1: tambahkan Staf ke UV-1.']);
+  if (L.nonadmin_dengan_role_bot > 0) T.push(['SEDANG', `${L.nonadmin_dengan_role_bot} akun non-admin memegang role bot (GovernanceBotRole, ApplicationBotRole, ApplicationBotImpersonationRole).`, 'Cabut role bot dari akun manusia. Gunakan DataGovernance_UV_1 lewat tim.']);
+  if (L.akun.admin > 2) T.push(['SEDANG', `${L.akun.admin} akun manusia berstatus admin.`, 'Least privilege: admin hanya operator UV-3. Lainnya lewat peran tim.']);
+  T.push(['SEDANG', 'Lalu lintas HTTP tanpa TLS (port 80/8585), termasuk login basic dan panel.', 'Sertifikat internal di gateway bersamaan dengan IDS.']);
+  T.push(['RENDAH', 'Panel /unduh/ memakai basic auth terpisah dari katalog.', 'Satu akun per orang sekarang. SSO IDS pada T4.']);
+  T.forEach(([s, f, a], i) => row('tbl-temuan', [`A${i + 1}`, sev(s), f, a]));
+
+  const S = (ok, a = 'Tersedia', b = 'Belum ada') => (ok ? a : b);
+  [['Arti metrik dan cara hitung', 'Tersedia / ' + S(has(e.metrik)), 'Isi 8 istilah kosong (UG-1). Buat entitas Metric dengan rumus untuk KPI risiko (T3).'],
+   ['Dataset yang mengisi dashboard', S(has(e.lineage_edge)), 'Daftarkan dashboard non-ERM (Power BI/Excel) sebagai dashboard service + lineage (T1).'],
+   ['Pemilik produk data', 'Tersedia / ' + S(has(e.produk_data)), 'ST-5: Domain + Data Product dari workbook.'],
+   ['Kontrak data', S(has(e.kontrak_data)), 'ST-4.'],
+   ['Segar, teruji, sertifikasi, terpercaya', S(has(e.hasil_uji), 'Tersedia', 'Belum bisa'), 'ST-2, ST-3, alur sertifikasi (T3). Tier sudah ada di sebagian aset.'],
+   ['Dampak perubahan kolom', S(has(e.lineage_edge)), 'Lineage pipeline/ML ikut setelah T1. Perbaiki L025.'],
+   ['Kolom sensitif', 'Tersedia', 'Lengkapi 3 elemen tanpa klasifikasi. Auto-klasifikasi PII setelah T1.'],
+   ['Glosarium, kebijakan, standar', 'Tersedia / Belum ada', 'ST-6: tautan dokumen kebijakan.'],
+   ['Keputusan, asumsi, insiden, percakapan', 'Tersedia / ' + S(has(e.percakapan)), 'Konvensi KEPUTUSAN:/ASUMSI:/INSIDEN: sudah ada di Manual Pengguna. Pertimbangkan Announcement dan Incident Manager (T2).'],
+  ].forEach(([q, s, a], i) => row('tbl-q9', [i + 1, q, s.split(' / ').map(chip).join(' '), a]));
+
+  for (const d of R.gold.gold) row('tbl-gold', [`<code>${esc(d.file)}</code>`, `<span style="font-family:monospace">${fmt(d.baris)}</span>`,
+    `<span style="font-size:7.4pt;color:var(--text2)">${esc(d.kolom.join(', '))}</span>`]);
+  document.getElementById('silver-notes').textContent = Object.entries(R.gold.silver_catatan_mutu).filter(([, v]) => v)
+    .map(([k, v]) => `${k}: ${v} baris`).join('; ') || 'tidak ada';
+};
+</script>
+</body>
+</html>
