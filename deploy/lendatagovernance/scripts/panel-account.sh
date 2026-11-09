@@ -7,7 +7,7 @@
 # Hashes live in $DATA/secrets/unduh.htpasswd (mounted read-only into the gateway); passwords are never stored.
 # Hand each password to its owner directly; rotate when someone leaves UV-1. Replaced by IDS login in phase 2.
 set -euo pipefail
-DATA=${OM_DATA_DIR:-/srv/openmetadata}
+DATA=${OM_DATA_DIR:-/srv/lendatagovernance}
 F=$DATA/secrets/unduh.htpasswd
 if [[ ${1:-} == --grc ]]; then F=$DATA/secrets/unduh-grc.htpasswd; shift; fi
 touch "$F"; chmod 644 "$F"          # hashes only; the gateway's nginx user must read it

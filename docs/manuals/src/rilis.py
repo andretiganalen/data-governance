@@ -23,9 +23,9 @@ from pathlib import Path
 SRC = Path(__file__).resolve().parent
 OUT = SRC.parent                                   # docs/manuals
 REPO = SRC.parents[2]
-DEPLOY = REPO / "deploy/openmetadata"
-LIVE = Path("/opt/openmetadata/deploy")
-DATA = Path("/srv/openmetadata")
+DEPLOY = REPO / "deploy/lendatagovernance"
+LIVE = Path("/opt/lendatagovernance/deploy")
+DATA = Path("/srv/lendatagovernance")
 MEDALLION = DATA / "medallion"
 WORKBOOK = REPO / "templates/261016 Rev.0.1_Data Governance_ERM.xlsx"
 DOCS = [  # (source html, nama dokumen)

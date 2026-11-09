@@ -3,7 +3,7 @@
 # Usage: scripts/reload-workbook.sh [path/to/workbook.xlsx]
 set -euo pipefail
 WB=${1:-"/home/ubuntu/data-governance/templates/261016 Rev.0.1_Data Governance_ERM.xlsx"}
-REP=/srv/openmetadata/reports
+REP=/srv/lendatagovernance/reports
 [[ -f $WB ]] || { echo "Workbook not found: $WB"; exit 1; }
 count() { grep -m1 -oP '^## Cacat \(\K[0-9]+' "$1" 2>/dev/null || echo "?"; }
 PREV=$(ls -t $REP/workbook-defects-*.md 2>/dev/null | grep -v -- '-dry' | head -1 || true)

@@ -1,23 +1,23 @@
 # OpenMetadata 2.0.7 — dev-data.len.co.id (server jitsi 192.168.125.14)
 # Plan: plan/openmetadata_deployment_plan.md
-# Data & secrets live OUTSIDE git in ${OM_DATA_DIR:-/srv/openmetadata}.
-name: openmetadata
+# Data & secrets live OUTSIDE git in ${OM_DATA_DIR:-/srv/lendatagovernance}.
+name: lendatagovernance
 
 x-om-env: &om-env
   env_file:
     - ./openmetadata.base.env                       # non-secret settings (in git)
-    - ${OM_DATA_DIR:-/srv/openmetadata}/secrets/openmetadata.env  # secrets + IDS (not in git)
+    - ${OM_DATA_DIR:-/srv/lendatagovernance}/secrets/openmetadata.env  # secrets + IDS (not in git)
   volumes:
-    - ${OM_DATA_DIR:-/srv/openmetadata}/secrets/jwt:/opt/openmetadata/conf/jwt:ro
+    - ${OM_DATA_DIR:-/srv/lendatagovernance}/secrets/jwt:/opt/openmetadata/conf/jwt:ro   # path inside the OpenMetadata image
 
 services:
   postgresql:
     image: postgres:15-bookworm
     restart: unless-stopped
     command: ["postgres", "-c", "work_mem=10MB", "-c", "max_connections=200"]
-    env_file: [ "${OM_DATA_DIR:-/srv/openmetadata}/secrets/postgres.env" ]
+    env_file: [ "${OM_DATA_DIR:-/srv/lendatagovernance}/secrets/postgres.env" ]
     volumes:
-      - ${OM_DATA_DIR:-/srv/openmetadata}/postgres:/var/lib/postgresql/data
+      - ${OM_DATA_DIR:-/srv/lendatagovernance}/postgres:/var/lib/postgresql/data
       - ./postgres/init:/docker-entrypoint-initdb.d:ro
     networks: [om-internal]
     mem_limit: 1g
@@ -39,7 +39,7 @@ services:
     ulimits:
       nofile: { soft: 65536, hard: 65536 }
     volumes:
-      - ${OM_DATA_DIR:-/srv/openmetadata}/opensearch:/usr/share/opensearch/data
+      - ${OM_DATA_DIR:-/srv/lendatagovernance}/opensearch:/usr/share/opensearch/data
     networks: [om-internal]
     mem_limit: 2g
     healthcheck:
@@ -85,9 +85,9 @@ services:
       - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./gateway/html:/usr/share/nginx/html:ro
       - ./ui/leno-theme:/usr/share/nginx/leno:ro
-      - ${OM_DATA_DIR:-/srv/openmetadata}/medallion/panel:/usr/share/nginx/unduh:ro     # panel Data Siap Pakai (Gold)
-      - ${OM_DATA_DIR:-/srv/openmetadata}/secrets/unduh.htpasswd:/etc/nginx/unduh.htpasswd:ro
-      - ${OM_DATA_DIR:-/srv/openmetadata}/secrets/unduh-grc.htpasswd:/etc/nginx/unduh-grc.htpasswd:ro   # E-GRC (Confidential)
+      - ${OM_DATA_DIR:-/srv/lendatagovernance}/medallion/panel:/usr/share/nginx/unduh:ro     # panel Data Siap Pakai (Gold)
+      - ${OM_DATA_DIR:-/srv/lendatagovernance}/secrets/unduh.htpasswd:/etc/nginx/unduh.htpasswd:ro
+      - ${OM_DATA_DIR:-/srv/lendatagovernance}/secrets/unduh-grc.htpasswd:/etc/nginx/unduh-grc.htpasswd:ro   # E-GRC (Confidential)
     networks: [om-egress]
     mem_limit: 128m
 

@@ -2,7 +2,7 @@
 
 Usage:
   python3 build_medallion.py --release "261106 01" --workbook <file.xlsx> [--egrc <E-GRC.xlsx>]
-                             [--root /srv/openmetadata/medallion] [--manifest-out <path.json>]
+                             [--root /srv/lendatagovernance/medallion] [--manifest-out <path.json>]
 
 Layout under --root:
   work/<rid>/bronze/*.csv     sheet workbook apa adanya (hanya di server)
@@ -439,7 +439,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--release", required=True, help='"YYMMDD CC"')
     ap.add_argument("--workbook", required=True)
-    ap.add_argument("--root", default="/srv/openmetadata/medallion")
+    ap.add_argument("--root", default="/srv/lendatagovernance/medallion")
     ap.add_argument("--assets", default=str(HERE / "panel-assets"), help="fonts + logo for the panel")
     ap.add_argument("--egrc", help="Bronze E-GRC (.xlsx) → Silver/Gold E-GRC (egrc.py)")
     ap.add_argument("--manifest-out")

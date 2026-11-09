@@ -1,0 +1,7 @@
+[Unit]
+Description=Len Data Governance (OpenMetadata) daily pg_dump
+After=docker.service
+[Service]
+Type=oneshot
+User=ubuntu
+ExecStart=/opt/lendatagovernance/deploy/scripts/backup.sh

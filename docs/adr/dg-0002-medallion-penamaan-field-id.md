@@ -2,7 +2,7 @@
 
 - Status: Diterima (2026-11-06). Berlaku untuk semua dataset Medallion baru, mulai dari E-GRC.
 - Masa pakai: dirancang untuk 10 tahun (2026–2036). Perubahan hanya lewat ADR baru yang menggantikan bagian tertentu.
-- Penegakan: `deploy/openmetadata/medallion/egrc.py` → `load_registry()` dan validasi keluaran. Build **gagal** bila standar dilanggar.
+- Penegakan: `deploy/lendatagovernance/medallion/egrc.py` → `load_registry()` dan validasi keluaran. Build **gagal** bila standar dilanggar.
 
 ## Konteks
 Data akan datang dari banyak sistem (ERM, E-GRC, SDM, keuangan, …) selama bertahun-tahun, dikerjakan oleh orang yang berganti-ganti.
@@ -12,7 +12,7 @@ Workbook ERM memakai `F001…F105` per workbook. Pola itu hanya muat 999 elemen 
 ## 1. Lapisan
 | Lapisan | Isi | Lokasi | Akses |
 | :-- | :-- | :-- | :-- |
-| Bronze | Berkas sumber apa adanya + CSV per sheet (nomor baris asli) + SHA-256 | `/srv/openmetadata/medallion/work/<rid>/bronze/<sistem>/` | server saja |
+| Bronze | Berkas sumber apa adanya + CSV per sheet (nomor baris asli) + SHA-256 | `/srv/lendatagovernance/medallion/work/<rid>/bronze/<sistem>/` | server saja |
 | Silver | Data bersih: dim, fact, bridge. Satu fakta satu tempat. Nilai sumber tidak diubah diam-diam. | `…/work/<rid>/silver/<sistem>/` | server saja |
 | Gold | Tabel datar siap dashboard + kamus data + temuan mutu | `…/panel/rilis/<rid>/[<domain>/]` | panel `/unduh/` sesuai sensitivitas |
 
@@ -88,7 +88,7 @@ Format: `<DOMAIN>-F<NNNN>`, contoh `GRC-F0012`, `CMN-F0013`. Regex: `^[A-Z]{3,4}
 - Kode entitas grup dikelola di `medallion/reference/entitas.csv`, dengan status `Usulan` sampai disetujui pemilik data.
 
 ## 6. Registry dan penegakan
-- Registry tunggal: `deploy/openmetadata/medallion/registry/field_registry.csv`, berisi metadata saja (tanpa nilai), aman untuk repo.
+- Registry tunggal: `deploy/lendatagovernance/medallion/registry/field_registry.csv`, berisi metadata saja (tanpa nilai), aman untuk repo.
 - Menambah kolom: tambahkan baris registry (field_id berikutnya di domainnya, definisi, satuan, sensitivitas, turunan), lalu pakai di ETL.
 - Build menolak: format field_id salah, field_id/kolom ganda, kata kelas tidak cocok, nama tabel tidak standar, kolom keluaran tidak terdaftar.
 - `gold_<domain>_kamus_data` dibuat otomatis dari registry + tabel pemakai, dan menjadi jawaban "apa arti kolom ini".

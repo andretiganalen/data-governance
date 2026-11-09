@@ -5,7 +5,7 @@ Main workspace for the data governance initiative.
 ```
 data-governance/
 ├── deploy/
-│   ├── openmetadata/   OpenMetadata 2.0.7 stack (mirrored live at /opt/openmetadata/deploy)
+│   ├── openmetadata/   OpenMetadata 2.0.7 stack (mirrored live at /opt/lendatagovernance/deploy)
 │   └── ui/             Len theme for the OpenMetadata gateway
 ├── plan/               Deployment plans and UI standard (Len classic)
 ├── docs/adr/           Architecture decision records

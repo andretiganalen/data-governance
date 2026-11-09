@@ -12,12 +12,12 @@ Deploys OpenMetadata 2.0.7 on server jitsi (192.168.125.14). Follows `plan/openm
 |---|---|
 | `compose.yaml` | postgresql 15, opensearch 3.2.0, migrate, openmetadata-server, gateway (nginx) |
 | `openmetadata.base.env` | Non-secret settings (git) |
-| `/srv/openmetadata/secrets/` | DB passwords, Fernet key, JWT keys, IDS client (NOT in git — back up to vault) |
-| `/srv/openmetadata/{postgres,opensearch,backup}` | Data |
+| `/srv/lendatagovernance/secrets/` | DB passwords, Fernet key, JWT keys, IDS client (NOT in git — back up to vault) |
+| `/srv/lendatagovernance/{postgres,opensearch,backup}` | Data |
 
 ## Operate
 ```bash
-cd ~/data-governance/deploy/openmetadata
+cd ~/data-governance/deploy/lendatagovernance
 ./scripts/secrets-init.sh            # once
 docker compose up -d                 # start / apply changes
 ./scripts/verify.sh                  # status
@@ -40,10 +40,10 @@ Until then, on each Windows PC add to `C:\Windows\System32\drivers\etc\hosts`:
 Needs an **admin** Personal Access Token (creates teams, roles, policies, custom properties):
 OpenMetadata → profile (top right) › **Access Token** › Generate. Then on the server:
 ```bash
-echo 'OM_TOKEN=<paste token>' > /srv/openmetadata/secrets/loader.env && chmod 600 /srv/openmetadata/secrets/loader.env
+echo 'OM_TOKEN=<paste token>' > /srv/lendatagovernance/secrets/loader.env && chmod 600 /srv/lendatagovernance/secrets/loader.env
 ```
 ```bash
-cd /opt/openmetadata/deploy/loader
+cd /opt/lendatagovernance/deploy/loader
 WB="/home/ubuntu/data-governance/templates/261016 Rev.0.1_Data Governance_ERM.xlsx"
 ./om_loader.py workbook "$WB" --dry-run   # preview, no writes
 ./om_loader.py workbook "$WB"             # load everything (idempotent, safe to re-run)
@@ -52,6 +52,6 @@ Loads: teams Direktorat › Divisi › Unit Kerja, classification Sensitivitas, 
 reviewers = Data Steward, owner = Data Owner, property Data User), service LenO ERM › ERM › erm › 18 tables
 (column tags: sensitivity + glossary term), 19 LenO screens (dashboard + data model, property *Hak Akses LenO*),
 column lineage table → screen, DQ test-case definitions (not executed), DG-* → policy/role for the team.
-Defect report → `/srv/openmetadata/reports/workbook-defects-<date>.md` (outside git — repo is public).
+Defect report → `/srv/lendatagovernance/reports/workbook-defects-<date>.md` (outside git — repo is public).
 
 After UG-1/UV-1 fix the workbook: `scripts/reload-workbook.sh [file.xlsx]` reloads and lists closed/new defects.

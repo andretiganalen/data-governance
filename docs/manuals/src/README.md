@@ -15,4 +15,4 @@ python3 docs/manuals/src/rilis.py --preview <dir>    # cetak ulang PDF dari data
 | `pengguna.html` | Pengguna | cara pakai + Tersedia / Belum ada / Belum bisa; tanpa detail aplikasi atau port |
 
 Angka diisi otomatis dari `build/data.js` (manifest Gold + status langsung server). Butuh python3 + openpyxl, node 22,
-google-chrome, dan `sudo docker` untuk membaca status katalog. Pipeline data: `deploy/openmetadata/medallion/`.
+google-chrome, dan `sudo docker` untuk membaca status katalog. Pipeline data: `deploy/lendatagovernance/medallion/`.

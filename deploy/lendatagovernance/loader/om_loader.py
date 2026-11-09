@@ -8,9 +8,9 @@ Idempotent: writes are PUT (create-or-update) or JSON-patch of fixed values — 
   om_loader.py inspect <file.xlsx>                 sheets + headers
 
 Auth: OM_TOKEN = Personal Access Token of an OpenMetadata *admin* (Profile › Access Token),
-read from /srv/openmetadata/secrets/loader.env or the environment. Admin is required because the
+read from /srv/lendatagovernance/secrets/loader.env or the environment. Admin is required because the
 workbook load creates teams, roles, policies and custom properties.
-Defect report → /srv/openmetadata/reports/ (outside git: the repo is public).
+Defect report → /srv/lendatagovernance/reports/ (outside git: the repo is public).
 """
 from __future__ import annotations
 
@@ -26,8 +26,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import workbook as W  # noqa: E402
 
 OM_URL = os.environ.get("OM_URL", "http://127.0.0.1:8585/api")
-SECRETS = os.environ.get("OM_LOADER_ENV", "/srv/openmetadata/secrets/loader.env")
-REPORT_DIR = os.environ.get("OM_REPORT_DIR", "/srv/openmetadata/reports")
+SECRETS = os.environ.get("OM_LOADER_ENV", "/srv/lendatagovernance/secrets/loader.env")
+REPORT_DIR = os.environ.get("OM_REPORT_DIR", "/srv/lendatagovernance/reports")
 
 SENSITIVITY = {
     "name": W.CLASSIFICATION, "displayName": W.CLASSIFICATION, "mutuallyExclusive": True,

@@ -188,11 +188,11 @@ code{font-size:8pt;background:#eef1f4;padding:0 1.2mm}
   <h2><span>§6</span>Medallion dan panel Data Siap Pakai</h2>
   <div class="grid2">
     <div class="card"><h4>Lokasi</h4>
-      <p><code>deploy/openmetadata/medallion/build_medallion.py</code>: Bronze → Silver → Gold (stdlib + openpyxl).<br>
-      Bronze/Silver: <code>/srv/openmetadata/medallion/work/&lt;rid&gt;/</code>. Hanya di server, tidak disajikan.<br>
-      Gold + panel: <code>/srv/openmetadata/medallion/panel/</code>, di-mount <i>read-only</i> ke gateway sebagai <code>/unduh/</code>.</p></div>
+      <p><code>deploy/lendatagovernance/medallion/build_medallion.py</code>: Bronze → Silver → Gold (stdlib + openpyxl).<br>
+      Bronze/Silver: <code>/srv/lendatagovernance/medallion/work/&lt;rid&gt;/</code>. Hanya di server, tidak disajikan.<br>
+      Gold + panel: <code>/srv/lendatagovernance/medallion/panel/</code>, di-mount <i>read-only</i> ke gateway sebagai <code>/unduh/</code>.</p></div>
     <div class="card"><h4>Akses panel</h4>
-      <p>nginx <code>auth_basic</code>. Hash di <code>/srv/openmetadata/secrets/unduh.htpasswd</code>. Saat ini ada
+      <p>nginx <code>auth_basic</code>. Hash di <code>/srv/lendatagovernance/secrets/unduh.htpasswd</code>. Saat ini ada
       <b data-v="live.panel_akun"></b> akun. Satu akun untuk satu orang:
       <code>scripts/panel-account.sh &lt;user&gt;</code>. Kata sandi hanya tampil sekali.
       Target T4: SSO IDS (oauth2-proxy) menggantikan basic auth.</p></div>
@@ -234,7 +234,7 @@ python3 docs/manuals/src/rilis.py [--workbook "templates/&lt;workbook&gt;.xlsx"]
 
 <section class="pb">
   <h2><span>§8</span>Runbook operasi</h2>
-  <p>Semua perintah dijalankan dari salinan live <code>/opt/openmetadata/deploy</code> (project compose <code>openmetadata</code>). Ubah di repo, lalu salin ke salinan live.</p>
+  <p>Semua perintah dijalankan dari salinan live <code>/opt/lendatagovernance/deploy</code> (project compose <code>openmetadata</code>). Ubah di repo, lalu salin ke salinan live.</p>
 <pre class="c"><span class="cm"># kesehatan</span>
 sudo docker compose -p openmetadata ps ; scripts/verify.sh
 curl -s http://127.0.0.1/_gateway/health
@@ -243,11 +243,11 @@ sudo docker compose -p openmetadata up -d ; sudo docker compose -p openmetadata 
 sudo docker compose -p openmetadata logs -f --tail=200 openmetadata-server
 <span class="cm"># terapkan perubahan gateway (nginx.conf, tema, mount panel)</span>
 sudo docker compose -p openmetadata up -d gateway ; sudo docker compose -p openmetadata exec gateway nginx -t
-<span class="cm"># backup (timer harian 01:30 → /srv/openmetadata/backup) dan pemulihan</span>
+<span class="cm"># backup (timer harian 01:30 → /srv/lendatagovernance/backup) dan pemulihan</span>
 sudo scripts/backup.sh
 sudo docker compose -p openmetadata stop openmetadata-server
 sudo docker compose -p openmetadata exec -T postgresql pg_restore -U postgres -d openmetadata_db --clean --if-exists \
-  &lt; /srv/openmetadata/backup/openmetadata_db-&lt;waktu&gt;.dump      <span class="cm"># butuh openmetadata.env + jwt/ yang sama</span>
+  &lt; /srv/lendatagovernance/backup/openmetadata_db-&lt;waktu&gt;.dump      <span class="cm"># butuh openmetadata.env + jwt/ yang sama</span>
 sudo docker compose -p openmetadata start openmetadata-server   <span class="cm"># lalu Settings › Applications › Search Indexing › Run</span>
 <span class="cm"># token loader: UI › Settings › Bots/Users › admin › Access Token (60–90 hari) → OM_TOKEN di secrets/loader.env</span>
 scripts/reload-workbook.sh "templates/&lt;workbook&gt;.xlsx"       <span class="cm"># muat ulang + selisih cacat</span>

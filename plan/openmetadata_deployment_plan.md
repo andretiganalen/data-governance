@@ -74,7 +74,7 @@ flowchart LR
     MIG["openmetadata-migrate<br/>(sekali jalan saat up)"] --> PG
     OM --> PG[("PostgreSQL 15<br/>openmetadata_db")]
     OM --> OS[("OpenSearch 3.2.0<br/>indeks pencarian")]
-    BK["om-backup.timer<br/>pg_dump harian"] --> PG
+    BK["lendatagovernance-backup.timer<br/>pg_dump harian"] --> PG
   end
   OM -. "fase 2: OIDC" .-> IDS["IDS (SSO internal)"]
   WB["Workbook Governance (Excel)"] -. "fase 3: pemuat via API" .-> OM
@@ -109,7 +109,7 @@ Aplikasi ERM LenO ditampilkan hanya sebagai konteks: **tidak ada panah ke LenO**
 | `.env.example` | Direktori, port, domain email, admin, image (dikunci digest) |
 | `postgres/init/10-openmetadata.sh` | Membuat `openmetadata_user` + `openmetadata_db` (setara skrip resmi, tanpa Airflow) |
 | `host/prepare.sh` | Aman untuk server bersama: cek port, `vm.max_map_count`, direktori, aturan UFW 8585, unit backup |
-| `host/systemd/om-backup.{service,timer}` | Backup harian 01:30 |
+| `host/systemd/lendatagovernance-backup.{service,timer}` | Backup harian 01:30 |
 | `scripts/secrets-init.sh` | Password DB, `FERNET_KEY`, `JWT_KEY_ID`, kunci RSA JWT milik sendiri |
 | `scripts/pin-images.sh` | Mengunci image ke digest |
 | `scripts/deploy.sh` | Guard digest → validasi → pull → up (migrasi otomatis) |
@@ -139,9 +139,9 @@ scp -r C:\Projects\data-management-apps\deploy ubuntu@192.168.125.14:/home/ubunt
 **2. Di server (PuTTY): tempatkan file**
 ```bash
 bind 'set enable-bracketed-paste off'
-sudo mkdir -p /opt/openmetadata
-sudo mv /home/ubuntu/om-deploy /opt/openmetadata/deploy
-cd /opt/openmetadata/deploy
+sudo mkdir -p /opt/lendatagovernance
+sudo mv /home/ubuntu/om-deploy /opt/lendatagovernance/deploy
+cd /opt/lendatagovernance/deploy
 sudo find . -type f -exec sed -i 's/\r$//' {} +
 sudo chmod +x host/*.sh scripts/*.sh
 sudo cp .env.example .env
@@ -158,7 +158,7 @@ sudo ./host/prepare.sh
 ```bash
 sudo ./scripts/secrets-init.sh
 ```
-Simpan salinan `/srv/openmetadata/secrets` di tempat aman di luar server (brankas/password manager tim).
+Simpan salinan `/srv/lendatagovernance/secrets` di tempat aman di luar server (brankas/password manager tim).
 
 **5. Kunci image & deploy**
 ```bash
@@ -189,16 +189,16 @@ Start pertama memakan waktu beberapa menit. Tekan Ctrl+C setelah log server menu
 
 **7. Backup & verifikasi**
 ```bash
-sudo systemctl enable --now om-backup.timer
-sudo systemctl start om-backup.service
+sudo systemctl enable --now lendatagovernance-backup.timer
+sudo systemctl start lendatagovernance-backup.service
 sudo ./scripts/verify.sh
 ```
 
 **Rollback** (tanpa menyentuh aplikasi lain):
 ```bash
-cd /opt/openmetadata/deploy && sudo docker compose down
+cd /opt/lendatagovernance/deploy && sudo docker compose down
 ```
-Data tetap di `/srv/openmetadata`.
+Data tetap di `/srv/lendatagovernance`.
 
 ---
 
@@ -207,7 +207,7 @@ Data tetap di `/srv/openmetadata`.
 **Restore** dari dump:
 1. `sudo docker compose stop openmetadata-server`
 2. ```bash
-   sudo docker compose exec -T postgresql pg_restore -U postgres -d openmetadata_db --clean --if-exists < /srv/openmetadata/backup/openmetadata_db-<waktu>.dump
+   sudo docker compose exec -T postgresql pg_restore -U postgres -d openmetadata_db --clean --if-exists < /srv/lendatagovernance/backup/openmetadata_db-<waktu>.dump
    ```
 3. `sudo docker compose up -d`
 4. Bangun ulang indeks pencarian dari UI: **Settings › Applications › Search Indexing › Run**.
