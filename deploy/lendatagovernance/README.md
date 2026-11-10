@@ -111,7 +111,13 @@ Panel unduhan berkas `/unduh/` (rilis CSV/XLSX) ditutup 2026-11-10: data Gold di
   oleh `migrate_legacy_medallion.py`, schema lama dihapus 2026-11-10) → `silver_dim_company_information`, `silver_dim_sdm_employee`,
   `silver_fact_sdm_certification`, `silver_fact_corp_{investment,tax}_monthly` → `gold_sdm_*`. Kolom pribadi ditandai
   `Sensitivitas: …` di komentar; `catalog_trino.py` memasang tag Sensitivitas-nya.
-- Urutan `lakehouse.py rebuild`: SDM/korporasi → berkas Workbook/E-GRC → ERM LenO → sinkron katalog.
+- `medallion/nextcloud_sync.py` + `medallion/astacita.py` — program Task Force Asta Cita dari Nextcloud `sharedrive.len.co.id`
+  folder `DBASTACITA` (WebDAV, app password dari Login Flow v2 di `secrets/nextcloud.env`): spreadsheet baru/berubah (ETag) →
+  inbox → Bronze `bronze_file_dbastacita_*` → `silver_dim_astacita_{theme,program,manpower}`, `silver_fact_astacita_*`
+  (kurva S, output, kendala, kegiatan, skor prioritas AHP) → `gold_astacita_*`. Berkas utama `DBASTACITA/DBASTACITA.xlsx`
+  (versi terbaru di Bronze). Kunci = tema bidang (`astacita.THEMES`), bukan nomor "Asta Cita N" (beda antar sheet).
+  Timer inbox menjalankan sinkron Nextcloud tiap 10 menit (`ExecStartPre`); berkas baru memicu rebuild.
+- Urutan `lakehouse.py rebuild`: SDM/korporasi → berkas Workbook/E-GRC → ERM LenO → Asta Cita → sinkron katalog.
 
 ## Visualisasi — di dalam aplikasi utama (`superset/`, `../ui/leno-theme/leno-menu.js`)
 Pengguna hanya melihat Len Data Governance (:8585). Menu **Visualisasi** di sidebar membuka panel di area konten

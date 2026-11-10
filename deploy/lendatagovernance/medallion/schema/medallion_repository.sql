@@ -2062,3 +2062,218 @@ CREATE TABLE gold_sdm_dq_finding (
    _loaded_at timestamp(6) with time zone COMMENT 'lineage'
 )
 COMMENT 'Gold SDM: temuan mutu data SDM/korporasi (nilai sumber tidak diubah; tindak lanjut ke pemilik data HC).';
+
+-- ==== Program Task Force Asta Cita (domain astacita), 2026-11-10. Sumber: berkas Nextcloud DBASTACITA (nextcloud_sync.py →
+-- inbox → Bronze bronze_file_dbastacita_*). Berkas utama: DBASTACITA/DBASTACITA.xlsx (versi terbaru di Bronze). Dibangun medallion/astacita.py.
+-- Kunci penghubung = tema bidang (theme_code), bukan nomor "Asta Cita N" (penomoran beda antar sheet; lihat gold_astacita_dq_finding).
+
+CREATE TABLE silver_dim_astacita_theme (
+   theme_code varchar COMMENT 'PK tema bidang baku (SEMICON, EO_SENSOR, AI, CYBER, SATELLITE, RADAR_EW, UAS, C2)',
+   astacita_no integer COMMENT 'Nomor Asta Cita menurut sheet Profile berkas utama',
+   astacita_label varchar COMMENT 'Asta Cita <no>',
+   theme_name varchar COMMENT 'Nama tema menurut sheet Profile',
+   theme_synonyms varchar COMMENT 'Ejaan lain di sheet/berkas lain (dipisah |)',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: ASTACITA',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Dimensi tema/bidang program Task Force Asta Cita.';
+
+CREATE TABLE silver_dim_astacita_program (
+   program_id varchar COMMENT 'PK: <theme_code>-<urutan baris profil>',
+   theme_code varchar COMMENT 'FK silver_dim_astacita_theme',
+   profile_code varchar COMMENT 'Kode di sheet Profile (P1…)',
+   program_no varchar,
+   program_name varchar,
+   budget_idr double COMMENT 'Anggaran (Rp); NULL bila sumber bukan angka',
+   budget_source varchar COMMENT 'Nilai anggaran apa adanya',
+   budget_status varchar,
+   co_lead varchar COMMENT 'Sensitivitas: Restricted',
+   program_lead varchar COMMENT 'Sensitivitas: Restricted',
+   description varchar,
+   output_description varchar,
+   operating_concept varchar,
+   period_label varchar,
+   stage_label varchar,
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: ASTACITA',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Dimensi program Asta Cita (sheet Profile).';
+
+CREATE TABLE silver_fact_astacita_scurve_weekly (
+   theme_code varchar COMMENT 'FK silver_dim_astacita_theme',
+   period_year integer,
+   period_month integer,
+   week_no integer COMMENT 'Minggu ke- dalam bulan (w1…w5)',
+   date_key integer COMMENT 'yyyymmdd hari pertama bulan',
+   plan_monthly_ratio double COMMENT 'Rencana bulanan (fraksi 0–1)',
+   plan_cumulative_ratio double COMMENT 'Akumulasi rencana (fraksi 0–1)',
+   actual_monthly_ratio double COMMENT 'Realisasi bulanan (fraksi 0–1)',
+   actual_cumulative_ratio double COMMENT 'Akumulasi realisasi (fraksi 0–1)',
+   deviation_cumulative_ratio double COMMENT 'Deviasi akumulasi (realisasi − rencana, apa adanya dari sumber)',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: ASTACITA',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Fakta kurva S mingguan per tema (sheet Kurva S).';
+
+CREATE TABLE silver_fact_astacita_output (
+   theme_code varchar,
+   output_no integer,
+   output_name varchar,
+   output_summary varchar,
+   status varchar COMMENT 'Baku: Completed | In Progress | Not Started (nilai lain apa adanya)',
+   status_source varchar,
+   progress_ratio double COMMENT 'Fraksi 0–1',
+   reporting_period_label varchar,
+   notes varchar,
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: ASTACITA',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Fakta output/deliverable per tema (sheet Output).';
+
+CREATE TABLE silver_fact_astacita_issue (
+   theme_code varchar,
+   period_year integer,
+   period_month integer,
+   date_key integer,
+   program_name varchar,
+   issue varchar,
+   issue_description varchar,
+   issue_summary varchar,
+   strategy varchar,
+   strategy_summary varchar,
+   support_needed varchar,
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: ASTACITA',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Fakta kendala dan strategi per tema per bulan (sheet Kendala dan strategi).';
+
+CREATE TABLE silver_fact_astacita_activity_monthly (
+   theme_code varchar,
+   period_year integer,
+   period_month integer,
+   date_key integer,
+   activity_category varchar,
+   activity_title varchar,
+   baseline_ratio double,
+   actual_ratio double,
+   deviation_cause varchar,
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: ASTACITA',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Fakta kegiatan bulanan (baseline vs realisasi) per tema (sheet 8 Asta Cita).';
+
+CREATE TABLE silver_fact_astacita_priority_score (
+   theme_code varchar,
+   survey_code varchar COMMENT 'Kode di sheet Hasil Kompilasi (P1…; penomoran survei)',
+   survey_label varchar COMMENT 'Label Asta Cita menurut survei',
+   avg_impact double,
+   avg_business double,
+   avg_resource double,
+   avg_risk double,
+   risk_score_used double,
+   consensus_score double,
+   aip_final_score double,
+   aip_rank integer,
+   function_balanced_score double,
+   balanced_rank integer,
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: ASTACITA',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Fakta skor prioritas AHP/AIP per tema (sheet Hasil Kompilasi, survei 13 responden).';
+
+CREATE TABLE silver_dim_astacita_manpower (
+   theme_code varchar,
+   person_name varchar COMMENT 'Nama personel — Sensitivitas: Confidential',
+   role_status varchar,
+   program_name varchar,
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: ASTACITA',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Personel per tema (sheet Manpower).';
+
+CREATE TABLE gold_astacita_program_summary (
+   theme_code varchar,
+   astacita_no integer,
+   astacita_label varchar,
+   theme_name varchar,
+   program_count bigint,
+   total_budget_idr double,
+   last_scurve_date_key integer,
+   plan_cumulative_ratio double,
+   actual_cumulative_ratio double,
+   deviation_cumulative_ratio double,
+   schedule_status varchar COMMENT 'Sesuai/Lebih cepat (deviasi ≥ 0) | Terlambat (deviasi < 0) | Belum ada realisasi',
+   output_count bigint,
+   output_completed bigint,
+   output_progress_avg double,
+   issue_count bigint,
+   aip_final_score double,
+   aip_rank integer,
+   manpower_count bigint,
+   _batch_id varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Gold Asta Cita: ringkasan per tema (program, anggaran, kurva S terakhir, output, kendala, prioritas, manpower).';
+
+CREATE TABLE gold_astacita_scurve_weekly (
+   theme_code varchar,
+   astacita_label varchar,
+   theme_name varchar,
+   period_date date,
+   date_key integer,
+   week_no integer,
+   week_label varchar,
+   plan_cumulative_ratio double,
+   actual_cumulative_ratio double,
+   deviation_cumulative_ratio double,
+   _batch_id varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Gold Asta Cita: kurva S mingguan siap grafik.';
+
+CREATE TABLE gold_astacita_output_status (
+   theme_code varchar,
+   astacita_label varchar,
+   theme_name varchar,
+   status varchar,
+   output_count bigint,
+   progress_avg double,
+   _batch_id varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Gold Asta Cita: jumlah output per status per tema.';
+
+CREATE TABLE gold_astacita_dq_finding (
+   table_name varchar,
+   column_name varchar,
+   rule_name varchar,
+   finding varchar,
+   affected_rows bigint,
+   _batch_id varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Gold Asta Cita: temuan mutu data sumber DBASTACITA.';

@@ -227,7 +227,7 @@ def read_sheets(path: Path) -> dict[str, tuple[list[str], list[tuple[int, list]]
         if not filled or max(filled) == 0:
             out[sheet] = ([], [])
             continue
-        need = max(2, math.ceil(max(filled) * 0.5))
+        need = min(max(filled), max(2, math.ceil(max(filled) * 0.5)))   # sheet 1 kolom: header = baris terisi pertama
         h = next(i for i, n in enumerate(filled) if n >= need)
         header = [c or "" for c in g[h]]
         width = max(len(header), max((len(r) for r in g), default=0))
@@ -930,13 +930,15 @@ SNAPSHOT_TABLES = {"gold_meta_governance_kpi_snapshot", "gold_meta_dq_finding_sn
 
 
 def rebuild(tq: Trino, schema: dict, batch_id: str, now: datetime) -> None:
-    """Urutan: SDM/korporasi (dimensi perusahaan bersama) → berkas DG_WORKBOOK/EGRC → Aplikasi ERM LenO (lenodb).
+    """Urutan: SDM/korporasi (dimensi perusahaan bersama) → berkas DG_WORKBOOK/EGRC → Aplikasi ERM LenO (lenodb) → Asta Cita.
     Tabel ber-kolom _source_system menampung beberapa sumber; tiap sumber hanya mengganti barisnya sendiri."""
+    import astacita  # program Task Force Asta Cita, dari Bronze berkas Nextcloud DBASTACITA (SQL di Trino)
     import leno_erm  # Aplikasi ERM LenO dari katalog Trino lenodb (SQL di Trino)
     import sdm  # kerangka SDM + korporasi (SQL di Trino), dari Bronze bronze_sdm_* / bronze_corp_*
     sdm.build(tq, schema, batch_id, now)
     rebuild_files(tq, schema, batch_id, now)
     leno_erm.build(tq, schema, batch_id, now)
+    astacita.build(tq, schema, batch_id, now)
 
 
 def rebuild_files(tq: Trino, schema: dict, batch_id: str, now: datetime) -> None:
@@ -1062,7 +1064,7 @@ def main() -> None:
     for f in files:
         log(f"Bronze: {f.name}")
         r = ingest(tq, f, schema, batch_id, now, name=names.get(f) if a.cmd == "retry" else None)
-        new = new or bool(r and r["source"] != "FILE")
+        new = new or bool(r)   # berkas FILE pun (mis. DBASTACITA) punya Silver/Gold sendiri → rebuild
         if a.cmd == "inbox":
             done = DATA / "medallion" / "inbox" / "selesai"
             done.mkdir(exist_ok=True)

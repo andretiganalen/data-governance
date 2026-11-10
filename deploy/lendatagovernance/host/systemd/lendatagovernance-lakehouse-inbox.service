@@ -5,6 +5,8 @@ After=network-online.target
 Type=oneshot
 User=ubuntu
 Environment=LDG_DATA_DIR=/srv/lendatagovernance
+# Sinkron folder sumber Nextcloud (DBASTACITA) ke inbox dulu; gagal (mis. kredensial belum ada) tidak menghentikan pemuatan.
+ExecStartPre=-/srv/lendatagovernance/medallion/.venv/bin/python -u /opt/lendatagovernance/deploy/medallion/nextcloud_sync.py
 ExecStart=/srv/lendatagovernance/medallion/.venv/bin/python -u /opt/lendatagovernance/deploy/medallion/lakehouse.py inbox
 StandardOutput=append:/srv/lendatagovernance/medallion/logs/inbox.log
 StandardError=append:/srv/lendatagovernance/medallion/logs/inbox.log
