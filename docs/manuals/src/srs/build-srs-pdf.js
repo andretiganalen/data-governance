@@ -14,8 +14,8 @@ const SRC = path.join(__dirname, "..");
 // ---- pemilihan dan pengelompokan 50 use case (id lama dari usecases.js → id baru)
 const DASAR = ["UC-01", "UC-02", "UC-03", "UC-07", "UC-08", "UC-09", "UC-10", "UC-11", "UC-12", "UC-13", "UC-14", "UC-15", "UC-16",
   "UC-18", "UC-19", "UC-23", "UC-24", "UC-38", "UC-39", "UC-40", "UC-41", "UC-42", "UC-43", "UC-44", "UC-45"];
-const LANJUT = ["UC-04", "UC-05", "UC-06", "UC-17", "UC-25", "UC-26", "UC-28", "UC-29", "UC-32", "UC-33", "UC-34", "UC-36", "UC-46",
-  "UC-47", "UC-48", "UC-50", "UC-51", "UC-52", "UC-53", "UC-54", "UC-55", "UC-56", "UC-57", "UC-58", "UC-60"];
+const LANJUT = ["UC-04", "UC-05", "UC-06", "UC-61", "UC-62", "UC-25", "UC-26", "UC-28", "UC-29", "UC-32", "UC-33", "UC-34", "UC-36", "UC-46",
+  "UC-47", "UC-48", "UC-50", "UC-51", "UC-52", "UC-54", "UC-55", "UC-56", "UC-57", "UC-58", "UC-60"];
 // use case yang dilebur ke use case lain (isi alurnya masuk ke sana)
 const LEBUR = {
   "UC-20": ["UC-16", "Hak akses layar LenO (properti referensi Unit Kerja × Kategori × Izin) terlihat pada dashboard layar."],
@@ -27,6 +27,8 @@ const LEBUR = {
   "UC-35": ["UC-60", "scripts/reload-workbook.sh memuat ulang dan menampilkan cacat yang tertutup dan yang baru."],
   "UC-37": ["UC-28", "Tabel *_snapshot menyimpan riwayat harian (baris hari ini diganti, hari sebelumnya dipertahankan)."],
   "UC-49": ["UC-44", "Hasil query/grafik dapat diunduh sebagai CSV untuk keperluan sesaat; sistem rekam tetap Trino."],
+  "UC-17": ["UC-34", "Lineage dapat disunting manual (hak DG-Edit Lineage); perubahan tertimpa bila workbook sumber tidak diperbaiki."],
+  "UC-53": ["UC-55", "scripts/verify.sh menampilkan status kontainer, versi API lewat gateway, dan backup terakhir sebelum/sesudah upgrade."],
   "UC-59": ["UC-55", "Tema LenO (leno.css, leno-superset.css, leno-menu.js) diperiksa setelah upgrade; teks merek upstream diganti di peramban."],
 };
 const byId = Object.fromEntries(UC.map((u) => [u.id, u]));
@@ -102,20 +104,20 @@ td ul,td ol{margin:0;padding-left:4.5mm}td li{margin:0 0 .6mm}
 <p>Katalog metadata, Trino lakehouse Medallion, dan Visualisasi untuk tata kelola data ERM Len (holding DEFEND ID)</p></div>
 <div class="qs"><div><b>50</b>use case — 25 Dasar, 25 Lanjutan</div><div><b>${FR.length}</b>kebutuhan fungsional</div>
 <div><b>${NFR.length}</b>kebutuhan non-fungsional</div><div><b>1</b>sistem rekam data: Trino lakehouse</div></div>
-<div class="meta">Nomor SRS-LDG ${REL} · Versi 1.1 · 10 November 2026 · Klasifikasi: Internal · Acuan struktur ISO/IEC/IEEE 29148:2018<br>
+<div class="meta">Nomor SRS-LDG ${REL} · Versi 1.2 · 10 November 2026 · Klasifikasi: Internal · Acuan struktur ISO/IEC/IEEE 29148:2018<br>
 Pemilik: Data Governance (UV-1) · Administrator (UV-3) · Server dev jitsi 192.168.125.14 / dev-data.len.co.id</div></section>
 
 <h1>Daftar isi</h1><div class="toc">
 ${["1|Pendahuluan", "2|Deskripsi umum", "3|Kebutuhan fungsional", "4|Kebutuhan non-fungsional dan antarmuka", "5|Kebutuhan data", "6|Use case — ringkasan",
   "7|Use case Dasar (UC-D01 … UC-D25)", "8|Use case Lanjutan (UC-L01 … UC-L25)", "9|Matriks keterlacakan", "10|Kriteria penerimaan", "11|Isu terbuka dan risiko", "A|Lampiran: aktor × use case", "B|Lampiran: riwayat revisi"]
   .map((x) => { const [n, t] = x.split("|"); return `<div><a href="#s${n}"><b>${n}.</b> ${t}</a></div>`; }).join("")}</div>
-<div class="note">Dokumen ini menggantikan versi .docx 261110 02 (60 use case). Use case kini dikelompokkan menjadi <b>Dasar</b> (pemakaian harian lewat antarmuka oleh pengguna bisnis) dan <b>Lanjutan</b> (administrasi, otomasi, integrasi, dan operasi). Sepuluh use case yang tumpang tindih dilebur ke use case terkait (ditandai "Termasuk:" pada alur alternatif).</div>
+<div class="note">Use case kini dikelompokkan menjadi <b>Dasar</b> (pemakaian harian lewat antarmuka oleh pengguna bisnis) dan <b>Lanjutan</b> (administrasi, otomasi, integrasi, dan operasi). ${Object.keys(LEBUR).length} use case yang tumpang tindih dilebur ke use case terkait (ditandai "Termasuk:" pada alur alternatif).</div>
 
 <h1 id="s1" class="pb">1. Pendahuluan</h1>
 <h2>1.1 Tujuan</h2><p>Dokumen ini menetapkan kebutuhan perangkat lunak Len Data Governance: apa yang harus dilakukan sistem, untuk siapa, dengan batasan apa, dan cara memverifikasinya. Dokumen menjadi acuan bersama Staf Data Governance, Data Owner, Administrator, pengembang, dan Pimpinan untuk pengembangan, pengujian penerimaan, dan audit.</p>
 <h2>1.2 Ruang lingkup</h2><ul>
 <li><b>Katalog metadata</b>: glosarium bisnis, klasifikasi sensitivitas, kepemilikan, lineage, definisi mutu data, hak tata kelola.</li>
-<li><b>Trino lakehouse</b> <code>lakekeeper.medallion_repository</code> (Iceberg/Lakekeeper, datahub.len.co.id:443): satu-satunya sistem rekam data bisnis, berlapis Bronze → Silver → Gold.</li>
+<li><b>Trino lakehouse</b> <code>lakekeeper.medallion_repository</code> (Iceberg/Lakekeeper, datahub.len.co.id:443): satu-satunya sistem rekam data bisnis, berlapis Bronze → Silver → Gold. Sumber: berkas Workbook/E-GRC (inbox), Aplikasi ERM LenO (katalog Trino <code>lenodb</code>), dan data SDM/korporasi.</li>
 <li><b>Visualisasi</b> (Superset 6) di dalam aplikasi: dashboard, grafik, SQL Lab, tabel kerja pengguna di <code>lakekeeper.workspace</code>.</li>
 <li><b>Operasi</b>: backup, pemulihan, upgrade, indeks pencarian, rilis dokumen.</li></ul>
 <p>Di luar cakupan: aplikasi transaksi ERM LenO (layarnya hanya direpresentasikan sebagai referensi lineage dan hak akses) dan sistem sumber E-GRC.</p>
@@ -146,10 +148,12 @@ ${["1|Pendahuluan", "2|Deskripsi umum", "3|Kebutuhan fungsional", "4|Kebutuhan n
   ["opensearch", "OpenSearch 3.4.0 (ldg-cluster)", "Indeks pencarian (data turunan; dapat dibangun ulang)."],
   ["superset", "Apache Superset 6.0.0-dg2", "Visualisasi di /visualisasi; SSO dg_sso.py; penjaga SQL."],
   ["Trino lakehouse", "Trino + Iceberg/Lakekeeper", "Sistem rekam: medallion_repository, workspace."],
+  ["lenodb (Trino)", "Replika CDC basis data Aplikasi LenO", "Sumber ERM operasional; dibaca leno_erm.py ke Bronze bronze_leno_*."],
+  ["sdm.py / leno_erm.py", "Python + SQL Trino", "ETL kerangka SDM/korporasi dan ERM LenO, dijalankan lakehouse.py rebuild."],
   ["lakehouse.py + timer", "Python 3.12, systemd", "Pemuat Bronze → Silver → Gold; inbox tiap 10 menit."],
   ["catalog_loader.py / catalog_trino.py", "Python", "Memuat workbook ke katalog; sinkron katalog ↔ Trino."],
 ].map((r) => r.map(e)))}
-<p>Alur data: berkas sumber → inbox → Bronze (Trino) → Silver → Gold → Visualisasi/SQL Lab; katalog disinkronkan dari Trino dan diperkaya metadata workbook.</p>
+<p>Alur data: berkas sumber → inbox → Bronze; Aplikasi ERM LenO (lenodb) → Bronze bronze_leno_*; data SDM/korporasi → Bronze bronze_sdm_*/bronze_corp_*. Semuanya → Silver → Gold → Visualisasi/SQL Lab; katalog disinkronkan dari Trino dan diperkaya metadata workbook.</p>
 <h2>2.3 Aktor</h2>${tbl(["Aktor", "Karakteristik", "Kebutuhan utama"], [
   [AKTOR.PU, "Pegawai unit kerja; non-teknis sampai analis.", "Mencari data, membaca definisi, dashboard, analisis di workspace."],
   [AKTOR.DO, "Pemilik bisnis data ERM.", "Pemilik aset, klasifikasi, perbaikan workbook."],
@@ -187,9 +191,9 @@ ${tbl(["ID", "Kategori", "Kebutuhan"], NFR.map((r) => r.map(e)))}
 <h1 id="s5" class="pb">5. Kebutuhan data</h1>
 <p>Sistem rekam: <code>lakekeeper.medallion_repository</code>. Definisi tabel di medallion_repository.sql; tabel Silver/Gold memuat kolom lineage <code>_file_id, _batch_id, _source_system, _source_file, _loaded_at</code>.</p>
 ${tbl(["Lapisan", "Tabel", "Isi", "Cara isi"], [
-  ["Bronze", "bronze_repository, bronze_&lt;sumber&gt;_&lt;sheet&gt;, bronze_meta_quarantine, bronze_erm_* (data lama)", "Baris mentah per sheet, status per berkas, header asing.", "Append; checksum mencegah duplikasi."],
-  ["Silver", "silver_dim_* (organisasi, tanggal, risiko, taksonomi, kriteria, glosarium, field …), silver_fact_* (penilaian risiko, KRI, mitigasi, appetite …)", "Bersih, bertipe, kode F0xx di komentar.", "Full refresh dari berkas terbaru tiap sumber."],
-  ["Gold", "gold_erm_* (risk register, heatmap, KRI, mitigasi, ringkasan eksekutif …), gold_meta_* (kamus data, lineage, glosarium, KPI, temuan mutu …)", "Siap dashboard; *_snapshot = riwayat harian.", "Full refresh; snapshot per hari."],
+  ["Bronze", "bronze_repository, bronze_&lt;sumber&gt;_&lt;sheet&gt;, bronze_meta_quarantine, bronze_erm_* (data lama), bronze_leno_* (snapshot lenodb), bronze_sdm_* / bronze_corp_* (SDM/korporasi)", "Baris mentah apa adanya, status per berkas, header asing.", "Append (berkas); snapshot penuh (lenodb); salinan sekali (prototipe medallion)."],
+  ["Silver", "silver_dim_* (organisasi, perusahaan, pegawai SDM, risiko, taksonomi, kriteria, glosarium …), silver_fact_* (penilaian risiko, mitigasi, appetite, sertifikasi, investasi, pajak …)", "Bersih, bertipe, kode F0xx di komentar; _source_system EGRC | LENO_ERM | SDM | CORP.", "Diganti per sumber (tiap sumber hanya barisnya sendiri)."],
+  ["Gold", "gold_erm_* (risk register, heatmap, mitigasi … ; kolom _source_system), gold_meta_* (kamus data, lineage, glosarium, KPI, temuan mutu …), gold_sdm_* (profil tenaga kerja, ringkasan perusahaan, sertifikasi, temuan mutu)", "Siap dashboard, tanpa data pribadi; *_snapshot = riwayat harian.", "Full refresh per sumber; snapshot per hari."],
   ["Workspace", "lakekeeper.workspace.*", "Tabel kerja pengguna (SQL Lab, unggahan).", "Dibuat pengguna; tidak dikelola loader."],
 ])}
 <h2>5.1 Tabel ERM LenO → tabel Trino</h2>${tbl(["Tabel LenO (Database_Object)", "Tabel Trino di medallion_repository"], [
@@ -238,7 +242,9 @@ ${tbl(["ID", "Isu", "Dampak", "Tindak lanjut", "Pemilik"], [
   ["ISU-01", "<b>Selesai 10-11-2026.</b> Pencarian galat 500 pada OpenSearch 3.2 (bug Lucene 10: script_score di dalam dis_max pada segmen tanpa kecocokan).", "—", "OpenSearch 3.4.0 + reindex penuh; 1.056 uji lulus (NFR-17).", "UV-3"],
   ["ISU-02", "Client IDS dan DNS dev-data.len.co.id belum tersedia.", "Login masih basic auth.", "P2-1, P2-2, lalu UC-L20.", "Tim IDS, Jaringan"],
   ["ISU-03", "Workspace memakai satu kredensial Trino bersama.", "Pengguna dapat menimpa tabel kerja pengguna lain.", "Kredensial Trino per pengguna atau impersonation.", "UV-3"],
-  ["ISU-04", "Namespace lakekeeper.erm (kosong) diproteksi di Lakekeeper.", "Schema kosong tersisa.", "Admin Lakekeeper melepas proteksi, lalu migrate_legacy_erm.py.", "Admin Lakekeeper"],
+  ["ISU-04", "Namespace lakekeeper.erm (kosong) diproteksi di Lakekeeper. (erm_bronze, erm_silver, medallion sudah dipindah dan dihapus 10-11-2026.)", "Schema kosong tersisa.", "Admin Lakekeeper melepas proteksi, lalu migrate_legacy_erm.py.", "Admin Lakekeeper"],
+  ["ISU-08", "Data pribadi SDM (NIK, nama, agama, kondisi fisik) dapat dibaca semua pengguna SQL Lab karena Visualisasi memakai satu kredensial Trino.", "Risiko kebocoran data pribadi.", "Batasi baca tabel bertanda Confidential/Strictly Confidential untuk non-admin (penjaga SQL atau hak Trino per pengguna).", "UV-3"],
+  ["ISU-09", "233 pegawai (LTI, Kopkarlen) tidak cocok ke dimensi perusahaan; 89 baris gender bernilai 'Mahasiswa'; 48 NIK kosong.", "Ringkasan SDM per perusahaan kurang lengkap.", "Lengkapi silver_dim_company_information dan perbaiki sumber HC (gold_sdm_dq_finding).", "Unit HC / UV-1"],
   ["ISU-05", "23 cacat workbook (glosarium kosong, tabel Not Found, klasifikasi, kolom kembar).", "Metadata belum lengkap.", "UC-L25.", "UG-1 / UV-1"],
   ["ISU-06", "Uji mutu baru definisi; Domain, Data Product, Data Contract belum ada.", "Mutu tidak terukur otomatis.", "P4-1.", "UV-1"],
   ["ISU-07", "Hardening akses (self-signup, policy konsumen, jumlah admin).", "Risiko hak berlebih.", "SEC-1 (Manual Pengembang §2.3).", "UV-3"],
@@ -248,8 +254,9 @@ ${tbl(["ID", "Isu", "Dampak", "Tindak lanjut", "Pemilik"], [
 ${tbl(["Aktor", "Dasar", "Lanjutan"], Object.values(AKTOR).map((a) => [e(a), D.filter((u) => u.aktor.includes(a)).map((u) => u.id).join(", ") || "—", L.filter((u) => u.aktor.includes(a)).map((u) => u.id).join(", ") || "—"]))}
 <h1 id="sB">Lampiran B. Riwayat revisi</h1>
 ${tbl(["Versi", "Tanggal", "Perubahan"], [
-  ["1.0", "10-11-2026", "Versi .docx (60 use case)."],
-  ["1.1", "10-11-2026", `Format PDF; 50 use case (25 Dasar, 25 Lanjutan; 10 dilebur); ${FR.length} FR, ${NFR.length} NFR; ISU-01 selesai.`],
+  ["1.0", "10-11-2026", "Draf awal (60 use case), ditarik."],
+  ["1.1", "10-11-2026", `Format PDF; 50 use case (25 Dasar, 25 Lanjutan); ISU-01 selesai.`],
+  ["1.2", "10-11-2026", `Sumber ERM Aplikasi LenO (lenodb) dan kerangka SDM; ${Object.keys(LEBUR).length} use case dilebur; ${FR.length} FR, ${NFR.length} NFR; ISU-08, ISU-09.`],
 ])}
 </body></html>`;
 

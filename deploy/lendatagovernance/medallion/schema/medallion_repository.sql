@@ -184,7 +184,8 @@ CREATE TABLE gold_erm_mitigation_progress_monthly (
    is_dilaporkan boolean,
    status_progres varchar COMMENT 'Belum dilaporkan | Belum mulai | Berjalan | Selesai',
    _batch_id varchar COMMENT 'lineage: batch loader',
-   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)',
+   _source_system varchar COMMENT 'lineage: EGRC | LENO_ERM (risiko korporat E-GRC vs risiko operasional Aplikasi ERM LenO)'
 )
 COMMENT 'Progres rencana penanganan risiko per bulan (12 bulan per rencana; is_dilaporkan = ada laporan).';
 
@@ -242,7 +243,8 @@ CREATE TABLE gold_erm_risk_assessment_monthly (
    dampak_terhadap_limit double COMMENT 'rasio',
    exposure_risiko double COMMENT 'IDR',
    _batch_id varchar COMMENT 'lineage: batch loader',
-   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)',
+   _source_system varchar COMMENT 'lineage: EGRC | LENO_ERM (risiko korporat E-GRC vs risiko operasional Aplikasi ERM LenO)'
 )
 COMMENT 'Penilaian risiko bulanan (INHEREN, TARGET_RESIDUAL, REALISASI) per risiko — untuk tren waktu.';
 
@@ -268,7 +270,8 @@ CREATE TABLE gold_erm_risk_heatmap_monthly (
    daftar_risk_id varchar COMMENT 'dipisah koma',
    total_exposure_risiko double COMMENT 'IDR',
    _batch_id varchar COMMENT 'lineage: batch loader',
-   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)',
+   _source_system varchar COMMENT 'lineage: EGRC | LENO_ERM (risiko korporat E-GRC vs risiko operasional Aplikasi ERM LenO)'
 )
 COMMENT 'Peta risiko 5×5 per perusahaan, bulan, dan jenis penilaian: jumlah risiko per sel.';
 
@@ -330,7 +333,8 @@ CREATE TABLE gold_erm_risk_register (
    progres_penanganan_rata2 double COMMENT 'rata-rata progres terakhir, 0–1',
    status_aktif varchar COMMENT 'Aktif',
    _batch_id varchar COMMENT 'lineage: batch loader',
-   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)'
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage: waktu muat (UTC)',
+   _source_system varchar COMMENT 'lineage: EGRC | LENO_ERM (risiko korporat E-GRC vs risiko operasional Aplikasi ERM LenO)'
 )
 COMMENT 'Register risiko per perusahaan & tahun: inheren, realisasi terakhir, penyebab, penanganan. Satu baris per risiko.';
 
@@ -1833,3 +1837,228 @@ CREATE TABLE silver_fact_erm_risk_strategy_matrix (
    silver_processed_at timestamp(6) with time zone
 )
 COMMENT 'Data ERM lama, dipindah dari lakekeeper.erm_silver.risk_strategy_matrix pada 2026-11-10 (apa adanya).';
+
+-- ==== Kerangka SDM (Sumber Daya Manusia) + data korporasi, 2026-11-10. Sumber: Bronze bronze_sdm_* / bronze_corp_*
+-- (dipindah dari prototipe lakekeeper.medallion oleh medallion/migrate_legacy_medallion.py). Dibangun medallion/sdm.py.
+-- Kolom data pribadi ditandai "Sensitivitas: <level>" di komentar → tag Sensitivitas di katalog (catalog_trino.py).
+
+CREATE TABLE silver_dim_company_information (
+   company_id varchar COMMENT 'PK perusahaan/entitas (dirujuk kolom company_id ERM, label ''Perusahaan'')',
+   company_name varchar,
+   company_name_formatted varchar,
+   company_aliases varchar,
+   company_acronym varchar,
+   entity_classification varchar,
+   domicile_status varchar,
+   company_group varchar,
+   company_level varchar,
+   relation_to_main varchar,
+   is_central_company boolean,
+   company_address varchar,
+   city varchar,
+   province varchar,
+   country varchar,
+   postal_code varchar,
+   phone_number varchar,
+   email varchar,
+   website varchar,
+   tax_id_npwp varchar COMMENT 'NPWP badan — Sensitivitas: Restricted',
+   industry_sector varchar,
+   business_category varchar,
+   vendor_category_finance varchar,
+   vendor_category_scm varchar,
+   contact_person varchar COMMENT 'Nama narahubung — Sensitivitas: Confidential',
+   contact_phone varchar COMMENT 'Telepon narahubung — Sensitivitas: Confidential',
+   notes varchar,
+   is_active boolean,
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: CORP',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Dimensi bersama perusahaan/entitas Len (holding DEFEND ID, anak, afiliasi, mitra). Sumber: bronze_corp_company_information.';
+
+CREATE TABLE silver_dim_sdm_employee (
+   employee_id varchar COMMENT 'PK pegawai',
+   nik_npp varchar COMMENT 'Nomor induk pegawai — Sensitivitas: Confidential',
+   full_name varchar COMMENT 'Nama lengkap — Sensitivitas: Confidential',
+   origin_name varchar COMMENT 'Nama asal di berkas sumber — Sensitivitas: Confidential',
+   company_id varchar COMMENT 'FK silver_dim_company_information (dicocokkan dari company_name; NULL = tidak cocok, lihat gold_sdm_dq_finding)',
+   company_name varchar,
+   company_scope varchar,
+   directorate varchar,
+   division varchar,
+   unit varchar,
+   job_title varchar,
+   job_title_detail varchar,
+   job_level varchar,
+   job_stream varchar,
+   sub_job_stream varchar,
+   employment_status varchar COMMENT 'PKWTT | PKWT | Maganghub',
+   special_program_assignment varchar,
+   gender varchar COMMENT 'Baku: Laki-laki | Perempuan; NULL bila sumber bukan jenis kelamin — Sensitivitas: Restricted',
+   gender_source varchar COMMENT 'Nilai jenis kelamin apa adanya dari sumber — Sensitivitas: Restricted',
+   age integer COMMENT 'Sensitivitas: Restricted',
+   age_group varchar,
+   generation varchar,
+   religion varchar COMMENT 'Sensitivitas: Strictly Confidential',
+   education_level varchar,
+   major varchar,
+   institution varchar,
+   years_of_service double,
+   years_of_service_group varchar,
+   physical_condition varchar COMMENT 'Kondisi fisik/kesehatan — Sensitivitas: Strictly Confidential',
+   is_certified boolean,
+   certification_summary varchar,
+   project_management_qualification varchar,
+   dq_note varchar COMMENT 'Catatan mutu baris (nilai sumber tidak diubah diam-diam)',
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: SDM',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Dimensi pegawai (kerangka SDM). Satu baris per pegawai. Sumber: bronze_sdm_employee_information.';
+
+CREATE TABLE silver_fact_sdm_certification (
+   certification_id varchar COMMENT 'PK',
+   employee_id varchar COMMENT 'FK silver_dim_sdm_employee (nama/NIK tidak diduplikasi di sini)',
+   company_id varchar COMMENT 'FK silver_dim_company_information',
+   company_name varchar,
+   certification_name varchar,
+   certification_category varchar,
+   training_type varchar,
+   validity_status varchar,
+   period_start_year integer COMMENT 'Tahun awal dari sumber ''YYYY'' atau ''YYYY-YYYY''; NULL bila format lain',
+   period_end_year integer COMMENT 'Tahun akhir (= awal bila sumber satu tahun)',
+   training_year_source varchar COMMENT 'Nilai tahun/rentang apa adanya dari sumber',
+   dq_note varchar,
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: SDM',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Fakta sertifikasi/pelatihan pegawai (kerangka SDM). Sumber: bronze_sdm_employee_certification.';
+
+CREATE TABLE silver_fact_corp_investment_monthly (
+   fact_id varchar COMMENT 'PK',
+   company_id varchar COMMENT 'FK silver_dim_company_information',
+   company_name varchar,
+   company_group varchar,
+   company_level varchar,
+   period_year integer,
+   period_month integer COMMENT '1–12',
+   date_key integer COMMENT 'yyyymmdd hari pertama bulan',
+   category_code varchar,
+   category_name varchar,
+   item_name varchar,
+   annual_budget double COMMENT 'Anggaran tahunan',
+   monthly_budget double,
+   monthly_realization double,
+   ytd_budget double COMMENT 'Anggaran s.d. bulan',
+   ytd_realization double COMMENT 'Realisasi s.d. bulan',
+   ytd_realization_pct double COMMENT 'Persen realisasi s.d. anggaran (apa adanya dari sumber)',
+   remaining_annual_budget double,
+   mom_growth_nominal double,
+   mom_growth_pct double,
+   notes varchar,
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: CORP',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Fakta investasi bulanan per perusahaan. Sumber: bronze_corp_company_investment.';
+
+CREATE TABLE silver_fact_corp_tax_monthly (
+   fact_id varchar COMMENT 'PK',
+   company_id varchar COMMENT 'FK silver_dim_company_information',
+   company_name varchar,
+   company_group varchar,
+   company_level varchar,
+   period_year integer,
+   period_month integer COMMENT '1–12',
+   date_key integer COMMENT 'yyyymmdd hari pertama bulan',
+   tax_jurisdiction varchar,
+   tax_group varchar,
+   tax_item_code varchar,
+   tax_item_name varchar,
+   monthly_realization double,
+   ytd_realization double,
+   mom_growth_nominal double,
+   mom_growth_pct double,
+   notes varchar,
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: CORP',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Fakta pajak bulanan per perusahaan. Sumber: bronze_corp_company_tax.';
+
+CREATE TABLE gold_sdm_workforce_profile (
+   company_id varchar,
+   company_name varchar,
+   directorate varchar,
+   division varchar,
+   employment_status varchar,
+   gender varchar,
+   age_group varchar,
+   generation varchar,
+   education_level varchar,
+   years_of_service_group varchar,
+   job_level varchar,
+   headcount bigint,
+   certified_count bigint,
+   avg_age double,
+   avg_years_of_service double,
+   _batch_id varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Gold SDM: profil tenaga kerja teragregasi (tanpa data pribadi) untuk dashboard demografi.';
+
+CREATE TABLE gold_sdm_company_summary (
+   company_id varchar,
+   company_name varchar,
+   company_group varchar,
+   headcount bigint,
+   pkwtt_count bigint,
+   pkwt_count bigint,
+   intern_count bigint,
+   female_count bigint,
+   female_ratio double COMMENT 'Perempuan / (Laki-laki + Perempuan); pegawai tanpa jenis kelamin baku tidak dihitung',
+   avg_age double,
+   certified_count bigint,
+   certified_ratio double,
+   certification_count bigint,
+   _batch_id varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Gold SDM: ringkasan tenaga kerja per perusahaan.';
+
+CREATE TABLE gold_sdm_certification_summary (
+   company_name varchar,
+   certification_category varchar,
+   training_type varchar,
+   validity_status varchar,
+   period_start_year integer,
+   period_end_year integer,
+   certification_count bigint,
+   employee_count bigint,
+   _batch_id varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Gold SDM: ringkasan sertifikasi per perusahaan, kategori, jenis, status, periode.';
+
+CREATE TABLE gold_sdm_dq_finding (
+   table_name varchar,
+   column_name varchar,
+   rule_name varchar,
+   finding varchar,
+   affected_rows bigint,
+   _batch_id varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Gold SDM: temuan mutu data SDM/korporasi (nilai sumber tidak diubah; tindak lanjut ke pemilik data HC).';

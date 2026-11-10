@@ -1,4 +1,4 @@
-// Kebutuhan fungsional (FR) dan non-fungsional (NFR) SRS Len Data Governance — dipakai build-srs-pdf.js dan build-srs.js.
+// Kebutuhan fungsional (FR) dan non-fungsional (NFR) SRS Len Data Governance — dipakai build-srs-pdf.js.
 module.exports.FR = [
   ["FR-01", "Autentikasi", "Sistem harus mewajibkan login sebelum akses katalog, API, dan Visualisasi."],
   ["FR-02", "Autentikasi", "Sistem harus mendukung SSO OIDC dengan IDS Len (confidential client) pada fase 2."],
@@ -30,7 +30,9 @@ module.exports.FR = [
   ["FR-36", "Lakehouse", "Sumber dikenali otomatis (DG_WORKBOOK, EGRC, FILE); header asing dikarantina."],
   ["FR-37", "Lakehouse", "Skema Trino harus mengikuti medallion_repository.sql sebagai sumber kebenaran."],
   ["FR-38", "Katalog", "Katalog harus disinkronkan dengan Trino setelah setiap pemuatan (tabel, kolom, jumlah baris; hapus lunak tabel hilang)."],
-  ["FR-39", "Lakehouse", "Data ERM lama di schema lain harus dapat dipindahkan ke medallion_repository dengan verifikasi jumlah baris."],
+  ["FR-56", "Lakehouse", "Data transaksi Aplikasi ERM LenO harus dimuat dari katalog Trino lenodb ke Bronze/Silver/Gold ERM; tiap sumber (EGRC, LENO_ERM) hanya mengganti barisnya sendiri."],
+  ["FR-57", "Lakehouse", "Data SDM (pegawai, sertifikasi) dan korporasi harus berada di kerangka SDM medallion_repository; kolom pribadi wajib bertanda Sensitivitas."],
+  ["FR-39", "Lakehouse", "Data di schema lama (lakekeeper.erm*, lakekeeper.medallion) harus dipindahkan ke medallion_repository dengan verifikasi jumlah baris, lalu schema lama dihapus."],
   ["FR-40", "Visualisasi", "Visualisasi harus tampil di dalam aplikasi utama (:8585/visualisasi/), tanpa port atau kredensial terpisah."],
   ["FR-41", "Visualisasi", "Peran Visualisasi mengikuti peran aplikasi utama (Admin → Admin; lainnya → Gamma + sql_lab)."],
   ["FR-42", "Visualisasi", "Dashboard Risiko ERM dan Tata Kelola Data harus membaca Gold langsung dari Trino, dengan filter dan drill-down."],

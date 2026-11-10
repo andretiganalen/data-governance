@@ -103,6 +103,16 @@ Schema lama dihapus dengan `migrate_legacy_erm.py` (tanpa `--keep-source`) setel
 
 Panel unduhan berkas `/unduh/` (rilis CSV/XLSX) ditutup 2026-11-10: data Gold dibaca dari Trino (menu Visualisasi, DBeaver).
 
+**Sumber lain (rebuild, SQL di Trino):**
+- `medallion/leno_erm.py` — Aplikasi ERM LenO dari katalog Trino `lenodb.silver` (replika CDC): snapshot Bronze `bronze_leno_*`,
+  lalu Silver/Gold ERM dengan `_source_system = LENO_ERM` (perusahaan COMP-LEN-001; unit kerja `hr_unitkerja.kodeuk` = ORG_ID).
+  Baris EGRC dan LENO_ERM hidup berdampingan; tiap sumber hanya mengganti barisnya sendiri.
+- `medallion/sdm.py` — kerangka SDM + korporasi: Bronze `bronze_sdm_*`/`bronze_corp_*` (dipindah dari prototipe `lakekeeper.medallion`
+  oleh `migrate_legacy_medallion.py`, schema lama dihapus 2026-11-10) → `silver_dim_company_information`, `silver_dim_sdm_employee`,
+  `silver_fact_sdm_certification`, `silver_fact_corp_{investment,tax}_monthly` → `gold_sdm_*`. Kolom pribadi ditandai
+  `Sensitivitas: …` di komentar; `catalog_trino.py` memasang tag Sensitivitas-nya.
+- Urutan `lakehouse.py rebuild`: SDM/korporasi → berkas Workbook/E-GRC → ERM LenO → sinkron katalog.
+
 ## Visualisasi — di dalam aplikasi utama (`superset/`, `../ui/leno-theme/leno-menu.js`)
 Pengguna hanya melihat Len Data Governance (:8585). Menu **Visualisasi** di sidebar membuka panel di area konten
 (header & sidebar tetap) berisi dashboard Gold. Mesinnya Apache Superset 6 (`lendatagovernance/superset:6.0.0-dg2`,

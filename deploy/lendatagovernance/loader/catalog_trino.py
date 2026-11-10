@@ -102,6 +102,7 @@ def main() -> None:
         if cur.get("owners"):
             body["owners"] = [{"id": o["id"], "type": o["type"]} for o in cur["owners"]]
         tb = om.put("/v1/tables", body)
+        sensitivity_tags(om, tb, cols[t])
         if counts[t] is not None:
             om.call("PUT", f"/v1/tables/{tb['id']}/tableProfile", {
                 "tableProfile": {"timestamp": int(now.timestamp() * 1000), "rowCount": counts[t], "columnCount": len(cols[t])}})
@@ -111,6 +112,35 @@ def main() -> None:
     for x in gone:
         om.call("DELETE", f"/v1/tables/{x['id']}")
     print(f"Katalog ↔ Trino: {len(names)} tabel disinkron, {len(gone)} dihapus, {sum(v for v in counts.values() if v):,} baris, {sum(1 for v in counts.values() if v is None)} tak terbaca ({stamp})")
+
+
+SENS = {"public": "Public", "restricted": "Restricted", "confidential": "Confidential", "strictly confidential": "StrictlyConfidential"}
+
+
+def sensitivity_tags(om, tb: dict, tcols: list) -> None:
+    """Komentar kolom "Sensitivitas: <level>" (skema medallion_repository.sql) → tag Sensitivitas.<level> di katalog.
+    Tag Sensitivitas lain pada kolom itu diganti (klasifikasi saling eksklusif); tag lain (glosarium) dipertahankan."""
+    want = {}
+    for c, _, cm in tcols:
+        m = re.search(r"Sensitivitas:\s*(Strictly Confidential|Confidential|Restricted|Public)", cm or "", re.I)
+        if m:
+            want[c] = f"{W.CLASSIFICATION}.{SENS[m.group(1).lower()]}"
+    if not want:
+        return
+    cur = om.get(f"/v1/tables/{tb['id']}?fields=columns,tags")
+    ops = []
+    for i, c in enumerate(cur.get("columns", [])):
+        if c["name"] not in want:
+            continue
+        tags = c.get("tags", [])
+        if any(g["tagFQN"] == want[c["name"]] for g in tags):
+            continue
+        keep = [{k: g[k] for k in ("tagFQN", "source", "labelType", "state") if k in g}
+                for g in tags if not g["tagFQN"].startswith(W.CLASSIFICATION + ".")]
+        ops.append({"op": "add", "path": f"/columns/{i}/tags", "value": keep + [
+            {"tagFQN": want[c["name"]], "source": "Classification", "labelType": "Manual", "state": "Confirmed"}]})
+    if ops:
+        om.patch(f"/v1/tables/{tb['id']}", ops)
 
 
 def defaultdict_list():

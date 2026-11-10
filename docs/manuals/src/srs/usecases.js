@@ -1,4 +1,4 @@
-// Use case SRS Len Data Governance. Satu objek per use case; dipakai build-srs.js.
+// Use case SRS Len Data Governance. Satu objek per use case; dipakai build-srs-pdf.js.
 // Field: id, nama, aktor, tujuan, pra (prasyarat), pemicu, utama[] (alur utama), alt[] (alur alternatif/eksepsi),
 //        pasca (pascakondisi), fr[] (kebutuhan fungsional yang dipenuhi), prioritas, status (Tersedia|Fase 2|Rencana).
 const A = {
@@ -337,4 +337,24 @@ module.exports.UC = [
     pra: ["Laporan workbook-defects-<tanggal>.md."], pemicu: "Pemuatan workbook selesai.",
     utama: ["Staf meneruskan daftar cacat ke Data Owner.", "Data Owner memperbaiki workbook.", "Staf memuat ulang (UC-35) dan memastikan cacat tertutup."],
     alt: [], pasca: "Kualitas metadata meningkat.", fr: ["FR-23"] },
+  // ---------------------------------------------------------------- F. Sumber data terpusat di Trino (2026-11-10)
+  { id: "UC-61", grup: "C", nama: "Memuat ERM dari Aplikasi LenO (lenodb)", aktor: [A.SYS, A.AD, A.TR], prioritas: "Tinggi", status: "Tersedia",
+    tujuan: "Membangun Silver/Gold ERM dari data transaksi Aplikasi ERM LenO yang sudah direplikasi ke Trino (katalog lenodb).",
+    pra: ["Katalog Trino lenodb (schema silver, replika CDC) terjangkau.", "Dimensi perusahaan tersedia (UC-62)."], pemicu: "lakehouse.py rebuild (juga dipanggil setelah pemuatan berkas).",
+    utama: ["Sistem menyalin 24 tabel erm_* + hr_unitkerja dari lenodb.silver ke Bronze bronze_leno_* (snapshot apa adanya).",
+            "Sistem membangun 16 tabel Silver ERM dari rekaman aktif (recordstatus A) lewat join relasional: risiko → perencanaan (tahun, unit kerja = ORG_ID) → master risiko, sasaran, kriteria.",
+            "Sistem menilai risiko INHEREN, RESIDUAL, dan REALISASI per periode pelaporan, serta rencana mitigasi bulanan (Bulan1…12) dan realisasinya.",
+            "Sistem membangun Gold ERM (register, penilaian bulanan, heatmap, progres mitigasi) dengan _source_system = LENO_ERM, berdampingan dengan baris EGRC.",
+            "Sistem menyinkronkan katalog."],
+    alt: ["1a. lenodb tidak terjangkau: langkah dilewati; data LENO_ERM terakhir tetap ada.", "2a. Pemuatan E-GRC berikutnya tidak menghapus baris LENO_ERM (tiap sumber hanya mengganti barisnya sendiri)."],
+    pasca: "Data operasional ERM LenO tersedia di medallion_repository dan dashboard dapat memfilter per sumber.", fr: ["FR-56", "FR-32"] },
+  { id: "UC-62", grup: "C", nama: "Membangun kerangka data SDM", aktor: [A.SYS, A.AD], prioritas: "Tinggi", status: "Tersedia",
+    tujuan: "Menyajikan data pegawai, sertifikasi, dan perusahaan dalam kerangka SDM di Trino dengan perlindungan data pribadi.",
+    pra: ["Bronze bronze_sdm_* dan bronze_corp_* ada (dipindah dari prototipe lakekeeper.medallion)."], pemicu: "lakehouse.py rebuild.",
+    utama: ["Sistem membangun silver_dim_company_information, silver_dim_sdm_employee, silver_fact_sdm_certification, dan fakta investasi/pajak bulanan.",
+            "Sistem membakukan nilai (gender, rentang tahun, kunci nama perusahaan) tanpa mengubah nilai asli, dan mencatat penyimpangan di dq_note.",
+            "Sistem membangun Gold SDM tanpa data pribadi: profil tenaga kerja, ringkasan per perusahaan, ringkasan sertifikasi, temuan mutu.",
+            "Kolom pribadi diberi komentar Sensitivitas; sinkron katalog memasang tag Sensitivitas (Confidential/Strictly Confidential)."],
+    alt: ["2a. Pegawai dengan perusahaan yang tidak ada di dimensi: company_id kosong dan tercatat di gold_sdm_dq_finding."],
+    pasca: "Data SDM terpusat di medallion_repository; data pribadi bertanda di katalog.", fr: ["FR-57", "FR-16"] },
 ];

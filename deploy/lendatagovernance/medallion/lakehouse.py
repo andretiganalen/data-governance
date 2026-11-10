@@ -615,9 +615,9 @@ def build_erm(tq: Trino, path: Path, L: dict, snap: date) -> dict[str, list[dict
         temuan = read_csv(gdir / "gold_grc_temuan_mutu.csv")
 
     ent = {e["entitas_key"]: e for e in csv.DictReader((REF / "entitas.csv").open(encoding="utf-8"))}
-    master = {r[0]: (r[1], r[2]) for r in tq.q(
-        "SELECT company_id, company_name, company_acronym FROM lakekeeper.medallion.silver_dim_company_information "
-        "WHERE company_id LIKE 'COMP-%'")}
+    master = {r[0]: (r[1], r[2]) for r in tq.q(   # dimensi perusahaan bersama (kerangka SDM/korporasi, sdm.py)
+        f"SELECT company_id, company_name, company_acronym FROM {tq.fq('silver_dim_company_information')} "
+        "WHERE company_id LIKE 'COMP-%'")} if "silver_dim_company_information" in set(tq.tables()) else {}
 
     def comp(ek: str | None, year: int | None) -> dict:
         e = ent.get(ek or "DID", {})
@@ -930,6 +930,16 @@ SNAPSHOT_TABLES = {"gold_meta_governance_kpi_snapshot", "gold_meta_dq_finding_sn
 
 
 def rebuild(tq: Trino, schema: dict, batch_id: str, now: datetime) -> None:
+    """Urutan: SDM/korporasi (dimensi perusahaan bersama) → berkas DG_WORKBOOK/EGRC → Aplikasi ERM LenO (lenodb).
+    Tabel ber-kolom _source_system menampung beberapa sumber; tiap sumber hanya mengganti barisnya sendiri."""
+    import leno_erm  # Aplikasi ERM LenO dari katalog Trino lenodb (SQL di Trino)
+    import sdm  # kerangka SDM + korporasi (SQL di Trino), dari Bronze bronze_sdm_* / bronze_corp_*
+    sdm.build(tq, schema, batch_id, now)
+    rebuild_files(tq, schema, batch_id, now)
+    leno_erm.build(tq, schema, batch_id, now)
+
+
+def rebuild_files(tq: Trino, schema: dict, batch_id: str, now: datetime) -> None:
     srcs = latest_sources(tq)
     if not srcs:
         log("Belum ada berkas DG_WORKBOOK/EGRC di bronze_repository. Jalankan: lakehouse.py ingest <berkas>")
@@ -942,6 +952,9 @@ def rebuild(tq: Trino, schema: dict, batch_id: str, now: datetime) -> None:
         log(f"Silver/Gold dari {src}: {info['name']} (file_id {info['file_id']})")
         T = build_meta(info["path"], info["file_id"], L, snap) if src == "DG_WORKBOOK" else build_erm(tq, info["path"], L, snap)
         findings += T.pop("_dq_findings")
+        for rows in T.values():          # Gold tanpa lineage per baris: tandai sumbernya
+            for r in rows:
+                r.setdefault("_source_system", src)
         out.update(T)
     if "DG_WORKBOOK" in srcs and "EGRC" in srcs:
         out["gold_meta_dq_finding_snapshot"] = findings
@@ -954,6 +967,8 @@ def rebuild(tq: Trino, schema: dict, batch_id: str, now: datetime) -> None:
         rows = out[name]
         if name in SNAPSHOT_TABLES:
             replace_rows(tq, name, spec, rows, where=f"snapshot_date = DATE '{snap.isoformat()}'")
+        elif any(c == "_source_system" for c, _, _ in spec["cols"]):
+            replace_rows(tq, name, spec, rows, where="_source_system IS DISTINCT FROM 'LENO_ERM'")   # baris LenO dikelola leno_erm.py
         else:
             replace_rows(tq, name, spec, rows)
         log(f"  {name:45s} {len(rows):6d} baris" + ("" if st == "sama" else f"  [{st}]"))

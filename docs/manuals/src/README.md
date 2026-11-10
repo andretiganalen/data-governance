@@ -26,16 +26,9 @@ Angka diisi otomatis dari `build/data.js` (dibuat saat rilis):
 Butuh: venv di atas + `/srv/lendatagovernance/secrets/trino.env`, node 22, google-chrome, dan `sudo docker` untuk membaca status katalog.
 
 ## SRS (Software Requirements Specification)
-Sumber: `srs/usecases.js` (60 use case) dan `srs/build-srs.js` (bab, kebutuhan fungsional/non-fungsional, keterlacakan, isu).
-Butuh paket npm `docx` (v9); bila belum terpasang global, pasang di folder sementara lalu arahkan `NODE_PATH`:
-```bash
-npm install --prefix /tmp/docxjs docx@9
-NODE_PATH=/tmp/docxjs/node_modules node docs/manuals/src/srs/build-srs.js "docs/manuals/<YYMMDD CC> SRS Len Data Governance.docx" "<YYMMDD CC>"
-```
-Perbarui `usecases.js`/`build-srs.js` setiap kali fitur, aturan data, atau isu terbuka berubah.
-
-SRS versi PDF (50 use case: 25 Dasar + 25 Lanjutan; tanpa dependensi npm, memakai `build-pdf.mjs` + Chrome):
+Versi resmi: PDF, 50 use case (25 Dasar + 25 Lanjutan). Tanpa dependensi npm; memakai `build-pdf.mjs` + Chrome:
 ```bash
 node docs/manuals/src/srs/build-srs-pdf.js "<YYMMDD CC>"      # → docs/manuals/<YYMMDD CC> SRS Len Data Governance.pdf
 ```
-Pemilihan dan peleburan use case ada di `srs/build-srs-pdf.js` (DASAR, LANJUT, LEBUR); kebutuhan di `srs/requirements.js`.
+Sumber: `srs/usecases.js` (use case), `srs/requirements.js` (FR/NFR), `srs/build-srs-pdf.js` (bab, pemilihan DASAR/LANJUT,
+peleburan LEBUR). Perbarui setiap kali fitur, aturan data, atau isu terbuka berubah.
