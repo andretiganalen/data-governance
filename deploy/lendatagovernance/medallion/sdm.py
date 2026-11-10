@@ -69,7 +69,7 @@ def silver_sql(tq: L.Trino, batch_id: str, now: datetime) -> dict[str, dict[str,
         **{c: f"e.{c}" for c in emp_cols},
         "company_id": "m.company_id",
         "gender": f"CASE {g} WHEN 'lakilaki' THEN 'Laki-laki' WHEN 'perempuan' THEN 'Perempuan' END",
-        "gender_source": "e.gender",
+        "gender_source": "e.gender", "birth_date": "CAST(NULL AS date)",
         "dq_note": ("NULLIF(concat_ws('; ', "
                     f"CASE WHEN e.gender IS NOT NULL AND {g} NOT IN ('lakilaki','perempuan') THEN 'gender sumber bukan jenis kelamin: ' || e.gender END, "
                     "CASE WHEN m.company_id IS NULL THEN 'perusahaan tidak cocok dengan silver_dim_company_information' END), '')"),
@@ -103,7 +103,9 @@ def silver_sql(tq: L.Trino, batch_id: str, now: datetime) -> dict[str, dict[str,
 
 
 def gold_sql(tq: L.Trino, batch_id: str, now: datetime) -> dict[str, str]:
-    E, C, CO = tq.fq("silver_dim_sdm_employee"), tq.fq("silver_fact_sdm_certification"), tq.fq("silver_dim_company_information")
+    # Gold prototipe hanya dari baris SDM (pegawai LenO punya Gold sendiri: gold_sdm_headcount_monthly, leno_sdm.py)
+    E = f"(SELECT * FROM {tq.fq('silver_dim_sdm_employee')} WHERE _source_system = 'SDM')"
+    C, CO = tq.fq("silver_fact_sdm_certification"), tq.fq("silver_dim_company_information")
     lin = f"{L.sq(batch_id)} AS _batch_id, {L.lit(now, 'timestamp')} AS _loaded_at"
     dims = "company_id, company_name, directorate, division, employment_status, gender, age_group, generation, education_level, years_of_service_group, job_level"
     return {
@@ -127,7 +129,7 @@ def gold_sql(tq: L.Trino, batch_id: str, now: datetime) -> dict[str, str]:
             f"GROUP BY company_name, certification_category, training_type, validity_status, period_start_year, period_end_year",
         "gold_sdm_dq_finding": " UNION ALL ".join(
             f"SELECT {L.sq(t)} AS table_name, {L.sq(c)} AS column_name, {L.sq(r)} AS rule_name, {L.sq(f)} AS finding, "
-            f"count(*) AS affected_rows, {lin} FROM {tq.fq(t)} WHERE {w}" for t, c, r, f, w in [
+            f"count(*) AS affected_rows, {lin} FROM {tq.fq(t)} WHERE _source_system = 'SDM' AND ({w})" for t, c, r, f, w in [
                 ("silver_dim_sdm_employee", "gender", "Nilai baku", "Jenis kelamin sumber bukan Laki-laki/Perempuan (mis. 'Mahasiswa')", "gender IS NULL AND gender_source IS NOT NULL"),
                 ("silver_dim_sdm_employee", "company_id", "Referensi", "Perusahaan pegawai tidak ada di silver_dim_company_information", "company_id IS NULL"),
                 ("silver_dim_sdm_employee", "employee_id", "Unik", "employee_id ganda", "employee_id IN (SELECT employee_id FROM " + E + " GROUP BY 1 HAVING count(*) > 1)"),
@@ -188,8 +190,9 @@ def build(tq: L.Trino, schema: dict, batch_id: str, now: datetime) -> None:
         return
     L.log("Silver/Gold SDM + korporasi (Trino SQL)")
     mark_bronze_pii(tq, live)
-    for name, m in silver_sql(tq, batch_id, now).items():
-        load_select(tq, schema, live, name, m)
+    for name, m in silver_sql(tq, batch_id, now).items():   # tiap sumber (SDM/CORP) hanya mengganti barisnya sendiri
+        src = "CORP" if "corp" in name or "company" in name else "SDM"
+        load_select(tq, schema, live, name, m, delete_where=f"_source_system = '{src}'")
     for name, sql in gold_sql(tq, batch_id, now).items():
         spec = schema[name]
         st = L.ensure_table(tq, name, spec, live, managed=True)

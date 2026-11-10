@@ -117,7 +117,15 @@ Panel unduhan berkas `/unduh/` (rilis CSV/XLSX) ditutup 2026-11-10: data Gold di
   (kurva S, output, kendala, kegiatan, skor prioritas AHP) → `gold_astacita_*`. Berkas utama `DBASTACITA/DBASTACITA.xlsx`
   (versi terbaru di Bronze). Kunci = tema bidang (`astacita.THEMES`), bukan nomor "Asta Cita N" (beda antar sheet).
   Timer inbox menjalankan sinkron Nextcloud tiap 10 menit (`ExecStartPre`); berkas baru memicu rebuild.
-- Urutan `lakehouse.py rebuild`: SDM/korporasi → berkas Workbook/E-GRC → ERM LenO → Asta Cita → sinkron katalog.
+- `medallion/leno_sdm.py` — kepegawaian Aplikasi LenO (`lenodb.silver.ps_karyawan`, `ps_statusbarukaryawan`, `ps_ukkaryawan`,
+  ringkasan absensi terakhir): Bronze hanya kolom yang diperlukan (tanpa KTP/paspor/NPWP/PIN) → `silver_dim_sdm_employee`
+  (`LENO_SDM`), `silver_fact_sdm_employment_status` (rentang berlaku + `end_date_basis`), `silver_fact_sdm_unit_assignment` →
+  **`gold_sdm_headcount_monthly`** (posisi akhir bulan sejak Jan 2024: unit × gender × Kontrak/Non Kontrak × status × kelompok umur,
+  jumlah orang + umur min/maks/rata-rata). Kelompok status: `reference/sdm_status_kepegawaian.csv` (koreksi oleh Unit HC).
+  Pegawai `aktif = 0` yang statusnya tak pernah ditutup diakhiri pada absensi terakhir (perkiraan) atau perubahan data terakhir.
+  Contoh: `SELECT contract_flag, sum(headcount), min(age_min), max(age_max) FROM gold_sdm_headcount_monthly WHERE period_year = 2026
+  AND period_month = 10 AND gender = 'Perempuan' AND contract_flag IN ('Kontrak','Non Kontrak') AND is_active GROUP BY 1`.
+- Urutan `lakehouse.py rebuild`: SDM/korporasi → berkas Workbook/E-GRC → ERM LenO → SDM LenO → Asta Cita → sinkron katalog.
 
 ## Visualisasi — di dalam aplikasi utama (`superset/`, `../ui/leno-theme/leno-menu.js`)
 Pengguna hanya melihat Len Data Governance (:8585). Menu **Visualisasi** di sidebar membuka panel di area konten

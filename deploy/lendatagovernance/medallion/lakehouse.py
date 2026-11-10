@@ -930,14 +930,16 @@ SNAPSHOT_TABLES = {"gold_meta_governance_kpi_snapshot", "gold_meta_dq_finding_sn
 
 
 def rebuild(tq: Trino, schema: dict, batch_id: str, now: datetime) -> None:
-    """Urutan: SDM/korporasi (dimensi perusahaan bersama) → berkas DG_WORKBOOK/EGRC → Aplikasi ERM LenO (lenodb) → Asta Cita.
+    """Urutan: SDM/korporasi (dimensi perusahaan bersama) → berkas DG_WORKBOOK/EGRC → Aplikasi ERM LenO (lenodb) → SDM LenO (lenodb) → Asta Cita.
     Tabel ber-kolom _source_system menampung beberapa sumber; tiap sumber hanya mengganti barisnya sendiri."""
     import astacita  # program Task Force Asta Cita, dari Bronze berkas Nextcloud DBASTACITA (SQL di Trino)
     import leno_erm  # Aplikasi ERM LenO dari katalog Trino lenodb (SQL di Trino)
+    import leno_sdm  # SDM (kepegawaian) Aplikasi LenO dari lenodb (SQL di Trino)
     import sdm  # kerangka SDM + korporasi (SQL di Trino), dari Bronze bronze_sdm_* / bronze_corp_*
     sdm.build(tq, schema, batch_id, now)
     rebuild_files(tq, schema, batch_id, now)
     leno_erm.build(tq, schema, batch_id, now)
+    leno_sdm.build(tq, schema, batch_id, now)   # memakai bronze_leno_hr_unitkerja dari leno_erm
     astacita.build(tq, schema, batch_id, now)
 
 

@@ -1,0 +1,14 @@
+status_name,employment_class,contract_flag,is_employee,is_active,catatan
+Karyawan Tetap,TETAP,Non Kontrak,true,true,
+Masa Persiapan Pensiun,TETAP,Non Kontrak,true,true,MPP: masih karyawan tetap
+Calon Karyawan,TETAP,Non Kontrak,true,true,Asumsi: masa percobaan calon karyawan tetap — perlu konfirmasi HC
+Kontrak Pemborongan,KONTRAK,Kontrak,true,true,
+Pro Hire,KONTRAK,Kontrak,true,true,
+Tenaga Kerja Berpengalaman,KONTRAK,Kontrak,true,true,
+Trainee,KONTRAK,Kontrak,true,true,
+Tenaga Harian Lepas,KONTRAK,Kontrak,true,true,
+Alih Daya,NON_KARYAWAN,Alih Daya,false,true,Asumsi: dipekerjakan vendor alih daya, bukan karyawan Len — perlu konfirmasi HC
+Direksi,NON_KARYAWAN,Organ Perusahaan,false,true,Organ perusahaan
+Dewan Komisaris,NON_KARYAWAN,Organ Perusahaan,false,true,Organ perusahaan
+Organ Pendukung Dewan Komisaris,NON_KARYAWAN,Organ Perusahaan,false,true,Organ perusahaan
+Cuti Tanpa Tanggungan,TIDAK_AKTIF,Non Kontrak,true,false,Masih karyawan tetapi tidak aktif bekerja

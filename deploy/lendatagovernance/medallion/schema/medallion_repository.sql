@@ -1900,6 +1900,7 @@ CREATE TABLE silver_dim_sdm_employee (
    gender varchar COMMENT 'Baku: Laki-laki | Perempuan; NULL bila sumber bukan jenis kelamin — Sensitivitas: Restricted',
    gender_source varchar COMMENT 'Nilai jenis kelamin apa adanya dari sumber — Sensitivitas: Restricted',
    age integer COMMENT 'Sensitivitas: Restricted',
+   birth_date date COMMENT 'Tanggal lahir (untuk umur per periode) — Sensitivitas: Restricted',
    age_group varchar,
    generation varchar,
    religion varchar COMMENT 'Sensitivitas: Strictly Confidential',
@@ -1915,11 +1916,11 @@ CREATE TABLE silver_dim_sdm_employee (
    dq_note varchar COMMENT 'Catatan mutu baris (nilai sumber tidak diubah diam-diam)',
    _file_id varchar COMMENT 'lineage',
    _batch_id varchar COMMENT 'lineage',
-   _source_system varchar COMMENT 'lineage: SDM',
+   _source_system varchar COMMENT 'lineage: SDM | LENO_SDM',
    _source_file varchar COMMENT 'lineage',
    _loaded_at timestamp(6) with time zone COMMENT 'lineage'
 )
-COMMENT 'Dimensi pegawai (kerangka SDM). Satu baris per pegawai. Sumber: bronze_sdm_employee_information.';
+COMMENT 'Dimensi pegawai (kerangka SDM). Satu baris per pegawai per sumber: SDM (prototipe, bronze_sdm_employee_information) | LENO_SDM (Aplikasi LenO ps_karyawan).';
 
 CREATE TABLE silver_fact_sdm_certification (
    certification_id varchar COMMENT 'PK',
@@ -2277,3 +2278,71 @@ CREATE TABLE gold_astacita_dq_finding (
    _loaded_at timestamp(6) with time zone COMMENT 'lineage'
 )
 COMMENT 'Gold Asta Cita: temuan mutu data sumber DBASTACITA.';
+
+-- ==== SDM dari Aplikasi LenO (lenodb.silver: ps_karyawan, ps_statusbarukaryawan, ps_ukkaryawan), 2026-11-10. Dibangun medallion/leno_sdm.py.
+-- Baris pegawai LenO masuk silver_dim_sdm_employee dengan _source_system = LENO_SDM (berdampingan dengan prototipe SDM).
+-- Kelompok status: reference/sdm_status_kepegawaian.csv (dapat dikoreksi Unit HC).
+
+CREATE TABLE silver_fact_sdm_employment_status (
+   status_id varchar COMMENT 'PK',
+   employee_id varchar COMMENT 'FK silver_dim_sdm_employee',
+   company_id varchar COMMENT 'FK silver_dim_company_information',
+   status_name varchar COMMENT 'Status kepegawaian sumber (Karyawan Tetap, Kontrak Pemborongan, …)',
+   employment_class varchar COMMENT 'TETAP | KONTRAK | NON_KARYAWAN | TIDAK_AKTIF | TIDAK_DIKENAL (reference/sdm_status_kepegawaian.csv)',
+   contract_flag varchar COMMENT 'Kontrak | Non Kontrak | Alih Daya | Organ Perusahaan',
+   is_employee boolean,
+   is_active boolean COMMENT 'FALSE untuk status tidak aktif bekerja (mis. Cuti Tanpa Tanggungan)',
+   job_category varchar COMMENT 'Jenis karyawan sumber (Staff, Penunjang Produksi & Operasi, …)',
+   valid_from date COMMENT 'TMT status',
+   valid_to date COMMENT 'Akhir berlaku: paling awal dari tanggal berakhir, TMT berhenti, dan (bila pegawai tidak aktif) absensi terakhir / perubahan data terakhir; 9999-12-31 = masih berlaku',
+   end_date_basis varchar COMMENT 'Dasar valid_to: tanggal berakhir | TMT berhenti | absensi terakhir (perkiraan) | perubahan data terakhir (perkiraan) | terbuka',
+   is_current boolean,
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_SDM',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Riwayat status kepegawaian per pegawai (rentang berlaku). Sumber: Aplikasi LenO ps_statusbarukaryawan.';
+
+CREATE TABLE silver_fact_sdm_unit_assignment (
+   assignment_id varchar COMMENT 'PK',
+   employee_id varchar COMMENT 'FK silver_dim_sdm_employee',
+   org_id varchar COMMENT 'Kode unit kerja (hr_unitkerja.kodeuk = ORG_ID workbook)',
+   unit_name varchar,
+   valid_from date,
+   valid_to date COMMENT '9999-12-31 = masih berlaku',
+   is_current boolean,
+   _file_id varchar COMMENT 'lineage',
+   _batch_id varchar COMMENT 'lineage',
+   _source_system varchar COMMENT 'lineage: LENO_SDM',
+   _source_file varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Riwayat penempatan unit kerja per pegawai. Sumber: Aplikasi LenO ps_ukkaryawan + hr_unitkerja.';
+
+CREATE TABLE gold_sdm_headcount_monthly (
+   period_year integer,
+   period_month integer,
+   period_date date COMMENT 'Hari pertama bulan',
+   date_key integer,
+   company_id varchar,
+   company_name varchar,
+   org_id varchar COMMENT 'Unit kerja pada akhir bulan (NULL bila tidak tercatat)',
+   unit_name varchar,
+   gender varchar COMMENT 'Laki-laki | Perempuan',
+   employment_class varchar COMMENT 'TETAP | KONTRAK | NON_KARYAWAN | TIDAK_AKTIF | TIDAK_DIKENAL',
+   contract_flag varchar COMMENT 'Kontrak | Non Kontrak | Alih Daya | Organ Perusahaan',
+   employment_status varchar COMMENT 'Status kepegawaian sumber',
+   is_employee boolean,
+   is_active boolean COMMENT 'Aktif bekerja (bukan cuti tanpa tanggungan)',
+   age_group varchar COMMENT '<25 | 25-34 | 35-44 | 45-54 | 55+ (umur pada akhir bulan)',
+   headcount bigint COMMENT 'Jumlah orang pada posisi akhir bulan',
+   age_min integer,
+   age_max integer,
+   age_avg double,
+   _source_system varchar COMMENT 'lineage: LENO_SDM',
+   _batch_id varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Gold SDM: jumlah karyawan per bulan (posisi akhir bulan) menurut perusahaan, unit, gender, kontrak/non kontrak, status, kelompok umur — dengan umur min/maks/rata-rata. Tanpa data pribadi.';
