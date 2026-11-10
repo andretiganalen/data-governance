@@ -33,3 +33,9 @@ npm install --prefix /tmp/docxjs docx@9
 NODE_PATH=/tmp/docxjs/node_modules node docs/manuals/src/srs/build-srs.js "docs/manuals/<YYMMDD CC> SRS Len Data Governance.docx" "<YYMMDD CC>"
 ```
 Perbarui `usecases.js`/`build-srs.js` setiap kali fitur, aturan data, atau isu terbuka berubah.
+
+SRS versi PDF (50 use case: 25 Dasar + 25 Lanjutan; tanpa dependensi npm, memakai `build-pdf.mjs` + Chrome):
+```bash
+node docs/manuals/src/srs/build-srs-pdf.js "<YYMMDD CC>"      # → docs/manuals/<YYMMDD CC> SRS Len Data Governance.pdf
+```
+Pemilihan dan peleburan use case ada di `srs/build-srs-pdf.js` (DASAR, LANJUT, LEBUR); kebutuhan di `srs/requirements.js`.
