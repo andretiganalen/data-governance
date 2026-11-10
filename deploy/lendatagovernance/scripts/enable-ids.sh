@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Switch OpenMetadata login from basic auth to IDS (OIDC, confidential client).
+# Switch Len Data Governance login from basic auth to IDS (OIDC, confidential client).
 # Usage: scripts/enable-ids.sh <client_id> <client_secret>
 # Prereq: IDS team registered redirect URI http://dev-data.len.co.id/callback
 set -euo pipefail
 [[ $# -eq 2 ]] || { echo "usage: $0 <client_id> <client_secret>"; exit 1; }
-SEC=${OM_DATA_DIR:-/srv/lendatagovernance}/secrets/openmetadata.env
+SEC=${LDG_DATA_DIR:-/srv/lendatagovernance}/secrets/lendatagovernance.env
 URL=http://dev-data.len.co.id
 IDS=https://ids.len.co.id
 
@@ -41,5 +41,5 @@ OIDC_PROMPT_TYPE=login
 ENV
 sed -i 's/^AUTHORIZER_ADMIN_PRINCIPALS=.*/AUTHORIZER_ADMIN_PRINCIPALS=[admin,andre.tigana]/' "$SEC"
 sed -i 's/data-ids-status" content="[a-z]*"/data-ids-status" content="on"/' "$(dirname "$0")/../gateway/html/index.html"
-cd "$(dirname "$0")/.." && docker compose up -d --force-recreate openmetadata-server gateway
+cd "$(dirname "$0")/.." && docker compose up -d --force-recreate ldg-server gateway
 echo "IDS enabled. Login at $URL"

@@ -1,6 +1,6 @@
-/* Len classic theme for OpenMetadata 2.0.7 — look of https://www.len.co.id
+/* Len classic theme for Len Data Governance (upstream catalog UI 2.0.7) — look of https://www.len.co.id
  * Standard: plan/interface-menu.md. Positions: plan/leno_interface_theme.md.
- * Menus, content and access stay OpenMetadata's. Selectors verified on openmetadata-ui-2.0.7 (rendered DOM).
+ * Menus, content and access stay the upstream UI's. Selectors verified on the upstream UI 2.0.7 (rendered DOM).
  * Primary/brand colour comes from Settings › Preferences › Theme (customUiThemePreference) — not forced here,
  * so Ant Design + Untitled UI (--tw-color-brand-*) keep deriving their palettes from it.
  */
@@ -18,7 +18,7 @@
   --len-shadow-header: 0 2px 6px rgba(0, 0, 0, .18);
 }
 
-/* ---- §2 Typography: Montserrat everywhere (OM sets Inter on many components directly) ---- */
+/* ---- §2 Typography: Montserrat everywhere (the upstream UI sets Inter on many components directly) ---- */
 /* :where() keeps specificity at 0 so the targeted rules below (menu, code) can override it */
 html body,
 body :where(*:not(code):not(pre):not(kbd):not(samp):not(svg):not(svg *):not([class*="katex"]):not([class*="katex"] *):not([class*="mono"]):not([class*="Mono"]):not(.CodeMirror *):not(.monaco-editor *)) {
@@ -47,13 +47,13 @@ h1, h2, h3, h4, h5, h6, .ant-typography h1, .ant-typography h2, .ant-typography 
 .app-container, .app-container .ant-layout, .ant-layout-content,
 .page-layout-v1, .page-layout-v1-center { background: var(--len-bg) !important; }
 
-/* ---- Header bar: flat, OpenMetadata default (user preference) — only square inputs ---- */
+/* ---- Header bar: flat, upstream default (user preference) — only square inputs ---- */
 .navbar-container .ant-input-affix-wrapper,
 .navbar-container .ant-select-selector { border-radius: var(--len-radius) !important; }
 
 /* ---- Home welcome banner: flat, follows the theme ----
  * Default = theme Primary Color (Settings › Preferences › Appearance), no gradient/texture.
- * A colour chosen in Settings › Persona › Customize UI › Home is set inline by OM and wins
+ * A colour chosen in Settings › Persona › Customize UI › Home is set inline by the upstream UI and wins
  * (background-color is deliberately NOT !important here). */
 .customise-landing-page-header {
   background-image: none !important;
@@ -108,7 +108,7 @@ h1, h2, h3, h4, h5, h6, .ant-typography h1, .ant-typography h2, .ant-typography 
 .ant-dropdown-menu-item:hover:not(.ant-dropdown-menu-item-disabled) { background: var(--len-red-hover) !important; color: #fff !important; }
 .ant-dropdown-menu-item:hover:not(.ant-dropdown-menu-item-disabled) * { color: #fff !important; }
 
-/* ---- §3 Corners: square, classic (antd + OM Tailwind "tw:" utilities), keep circles ---- */
+/* ---- §3 Corners: square, classic (antd + upstream Tailwind "tw:" utilities), keep circles ---- */
 .ant-card, .ant-btn, .ant-input, .ant-input-affix-wrapper, .ant-select-selector, .ant-picker, .ant-tag,
 .ant-modal-content, .ant-drawer-content, .ant-collapse, .ant-table-wrapper, .ant-popover-inner, .ant-tabs-card .ant-tabs-tab,
 [class*="tw:rounded"]:not([class*="rounded-full"]):not(.ant-avatar),

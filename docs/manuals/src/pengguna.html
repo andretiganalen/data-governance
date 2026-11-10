@@ -79,7 +79,8 @@ figure{margin:3mm 0}figcaption{font-size:8.5pt;color:var(--muted);margin-top:1mm
 <section>
   <h2><small>Bagian 1</small>Mulai dalam tiga langkah</h2>
   <p class="lead">Len Data Governance adalah <b>katalog data perusahaan</b>: tempat mencari tahu data apa yang ada, apa artinya,
-  siapa pemiliknya, dari mana asalnya, dan siapa yang memakainya. Katalog berisi <i>keterangan tentang data</i>, bukan isi datanya.</p>
+  siapa pemiliknya, dari mana asalnya, dan siapa yang memakainya. Halaman katalog berisi <i>keterangan tentang data</i>. Angka siap pakai
+  dan dashboard ada di menu <span class="ui">Visualisasi</span> dalam aplikasi yang sama.</p>
   <div class="steps">
     <div><b>1</b><h4>Buka alamat</h4><p>Di browser komputer kantor, buka <b data-v="alamat"></b>. Hanya bisa dibuka dari jaringan kantor.</p></div>
     <div><b>2</b><h4>Masuk</h4><p>Klik tombol <span class="ui">Masuk</span>, lalu isi email dan kata sandi akun Anda.</p></div>
@@ -113,20 +114,20 @@ figure{margin:3mm 0}figcaption{font-size:8.5pt;color:var(--muted);margin-top:1mm
     <g fill="#515151"><text x="14" y="58">Home</text><text x="14" y="80" fill="#194A80" font-weight="600">Explore</text>
       <text x="14" y="102">Lineage</text><text x="14" y="124">Observability</text><text x="14" y="146">Insights</text>
       <text x="14" y="168">Domains</text><text x="14" y="190">Govern</text><text x="24" y="208" font-size="9">Glossary</text>
-      <text x="24" y="224" font-size="9">Classification</text></g>
+      <text x="24" y="224" font-size="9">Classification</text><text x="14" y="246">Visualisasi</text></g>
     <rect x="3" y="70" width="3" height="14" fill="#DA0000"/>
     <rect x="124" y="46" width="356" height="56" fill="#fff" stroke="#E6E6E6"/>
-    <text x="136" y="66" font-weight="700" fill="#3B3B3B" font-size="12">erm_riskregister</text>
-    <text x="136" y="84" fill="#838282">LenO_ERM › ERM › erm</text>
-    <rect x="400" y="56" width="66" height="18" fill="#fff" stroke="#194A80"/><text x="416" y="69" fill="#194A80">Follow</text>
+    <text x="136" y="66" font-weight="700" fill="#3B3B3B" font-size="12">silver_dim_erm_risk</text>
+    <text x="136" y="84" fill="#838282" font-size="8">len_lakehouse_trino › lakekeeper › medallion_repository</text>
+    <rect x="400" y="52" width="66" height="18" fill="#fff" stroke="#194A80"/><text x="416" y="65" fill="#194A80">Follow</text>
     <g fill="#515151"><text x="136" y="120" fill="#194A80" font-weight="600">Schema</text><text x="190" y="120">Activity Feeds &amp; Tasks</text>
       <text x="315" y="120">Data Observability</text><text x="420" y="120">Lineage</text></g>
     <rect x="136" y="124" width="40" height="2" fill="#DA0000"/>
     <rect x="124" y="132" width="356" height="236" fill="#fff" stroke="#E6E6E6"/>
     <g fill="#515151"><text x="136" y="150" font-weight="600">Name</text><text x="250" y="150" font-weight="600">Description</text><text x="400" y="150" font-weight="600">Tags</text></g>
-    <g fill="#515151"><text x="136" y="174">MainCategory</text><text x="250" y="174">Elemen Data: F006 …</text>
+    <g fill="#515151"><text x="136" y="174">main_category</text><text x="250" y="174">Elemen Data: F006 …</text>
       <rect x="400" y="164" width="66" height="14" fill="#EEF3F9"/><text x="404" y="175" font-size="8">Restricted</text>
-      <text x="136" y="198">SkalaRisiko</text><text x="250" y="198">Nilai risiko yang …</text>
+      <text x="136" y="198">sub_category</text><text x="250" y="198">Elemen Data: F007 …</text>
       <rect x="400" y="188" width="66" height="14" fill="#EEF3F9"/><text x="404" y="199" font-size="8">Restricted</text></g>
     <rect x="490" y="46" width="138" height="322" fill="#fff" stroke="#E6E6E6"/>
     <g fill="#3B3B3B" font-weight="600"><text x="500" y="66">Owners</text><text x="500" y="116">Tier</text><text x="500" y="160">Tags</text><text x="500" y="204">Glossary Terms</text></g>
@@ -164,8 +165,8 @@ figure{margin:3mm 0}figcaption{font-size:8.5pt;color:var(--muted);margin-top:1mm
   <table class="t" id="tbl-dataset">
     <tr><th style="width:40mm">Kelompok data</th><th style="width:20mm">Status</th><th>Dipakai di</th><th style="width:34mm">Pemilik</th><th style="width:44mm">Pengguna (unit kerja)</th></tr>
   </table>
-  <div class="box tip">Isi transaksinya, misalnya daftar risiko per unit, tetap dibuka di aplikasi asalnya (LenO). Hak membuka data di aplikasi
-    asal diatur oleh aplikasi tersebut, bukan oleh katalog.</div>
+  <div class="box tip">Angka siap pakai, misalnya register risiko dan peta risiko per perusahaan, bisa Anda lihat di menu <span class="ui">Visualisasi</span> (Bagian 5).
+    Isi transaksi rinci di aplikasi asal (LenO) tetap dibuka di aplikasi tersebut sesuai hak aksesnya.</div>
   <h3>Cara melihat siapa yang memakai suatu data</h3>
   <ol>
     <li>Buka tabelnya, lalu lihat <span class="ui">Owners</span> di panel kanan. Itu unit pemilik data.</li>
@@ -180,9 +181,31 @@ figure{margin:3mm 0}figcaption{font-size:8.5pt;color:var(--muted);margin-top:1mm
   <p class="lead">Setiap kartu memuat status jawaban saat ini, langkah mencarinya, dan apa yang bisa Anda lakukan bila jawabannya belum ada.</p>
 </section>
 
-<!-- 5. Bisa & tidak bisa -->
+<!-- 5. Visualisasi -->
 <section class="pb">
-  <h2><small>Bagian 5</small>Yang bisa Anda lakukan</h2>
+  <h2><small>Bagian 5</small>Melihat data siap pakai di menu Visualisasi</h2>
+  <p class="lead">Data siap pakai (<b>Gold</b>) adalah data yang sudah dibersihkan dan siap ditampilkan sebagai dashboard. Data ini dibuka di menu
+  <span class="ui">Visualisasi</span>, di dalam aplikasi yang sama, dengan akun yang sama. Tidak ada kata sandi lain.</p>
+  <div class="steps">
+    <div><b>1</b><h4>Buka menu</h4><p>Setelah masuk, klik <span class="ui">Visualisasi</span> di menu kiri.</p></div>
+    <div><b>2</b><h4>Pilih dashboard</h4><p>Tab <i>Risiko ERM</i> dan <i>Tata Kelola Data</i> berisi dashboard yang sudah jadi. <i>Semua dashboard</i> berisi daftar lengkap.</p></div>
+    <div><b>3</b><h4>Buat sendiri</h4><p>Tab <i>Grafik</i> untuk membuat grafik dari dataset yang namanya diawali <b>gold_</b>. Tab <i>SQL Lab</i> untuk menulis kueri.</p></div>
+  </div>
+  <h3>Membuat tabel kerja sendiri</h3>
+  <ul>
+    <li>Semua data resmi hanya bisa <b>dibaca</b>. Anda tidak bisa mengubahnya, dan memang tidak perlu.</li>
+    <li>Hasil olahan Anda bisa disimpan sebagai tabel di schema <b>workspace</b>. Tulis nama schema-nya lengkap, misalnya
+      <i>CREATE TABLE workspace.risiko_unit_saya AS SELECT …</i>. Perintah tulis ke tempat lain akan ditolak.</li>
+    <li>Berkas CSV atau Excel pribadi juga bisa diunggah, hanya ke <b>workspace</b>.</li>
+    <li>Tabel di workspace bisa dilihat dan diubah pengguna lain. Beri nama yang jelas, jangan simpan data Confidential di sana, dan hapus bila tidak dipakai lagi.</li>
+  </ul>
+  <div class="box tip"><b>Angka resmi</b> untuk laporan selalu diambil dari dashboard atau tabel <b>gold_</b>, bukan dari tabel workspace.
+    Bila dashboard yang Anda perlukan belum ada, minta ke Staf Data Governance.</div>
+</section>
+
+<!-- 6. Bisa & tidak bisa -->
+<section class="pb">
+  <h2><small>Bagian 6</small>Yang bisa Anda lakukan</h2>
   <div class="can">
     <div>
       <h3><span class="chip ok">Bisa</span> sendiri</h3>
@@ -192,6 +215,8 @@ figure{margin:3mm 0}figcaption{font-size:8.5pt;color:var(--muted);margin-top:1mm
         <li>Bertanya dan berdiskusi di tab <span class="ui">Activity Feeds &amp; Tasks</span>, juga menyebut rekan dengan <b>@nama</b>.</li>
         <li>Mengajukan perbaikan: <span class="ui">Request description</span> untuk deskripsi, <span class="ui">Request Tags</span> untuk label.</li>
         <li>Memantau permintaan Anda di <span class="ui">Tasks</span>.</li>
+        <li>Melihat dashboard dan membuat grafik sendiri di menu <span class="ui">Visualisasi</span>.</li>
+        <li>Membuat tabel kerja sendiri di schema <b>workspace</b> (Bagian 5).</li>
       </ul>
     </div>
     <div>
@@ -199,7 +224,7 @@ figure{margin:3mm 0}figcaption{font-size:8.5pt;color:var(--muted);margin-top:1mm
       <ul>
         <li>Mengubah definisi resmi, pemilik, klasifikasi sensitivitas, atau alur data.</li>
         <li>Mendapat akun atau mengubah hak akses.</li>
-        <li>Mendapat <b>data siap pakai</b> untuk dashboard (Excel atau CSV).</li>
+        <li>Meminta dashboard baru atau data yang belum tersedia.</li>
         <li>Membuka isi data di aplikasi asal: ikuti hak akses aplikasi tersebut.</li>
       </ul>
     </div>
@@ -210,7 +235,7 @@ figure{margin:3mm 0}figcaption{font-size:8.5pt;color:var(--muted);margin-top:1mm
 
   <h3>Tips pencarian</h3>
   <ul>
-    <li>Cari dengan nama bisnis (<i>Skala Risiko</i>) atau nama teknis kolom (<i>SkalaRisiko</i>). Keduanya bisa.</li>
+    <li>Cari dengan nama bisnis (<i>Skala Risiko</i>) atau nama teknis kolom (<i>tingkat_risiko</i>). Keduanya bisa.</li>
     <li>Di <span class="ui">Explore</span>, pakai <span class="ui">Filters</span> di kiri: <b>Owners</b> untuk unit pemilik, <b>Tag</b> untuk sensitivitas, <b>Tier</b> untuk tingkat kepentingan.</li>
     <li>Nama layar aplikasi ERM diawali modulnya: <i>Master Data</i>, <i>Perencanaan Resiko</i>, <i>Risiko Utama</i>, <i>Pelaporan Resiko</i>.</li>
   </ul>
@@ -218,7 +243,7 @@ figure{margin:3mm 0}figcaption{font-size:8.5pt;color:var(--muted);margin-top:1mm
   <h3>Tanya-jawab singkat</h3>
   <dl class="faq">
     <dt>Mengapa saya tidak melihat angka atau isi datanya?</dt>
-    <dd>Katalog hanya menyimpan keterangan tentang data. Angka dan isinya ada di aplikasi asal.</dd>
+    <dd>Halaman katalog hanya menampilkan keterangan tentang data. Angka siap pakai ada di menu <span class="ui">Visualisasi</span>. Isi transaksi rinci ada di aplikasi asal.</dd>
     <dt>Status "Belum ada" artinya data itu tidak ada?</dt>
     <dd>Bukan. Fiturnya sudah ada tetapi keterangannya belum diisi oleh Staf Data Governance. Anda bisa memintanya lewat <span class="ui">Request description</span> atau diskusi.</dd>
     <dt>Berapa lama permintaan saya diproses?</dt>
@@ -263,14 +288,14 @@ window.render = (R) => {
               'Pilih hasil di kelompok <span class="ui">Dashboards</span>.',
               'Buka tab <span class="ui">Lineage</span>. Tabel sumber tampil di sebelah kiri layar.',
               'Klik sebuah tabel untuk melihat kolom yang mengalir ke layar. Aktifkan <span class="ui">Column Level Lineage</span> bila tersedia.'],
-      ex: '<p>Layar <b>Perencanaan Resiko - Risk Register - Perencanaan Risiko</b> diisi oleh 6 tabel, antara lain erm_riskregister, erm_riskinherent, dan erm_rencanamitigasi.</p>',
+      ex: '<p>Layar <b>Perencanaan Resiko - Risk Register - Perencanaan Risiko</b> diisi oleh beberapa tabel, antara lain silver_dim_erm_risk, silver_fact_erm_risk_assessment, dan silver_fact_erm_mitigation_plan_monthly.</p>',
       no: 'Dashboard yang dibuat di luar aplikasi ERM, misalnya laporan Excel atau Power BI, belum tercatat. Sampaikan nama dashboard Anda ke Staf Data Governance agar dicatat.' },
     { q: 'Siapa pemilik produk data ini?',
       st: [['Pemilik tabel dan istilah', 'Tersedia'], ['Produk data', S(has(e.produk_data))]],
       steps: ['Buka tabel, layar, atau istilah yang dimaksud.',
               'Lihat <span class="ui">Owners</span> di panel kanan. Itu unit kerja pemilik data.',
               'Pada istilah glosarium, <span class="ui">Reviewers</span> dan <span class="ui">Custom Properties</span> › <b>Data Steward</b> menunjukkan unit pengelola.'],
-      ex: '<p>Tabel <b>erm_riskregister</b> dimiliki oleh <b>UG-1 Risk Management</b>.</p>',
+      ex: '<p>Tabel <b>silver_dim_erm_risk</b> (register risiko) dimiliki oleh <b>UG-1 Risk Management</b>.</p>',
       no: 'Data belum dikelompokkan menjadi <i>produk data</i>. Untuk sementara, pemilik tabel adalah pemilik datanya.' },
     { q: 'Kontrak data apa yang berlaku?',
       st: [['Kontrak data', S(has(e.kontrak_data))]],
@@ -287,7 +312,7 @@ window.render = (R) => {
               'Lihat <span class="ui">Tier</span> dan <span class="ui">Certification</span> di bagian atas atau di panel kanan.',
               'Buka tab <span class="ui">Data Observability</span> untuk membaca aturan mutu per kolom, misalnya <i>Wajib terisi</i>.',
               'Baca deskripsi kolom. Aturan mutu juga tertulis di sana.'],
-      ex: '<p>Kolom <b>MainCategory</b> punya aturan "Wajib terisi (Not Null)".</p>',
+      ex: '<p>Kolom <b>main_category</b> punya aturan "Wajib terisi (Not Null)".</p>',
       no: 'Hasil pemeriksaan mutu dan waktu pembaruan terakhir belum bisa ditampilkan. Sertifikasi belum diberikan. Untuk keputusan penting, pastikan dulu ke pemilik data.' },
     { q: 'Dashboard, pipeline, atau model ML mana yang terdampak bila kolom ini berubah?',
       st: [['Layar aplikasi yang terdampak', S(has(e.lineage_edge))], ['Pipeline dan model ML', S(has(e.pipeline) || has(e.model_ml))]],
@@ -295,7 +320,7 @@ window.render = (R) => {
               'Buka tab <span class="ui">Lineage</span>. Semua yang ada di sebelah kanan (<span class="ui">Downstream</span>) memakai tabel ini.',
               'Pakai <span class="ui">Impact Analysis</span> untuk melihat daftar aset terdampak.',
               'Beri tahu pemilik layar yang terdampak melalui <span class="ui">Activity Feeds &amp; Tasks</span>.'],
-      ex: '<p>Perubahan pada <b>erm_riskregister</b> berdampak ke beberapa layar di modul <i>Risiko Utama</i> dan <i>Perencanaan Resiko</i>.</p>',
+      ex: '<p>Perubahan pada <b>silver_dim_erm_risk</b> berdampak ke beberapa layar di modul <i>Risiko Utama</i> dan <i>Perencanaan Resiko</i>.</p>',
       no: 'Pipeline data dan model ML belum tercatat, jadi hanya layar aplikasi ERM yang terlihat.' },
     { q: 'Kolom mana yang berisi informasi sensitif?',
       st: [['Label sensitivitas per kolom', 'Tersedia']],
@@ -303,14 +328,14 @@ window.render = (R) => {
               'Label <b>Sensitivitas.Confidential</b> berarti paling sensitif. <b>Sensitivitas.Restricted</b> berarti terbatas untuk unit tertentu.',
               'Label <b>PII.Sensitive</b> menandai data pribadi.',
               'Untuk melihat semuanya: buka <span class="ui">Explore</span>, lalu di <span class="ui">Filters</span> pilih <b>Tag</b> › <i>Sensitivitas.Confidential</i>.'],
-      ex: `<p>Contoh kolom Confidential: <b>NilaiSeleraRisiko</b> dan <b>NilaiToleransiRisiko</b> (erm_penerimaanrisiko), serta <b>DampakFinansial</b> (erm_riskresidual). Ada ${fmt(kpi('Kolom Confidential atau lebih tinggi'))} kolom Confidential.</p>`,
+      ex: `<p>Contoh kolom Confidential: <b>nilai_selera_risiko</b> dan <b>nilai_toleransi_risiko</b> (silver_fact_erm_risk_appetite), serta <b>dampak_finansial</b> (silver_fact_erm_risk_assessment). Ada ${fmt(kpi('Kolom Confidential atau lebih tinggi'))} kolom Confidential.</p>`,
       no: 'Beberapa kolom belum berlabel. Bila Anda ragu, perlakukan sebagai Restricted dan tanyakan ke pemilik data.' },
     { q: 'Istilah glosarium, kebijakan, standar, dan konsep bisnis apa yang berlaku?',
       st: [['Istilah glosarium', 'Tersedia'], ['Klasifikasi sensitivitas', 'Tersedia'], ['Dokumen kebijakan dan standar', 'Belum ada']],
       steps: ['Buka aset, lalu lihat <span class="ui">Glossary Terms</span> dan <span class="ui">Tags</span> di panel kanan atau pada setiap kolom.',
               'Klik sebuah istilah untuk membaca definisinya.',
               'Daftar lengkap ada di <span class="ui">Govern</span> › <span class="ui">Glossary</span> dan <span class="ui">Govern</span> › <span class="ui">Classification</span>.'],
-      ex: '<p>Kolom <b>MainCategory</b> memakai istilah <b>Kategori/Taksonomi Risiko</b> dan berlabel <b>Restricted</b>.</p>',
+      ex: '<p>Kolom <b>main_category</b> memakai istilah <b>Kategori/Taksonomi Risiko</b> dan berlabel <b>Restricted</b>.</p>',
       no: 'Dokumen kebijakan dan standar tertulis belum ditautkan ke katalog. Tanyakan ke Staf Data Governance.' },
     { q: 'Keputusan, asumsi, insiden, atau percakapan apa yang sudah tercatat?',
       st: [['Fitur catatan dan diskusi', 'Tersedia'], ['Catatan yang sudah ada', S(has(e.percakapan))]],

@@ -38,14 +38,14 @@ Manual for Developers:
 - Update details status of development, 
 - tindak lanjut untuk melengkapi kebutuhan Staff dan Kebutuhan End User.
 - Arah pengembangan aplikasi agar full-power
-- Siapkan sebuah panel unutuk download Ready to Use data, versi dari Medallion data, versi Gold (Clean, sleek, ready to use for Dashboar.
+- Data Ready to Use (Medallion versi Gold: clean, sleek, ready to use for Dashboard) hanya tinggal di Trino lakehouse `lakekeeper.medallion_repository` dan dibaca lewat menu Visualisasi (panel berkas CSV/XLSX lama sudah ditutup 2026-11-10).
 
 Manual for Data Governance Staff & Direction
 - Tidak perlu memuat status aplikasi
 - Cukup menampilkan, sudah bisa, belum bisa, saja. Jangan Offiside/Berlebihan.
 - Jangan tampilkan status development apps.
 - Ambil sudut pandang Staff untuk end User, jangan ekspose status developer.
-- Download a ready to use data for Dashboard: data apa saja yang sudah ada sampai dengan dokumen ini di Release.
+- Data ready to use for Dashboard (menu Visualisasi): data apa saja yang sudah ada sampai dengan dokumen ini di Release.
 
 
 Manual for End User:

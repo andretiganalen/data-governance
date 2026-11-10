@@ -1,5 +1,5 @@
 [Unit]
-Description=Len Data Governance (OpenMetadata) daily pg_dump
+Description=Len Data Governance daily pg_dump
 After=docker.service
 [Service]
 Type=oneshot

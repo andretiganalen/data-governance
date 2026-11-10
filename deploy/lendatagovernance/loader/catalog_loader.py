@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
-"""Phase 3 loader for OpenMetadata (plan/openmetadata_deployment_plan.md §7). Stdlib only.
+"""Phase 3 loader for the Len Data Governance catalog (plan/lendatagovernance_deployment_plan.md §7). Stdlib only.
 
 Idempotent: writes are PUT (create-or-update) or JSON-patch of fixed values — re-running never duplicates.
 
-  om_loader.py foundation [--dry-run]              classification, services, glossary
-  om_loader.py workbook <file.xlsx> [--dry-run]    everything from Workbook Governance (+ foundation)
-  om_loader.py inspect <file.xlsx>                 sheets + headers
+  catalog_loader.py foundation [--dry-run]              classification, services, glossary
+  catalog_loader.py workbook <file.xlsx> [--dry-run]    everything from Workbook Governance (+ foundation)
+  catalog_loader.py inspect <file.xlsx>                 sheets + headers
 
-Auth: OM_TOKEN = Personal Access Token of an OpenMetadata *admin* (Profile › Access Token),
+ERM tables (sheet Database_Object) are NOT a separate service: their metadata (descriptions, sensitivity tags,
+glossary terms, owners, DQ tests, lineage to LenO screens) is applied to the matching Trino tables in
+len_lakehouse_trino.lakekeeper.medallion_repository (workbook.TABLE_MAP). The old LenO_ERM database service is removed.
+
+Auth: LDG_TOKEN = Personal Access Token of a Len Data Governance *admin* (Profile › Access Token),
 read from /srv/lendatagovernance/secrets/loader.env or the environment. Admin is required because the
 workbook load creates teams, roles, policies and custom properties.
 Defect report → /srv/lendatagovernance/reports/ (outside git: the repo is public).
@@ -25,9 +29,9 @@ import urllib.request
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import workbook as W  # noqa: E402
 
-OM_URL = os.environ.get("OM_URL", "http://127.0.0.1:8585/api")
-SECRETS = os.environ.get("OM_LOADER_ENV", "/srv/lendatagovernance/secrets/loader.env")
-REPORT_DIR = os.environ.get("OM_REPORT_DIR", "/srv/lendatagovernance/reports")
+API_URL = os.environ.get("LDG_API_URL", "http://127.0.0.1:8585/api")
+SECRETS = os.environ.get("LDG_LOADER_ENV", "/srv/lendatagovernance/secrets/loader.env")
+REPORT_DIR = os.environ.get("LDG_REPORT_DIR", "/srv/lendatagovernance/reports")
 
 SENSITIVITY = {
     "name": W.CLASSIFICATION, "displayName": W.CLASSIFICATION, "mutuallyExclusive": True,
@@ -42,17 +46,17 @@ SENSITIVITY_TAGS = [
 
 
 def load_token() -> str:
-    tok = os.environ.get("OM_TOKEN")
+    tok = os.environ.get("LDG_TOKEN")
     if not tok and os.path.exists(SECRETS):
         for line in open(SECRETS):
-            if line.startswith("OM_TOKEN="):
+            if line.startswith("LDG_TOKEN="):
                 tok = line.split("=", 1)[1].strip().strip('"')
     if not tok:
-        sys.exit(f"OM_TOKEN not set. Put OM_TOKEN=<admin personal access token> in {SECRETS} (chmod 600).")
+        sys.exit(f"LDG_TOKEN not set. Put LDG_TOKEN=<admin personal access token> in {SECRETS} (chmod 600).")
     return tok
 
 
-class OM:
+class Catalog:
     def __init__(self, dry: bool):
         self.dry = dry
         self.token = "dry" if dry else load_token()
@@ -60,7 +64,7 @@ class OM:
 
     def call(self, method: str, path: str, body=None, content_type="application/json"):
         req = urllib.request.Request(
-            OM_URL + path, method=method,
+            API_URL + path, method=method,
             data=json.dumps(body).encode() if body is not None else None,
             headers={"Authorization": f"Bearer {self.token}", "Content-Type": content_type},
         )
@@ -86,6 +90,19 @@ class OM:
                                 for c in body.get("columns", [])]}
         return self.call("PUT", path, body)
 
+    def find(self, path: str):
+        """GET, None bila 404 (entitas belum/tidak ada)."""
+        if self.dry:
+            return self.get(path)
+        req = urllib.request.Request(API_URL + path, headers={"Authorization": f"Bearer {self.token}"})
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return json.loads(r.read() or b"{}")
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                return None
+            sys.exit(f"\nFAILED GET {path} → HTTP {e.code}: {e.read().decode()[:600]}")
+
     def patch(self, path: str, ops: list):
         self.writes += 1
         if self.dry:
@@ -106,16 +123,12 @@ def step(msg: str):
 
 
 # ------------------------------------------------------------------------------- foundation
-def foundation(om: OM):
-    step("foundation: classification Sensitivitas + 4 tags, services LenO ERM, glossary ERM")
+def foundation(om: Catalog):
+    step("foundation: classification Sensitivitas + 4 tags, dashboard service LenO ERM, glossary ERM")
     om.put("/v1/classifications", SENSITIVITY)
     for name, display, desc in SENSITIVITY_TAGS:
         om.put("/v1/tags", {"classification": W.CLASSIFICATION, "name": name, "displayName": display,
                             "description": desc})
-    om.put("/v1/services/databaseServices", {
-        "name": W.SERVICE, "displayName": "LenO ERM", "serviceType": "CustomDatabase",
-        "description": "Representasi metadata database Aplikasi ERM LenO. Tanpa koneksi: OpenMetadata tidak "
-                       "terhubung ke dan tidak mengubah database LenO."})
     om.put("/v1/services/dashboardServices", {
         "name": W.SERVICE, "displayName": "LenO ERM", "serviceType": "CustomDashboard",
         "description": "Layar Aplikasi ERM LenO (satu Dashboard per layar) untuk lineage kolom → layar. Tanpa koneksi."})
@@ -125,7 +138,7 @@ def foundation(om: OM):
 
 
 # ------------------------------------------------------------------------------- workbook
-def ensure_custom_property(om: OM, entity_type: str, prop_type: str, name: str, display: str,
+def ensure_custom_property(om: Catalog, entity_type: str, prop_type: str, name: str, display: str,
                            desc: str, config):
     et = om.get(f"/v1/metadata/types/name/{entity_type}?fields=customProperties")
     pt = om.get(f"/v1/metadata/types/name/{prop_type}")
@@ -134,8 +147,8 @@ def ensure_custom_property(om: OM, entity_type: str, prop_type: str, name: str, 
     om.put(f"/v1/metadata/types/{et['id']}", body)
 
 
-def load_workbook(om: OM, path: str):
-    plan = W.build(W.read_xlsx(path))
+def load_workbook(om: Catalog, path: str):
+    plan = W.to_lakehouse(W.build(W.read_xlsx(path)))
     step(f"workbook parsed: {dict(plan.stats)}; {len(plan.defects)} defects")
     foundation(om)
 
@@ -164,7 +177,7 @@ def load_workbook(om: OM, path: str):
     ensure_custom_property(om, "glossaryTerm", "entityReferenceList", "dataUser", "Data User",
                            "Unit kerja pengguna data (Workbook: Data_Governance_Assignment).", ["team"])
     ensure_custom_property(om, "dashboard", "table-cp", "hakAksesLenO", "Hak Akses LenO",
-                           "Hak akses layar di Aplikasi LenO (referensi, tidak ditegakkan di OpenMetadata).",
+                           "Hak akses layar di Aplikasi LenO (referensi, tidak ditegakkan di Len Data Governance).",
                            {"columns": ["Unit Kerja", "Kategori", "Izin"]})
 
     # Glossary terms
@@ -183,18 +196,47 @@ def load_workbook(om: OM, path: str):
             body["extension"] = ext
         om.put("/v1/glossaryTerms", body)
 
-    # Database, schema, tables
-    step(f"database {W.SERVICE}.{W.DATABASE}.{W.SCHEMA}: {len(plan.tables)} tables")
-    db = om.put("/v1/databases", {"name": W.DATABASE, "service": W.SERVICE, "displayName": "ERM",
-                                  "description": "Aplikasi di LenO untuk mengelola risiko operasional Perusahaan (SYS001)."})
-    schema = om.put("/v1/databaseSchemas", {"name": W.SCHEMA, "database": db["fullyQualifiedName"],
-                                            "description": "Objek database Aplikasi ERM LenO (dari Database_Object)."})
+    # ERM tables → their Trino tables in lakekeeper.medallion_repository (metadata only; data comes from the lakehouse)
+    step(f"ERM → Trino {W.LAKEHOUSE_SCHEMA_FQN}: {len(plan.tables)} tables")
+    if not om.dry and any(om.find(f"/v1/tables/name/{q(W.LAKEHOUSE_SCHEMA_FQN + '.' + t['name'])}") is None
+                          for t in plan.tables):
+        import catalog_trino  # tables not catalogued yet → sync from Trino first
+        catalog_trino.main()
     tables = {}
     for t in plan.tables:
-        cols = [{k: v for k, v in c.items() if not k.startswith("_")} for c in t["columns"]]
-        tables[t["name"]] = om.put("/v1/tables", {
-            "name": t["name"], "databaseSchema": schema["fullyQualifiedName"], "tableType": "Regular",
-            "description": t["description"], "columns": cols, "owners": team_refs(t["owners"])})
+        cur = om.get(f"/v1/tables/name/{q(W.LAKEHOUSE_SCHEMA_FQN + '.' + t['name'])}?fields=columns,tags,owners")
+        wb_cols = {c["name"]: c for c in t["columns"]}
+        cols = []
+        for c in cur.get("columns", []):
+            base = (c.get("description") or "").split(W.WORKBOOK_MARK)[0]
+            col = {k: c[k] for k in ("name", "dataType", "dataTypeDisplay", "precision", "scale") if k in c}
+            tags = [g for g in c.get("tags", []) if g.get("source") != "Glossary" and not g["tagFQN"].startswith(W.CLASSIFICATION + ".")]
+            if c["name"] in wb_cols:
+                w = wb_cols[c["name"]]
+                col["description"] = base + W.WORKBOOK_MARK + "\n\n" + w["description"]
+                tags += [{k: g[k] for k in ("tagFQN", "source", "labelType", "state")} for g in w["tags"]]
+            elif base:
+                col["description"] = base
+            col["tags"] = [{k: g[k] for k in ("tagFQN", "source", "labelType", "state") if k in g} for g in tags]
+            cols.append(col)
+        missing = set(wb_cols) - {c["name"] for c in cols}
+        if missing and not om.dry:
+            plan.defects.append(("Kolom belum ada di Trino", f"{t['name']}: {sorted(missing)}"))
+        body = {"name": t["name"], "databaseSchema": W.LAKEHOUSE_SCHEMA_FQN, "tableType": cur.get("tableType", "Iceberg"),
+                "description": (cur.get("description") or "").split(W.WORKBOOK_MARK)[0] + W.WORKBOOK_MARK + "\n\n"
+                               + t["description"],
+                "columns": cols or t["columns"], "owners": team_refs(t["owners"])}
+        tb = om.put("/v1/tables", body)
+        # Column tags: PUT does not change tags of existing columns → JSON-patch the full tag list per column.
+        ops = [{"op": "add", "path": f"/columns/{i}/tags", "value": c["tags"]}
+               for i, c in enumerate(cols) if c["name"] in wb_cols]
+        tables[t["name"]] = om.patch(f"/v1/tables/{tb['id']}", ops) if ops and not om.dry else tb
+
+    # The old CustomDatabase service (LenO ERM, no data) is replaced by the Trino tables above.
+    old = om.find(f"/v1/services/databaseServices/name/{q(W.LEGACY_DB_SERVICE)}")
+    if old and not om.dry and old.get("serviceType") == "CustomDatabase":
+        step(f"remove old database service {W.LEGACY_DB_SERVICE} (CustomDatabase) — moved to Trino")
+        om.call("DELETE", f"/v1/services/databaseServices/{old['id']}?hardDelete=true&recursive=true")
 
     # Screens: data models + dashboards
     step(f"LenO screens: {len(plan.dashboards)} dashboards + data models")
@@ -252,7 +294,7 @@ def load_workbook(om: OM, path: str):
     write_report(plan, path, om)
 
 
-def write_report(plan: W.Plan, path: str, om: OM):
+def write_report(plan: W.Plan, path: str, om: Catalog):
     by_cat: dict[str, list[str]] = {}
     for cat, detail in plan.defects:
         by_cat.setdefault(cat, []).append(detail)
@@ -281,11 +323,11 @@ if __name__ == "__main__":
     dry = "--dry-run" in a
     a = [x for x in a if x != "--dry-run"]
     if a[:1] == ["foundation"]:
-        om = OM(dry)
+        om = Catalog(dry)
         foundation(om)
         print(f"writes: {om.writes}\ndone")
     elif a[:1] == ["workbook"] and len(a) == 2:
-        load_workbook(OM(dry), a[1])
+        load_workbook(Catalog(dry), a[1])
     elif a[:1] == ["inspect"] and len(a) == 2:
         inspect(a[1])
     else:

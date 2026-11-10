@@ -55,10 +55,10 @@ code{font-size:8pt;background:#eef1f4;padding:0 1.2mm}
   <div class="grid"></div>
   <img src="img/len-logo.png" alt="Len">
   <div class="t">
-    <div class="k">LEN DATA GOVERNANCE · OPENMETADATA <span data-v="live.versi_om"></span></div>
+    <div class="k">LEN DATA GOVERNANCE · KATALOG <span data-v="live.versi_katalog"></span></div>
     <h1>Manual Pengembang</h1>
     <p>Status pengembangan rinci, model akses, tindak lanjut untuk kebutuhan Staf dan Pengguna, arah pengembangan,
-    serta operasi Medallion dan panel Data Siap Pakai.</p><i></i>
+    serta operasi lakehouse Medallion (Trino) dan Visualisasi.</p><i></i>
   </div>
   <pre id="cover-pre"></pre>
 </section>
@@ -71,12 +71,13 @@ code{font-size:8pt;background:#eef1f4;padding:0 1.2mm}
     <div><span>§3</span>Tindak lanjut untuk kebutuhan Staf DG</div>
     <div><span>§4</span>Tindak lanjut untuk kebutuhan Pengguna (9 pertanyaan)</div>
     <div><span>§5</span>Arah pengembangan menuju full-power</div>
-    <div><span>§6</span>Medallion dan panel Data Siap Pakai</div>
+    <div><span>§6</span>Lakehouse Medallion dan Visualisasi</div>
     <div><span>§7</span>Rilis dokumen dan data (YYMMDD CC)</div>
     <div><span>§8</span>Runbook operasi</div>
   </div>
   <p>Semua angka di manual ini diambil otomatis oleh <code>docs/manuals/src/rilis.py</code> saat rilis
-  (<span data-v="live.diambil"></span>) dari basis data katalog, status kontainer, berkas rahasia (hanya metadata, tanpa nilai), dan manifest rilis Gold.
+  (<span data-v="live.diambil"></span>) dari basis data katalog, status kontainer, berkas rahasia (hanya metadata, tanpa nilai), dan
+  lakehouse Trino <code data-v="gold.katalog"></code> (hanya baca).
   Manual Staf dan Manual Pengguna sengaja <b>tidak</b> memuat isi manual ini. Status pengembangan hanya ada di sini.</p>
   <p>Konvensi: <span class="sev h">TINGGI</span> menghambat kebutuhan pengguna atau membuka risiko akses.
   <span class="sev m">SEDANG</span> mengurangi kualitas jawaban. <span class="sev l">RENDAH</span> berupa perapian.</p>
@@ -95,8 +96,9 @@ code{font-size:8pt;background:#eef1f4;padding:0 1.2mm}
 
 <section class="pb">
   <h2><span>§2</span>Model akses dan kapabilitas</h2>
-  <p>Penegakan akses memakai kebijakan OpenMetadata (ADR 0001: hak DG-* workbook menjadi policy). Hak layar LenO (DA-, DM-, A-, W-)
-  disimpan sebagai referensi di custom property <code>hakAksesLenO</code> dan <b>tidak</b> ditegakkan oleh katalog.</p>
+  <p>Penegakan akses di katalog memakai kebijakan (policy) Len Data Governance (ADR 0001: hak DG-* workbook menjadi policy). Hak layar LenO (DA-, DM-, A-, W-)
+  disimpan sebagai referensi di custom property <code>hakAksesLenO</code> dan <b>tidak</b> ditegakkan oleh katalog.
+  Akses data Gold lewat menu <b>Visualisasi</b> diatur terpisah oleh <code>superset/dg_sso.py</code> (§2.4, §6).</p>
   <h3>2.1 Penugasan peran saat ini</h3>
   <table class="t" id="tbl-peran"><tr><th style="width:40mm">Subjek</th><th style="width:40mm">Role / Policy</th><th>Efek</th></tr></table>
   <h3>2.2 Aturan kebijakan yang berlaku</h3>
@@ -113,7 +115,9 @@ code{font-size:8pt;background:#eef1f4;padding:0 1.2mm}
     <tr><td>Hapus aset</td><td>✘</td><td><b>✘ (target)</b></td><td>✘</td><td>✔</td><td>deny Delete pada Owner-Rule</td></tr>
     <tr><td>Jalankan uji / profiler</td><td>✘</td><td>✘</td><td>✔ (target)</td><td>✔</td><td>Trigger + pipeline ingestion</td></tr>
     <tr><td>Domain, produk data, kontrak</td><td>✘</td><td>usul</td><td>✔ (target)</td><td>✔</td><td>perluas DG_UV_1</td></tr>
-    <tr><td>Unduh Gold (panel)</td><td>via Staf</td><td>via Staf</td><td>✔</td><td>✔</td><td>htpasswd per orang → SSO</td></tr>
+    <tr><td>Baca Gold: dashboard, grafik, SQL Lab (Visualisasi)</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>SSO sesi aplikasi → Superset Gamma + sql_lab</td></tr>
+    <tr><td>Buat tabel sendiri di <code>lakekeeper.workspace</code></td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td><code>dg_sql_guard</code>, unggah hanya ke workspace</td></tr>
+    <tr><td>Tulis <code>medallion_repository</code></td><td>✘</td><td>✘</td><td>✘</td><td>loader</td><td><code>lakehouse.py</code> (secrets/trino.env)</td></tr>
     <tr><td>Akun, tim, peran, setelan</td><td>✘</td><td>✘</td><td>✘</td><td>✔</td><td>admin principal</td></tr>
   </table>
 </section>
@@ -124,12 +128,12 @@ code{font-size:8pt;background:#eef1f4;padding:0 1.2mm}
   <table class="t">
     <tr><th style="width:12mm">ID</th><th style="width:44mm">Kebutuhan Staf</th><th>Pekerjaan pengembang</th><th style="width:22mm">Bergantung</th><th style="width:13mm">Tingkat</th></tr>
     <tr><td>ST-1</td><td>Akun Staf benar-benar memegang hak UV-1</td><td>Impor keanggotaan tim dari CSV HR/IDS (email, ORG_ID) lalu tambahkan anggota UV-1. Sementara itu, tambahkan Staf secara manual di Settings › Teams › UV-1.</td><td>P3-3, IDS</td><td><span class="sev h">TINGGI</span></td></tr>
-    <tr><td>ST-2</td><td>Menjalankan pemeriksaan mutu dan melihat hasilnya</td><td>Buat koneksi DB ERM (user read-only), jalankan ingestion metadata, lalu test suite terjadwal untuk <span data-v="live.entitas.test_case"></span> test case. Beri DG_UV_1 operasi <code>Trigger</code>.</td><td>Akses DB ERM</td><td><span class="sev h">TINGGI</span></td></tr>
+    <tr><td>ST-2</td><td>Menjalankan pemeriksaan mutu dan melihat hasilnya</td><td><span data-v="live.entitas.test_case"></span> test case sudah menempel pada tabel Trino (<code>len_lakehouse_trino</code> › <code>lakekeeper</code> › <code>medallion_repository</code>). Jadwalkan test suite lewat koneksi Trino (user read-only), lalu beri DG_UV_1 operasi <code>Trigger</code>.</td><td>User Trino read-only</td><td><span class="sev h">TINGGI</span></td></tr>
     <tr><td>ST-3</td><td>Kesegaran data</td><td>Profiler terjadwal dan uji freshness pada kolom waktu pembaruan. Tampilkan di Data Observability.</td><td>ST-2</td><td><span class="sev m">SEDANG</span></td></tr>
     <tr><td>ST-4</td><td>Membuat kontrak data</td><td>Aktifkan Data Contract (bot <code>datacontractvalidationapplicationbot</code> sudah ada). Buat template dari aturan mutu workbook. Beri DG_UV_1 hak kontrak.</td><td>ST-2</td><td><span class="sev m">SEDANG</span></td></tr>
     <tr><td>ST-5</td><td>Domain dan produk data</td><td>Perluas loader: Domain dari <code>BUSINESS_DOMAIN</code>, Data Product dari <code>Business_Dataset</code>, owner dari Data Owner. Beri DG_UV_1 hak EditAll pada domain/dataProduct.</td><td>—</td><td><span class="sev m">SEDANG</span></td></tr>
     <tr><td>ST-6</td><td>Menautkan dokumen kebijakan</td><td>Custom property <code>dokumenKebijakan</code> (tipe URL/markdown) pada table, glossaryTerm, dan dataProduct.</td><td>—</td><td><span class="sev l">RENDAH</span></td></tr>
-    <tr><td>ST-7</td><td>Data siap pakai yang selalu terbaru</td><td>Panel /unduh/ <b>sudah tersedia</b> (§6). Berikutnya: rilis otomatis setelah workbook dimuat ulang, dan akun panel per orang.</td><td>—</td><td><span class="sev l">RENDAH</span></td></tr>
+    <tr><td>ST-7</td><td>Data siap pakai yang selalu terbaru</td><td>Gold di Trino dibangun ulang otomatis setiap ada berkas baru di inbox (§6) dan dibaca di menu <b>Visualisasi</b> dengan SSO. Berikutnya: dashboard Gold tambahan sesuai usulan Staf, dan sumber terjadwal (T1) agar tidak bergantung pada unggahan berkas.</td><td>—</td><td><span class="sev l">RENDAH</span></td></tr>
     <tr><td>ST-8</td><td>Workbook dimuat ulang setelah perbaikan</td><td>Buat ulang token loader (sekarang <span id="tok"></span>), jalankan <code>reload-workbook.sh</code>, lalu buat rilis baru.</td><td>P3-1</td><td><span class="sev h">TINGGI</span></td></tr>
   </table>
 </section>
@@ -146,34 +150,35 @@ code{font-size:8pt;background:#eef1f4;padding:0 1.2mm}
   data siap pakai diterbitkan dari data transaksi nyata, dan akses mengikuti identitas perusahaan (IDS).</p>
   <div class="road">
     <div><b>T0 · Fondasi aman</b><ul><li>IDS SSO (P2)</li><li>Matikan self-signup</li><li>Pangkas kebijakan (§2.3)</li><li>Keanggotaan tim</li><li>Token loader 60–90 hari</li></ul></div>
-    <div><b>T1 · Sumber nyata</b><ul><li>Konektor DB ERM (read-only)</li><li>Ingestion metadata terjadwal</li><li>Lineage dan usage otomatis</li><li>Workbook menjadi pelengkap</li></ul></div>
+    <div><b>T1 · Sumber nyata</b><ul><li>Ekstrak terjadwal DB ERM ke Bronze</li><li>Ingestion metadata Trino terjadwal</li><li>Lineage dan usage otomatis</li><li>Workbook menjadi pelengkap</li></ul></div>
     <div><b>T2 · Mutu dan kesegaran</b><ul><li>Test suite terjadwal</li><li>Profiler dan freshness</li><li>Alerts (email/Teams)</li><li>Incident Manager</li></ul></div>
     <div><b>T3 · Produk dan kontrak</b><ul><li>Domain dan Data Product</li><li>Data Contract + validasi</li><li>Alur sertifikasi (governance workflow)</li><li>Metric dengan rumus</li></ul></div>
-    <div><b>T4 · Medallion nyata dan AI</b><ul><li>ERM → Bronze/Silver/Gold di skema gudang</li><li>Panel lewat SSO dan API</li><li>MCP dan auto-klasifikasi</li><li>Data Insights</li></ul></div>
+    <div><b>T4 · Medallion penuh dan AI</b><ul><li>Sumber SDM/keuangan → Bronze/Silver/Gold</li><li>Visualisasi lewat SSO IDS</li><li>MCP dan auto-klasifikasi</li><li>Data Insights</li></ul></div>
   </div>
   <figure class="keep" style="margin:0">
   <svg viewBox="0 0 700 250" width="100%" font-family="Open Sans, Arial" font-size="10">
     <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#54595F"/></marker></defs>
     <g stroke="#C4C4C4" fill="#fff"><rect x="10" y="20" width="110" height="44"/><rect x="10" y="80" width="110" height="44"/><rect x="10" y="140" width="110" height="44" stroke-dasharray="4 3"/></g>
     <g fill="#3B3B3B"><text x="20" y="38" font-weight="600">Workbook</text><text x="20" y="54" fill="#838282">governance (.xlsx)</text>
-      <text x="20" y="98" font-weight="600">DB ERM (LenO)</text><text x="20" y="114" fill="#838282">T1 · read-only</text>
-      <text x="20" y="158" font-weight="600">Sistem SDM / lain</text><text x="20" y="174" fill="#838282">T4</text></g>
+      <text x="20" y="98" font-weight="600">E-GRC (Excel)</text><text x="20" y="114" fill="#838282">data risiko ERM</text>
+      <text x="20" y="158" font-weight="600">DB ERM / SDM</text><text x="20" y="174" fill="#838282">T1 · T4 terjadwal</text></g>
     <g fill="#EEF3F9" stroke="#194A80"><rect x="160" y="20" width="100" height="164"/><rect x="275" y="20" width="100" height="164"/><rect x="390" y="20" width="100" height="164"/></g>
     <g font-weight="700" fill="#194A80" font-size="11"><text x="168" y="40">Bronze</text><text x="283" y="40">Silver</text><text x="398" y="40">Gold</text></g>
-    <g fill="#515151" font-size="8.5"><text x="168" y="60">salinan apa adanya</text><text x="168" y="74">per sheet / tabel</text>
-      <text x="283" y="60">rapi, tanpa duplikat</text><text x="283" y="74">catatan_mutu</text><text x="283" y="88">cek referensi</text>
-      <text x="398" y="60">gabungan siap pakai</text><text x="398" y="74">kolom berbahasa</text><text x="398" y="88">Indonesia</text><text x="398" y="102">CSV · XLSX</text></g>
+    <g fill="#515151" font-size="8.5"><text x="168" y="60">inbox, tiap 10 mnt</text><text x="168" y="74">baris mentah</text><text x="168" y="88">per sheet</text>
+      <text x="283" y="60">silver_dim_*</text><text x="283" y="74">silver_fact_*</text><text x="283" y="88">bertipe, bersih</text>
+      <text x="398" y="60">gold_meta_*</text><text x="398" y="74">gold_erm_*</text><text x="398" y="88">siap dashboard</text></g>
+    <text x="160" y="198" fill="#194A80" font-size="8.5" font-weight="600">Trino lakekeeper.medallion_repository (Iceberg) · lakehouse.py</text>
     <g fill="#fff" stroke="#DA0000"><rect x="530" y="20" width="160" height="44"/><rect x="530" y="80" width="160" height="44"/><rect x="530" y="140" width="160" height="44"/></g>
-    <g fill="#3B3B3B"><text x="540" y="38" font-weight="600">Panel /unduh/</text><text x="540" y="54" fill="#838282">rilis YYMMDD CC</text>
-      <text x="540" y="98" font-weight="600">Dashboard</text><text x="540" y="114" fill="#838282">Excel · Power BI · Looker</text>
-      <text x="540" y="158" font-weight="600">Katalog (OpenMetadata)</text><text x="540" y="174" fill="#838282">metadata tiap lapisan + lineage</text></g>
-    <g stroke="#54595F" marker-end="url(#a)" fill="none"><path d="M120 42H158"/><path d="M120 102H158" stroke-dasharray="4 3"/><path d="M120 162H158" stroke-dasharray="4 3"/>
-      <path d="M260 100H273"/><path d="M375 100H388"/><path d="M490 42H528"/><path d="M490 102H528"/><path d="M490 162H528" stroke-dasharray="4 3"/></g>
-    <text x="10" y="212" fill="#54595F" font-size="9">Garis penuh: sudah berjalan (rilis <tspan font-weight="700" id="svg-rel"></tspan>). Garis putus-putus: target T1–T4.</text>
-    <text x="10" y="228" fill="#54595F" font-size="9">Workbook saat ini juga dimuat langsung ke katalog oleh loader/om_loader.py (tidak lewat Medallion).</text>
+    <g fill="#3B3B3B"><text x="540" y="38" font-weight="600">Visualisasi</text><text x="540" y="54" fill="#838282">:8585/visualisasi/ · SSO</text>
+      <text x="540" y="98" font-weight="600">SQL Lab → workspace</text><text x="540" y="114" fill="#838282">tabel milik pengguna</text>
+      <text x="540" y="158" font-weight="600">Katalog Len Data Governance</text><text x="540" y="174" fill="#838282">metadata tiap lapisan + lineage</text></g>
+    <g stroke="#54595F" marker-end="url(#a)" fill="none"><path d="M120 42H158"/><path d="M120 102H158"/><path d="M120 162H158" stroke-dasharray="4 3"/>
+      <path d="M260 100H273"/><path d="M375 100H388"/><path d="M490 42H528"/><path d="M490 102H528"/><path d="M490 162H528"/></g>
+    <text x="10" y="222" fill="#54595F" font-size="9">Garis penuh: sudah berjalan (rilis <tspan font-weight="700" id="svg-rel"></tspan>). Garis putus-putus: target T1–T4.</text>
+    <text x="10" y="238" fill="#54595F" font-size="9">Workbook juga dimuat ke katalog oleh loader/catalog_loader.py; loader/catalog_trino.py menyinkronkan tabel Trino ke katalog.</text>
   </svg>
   </figure>
-  <h3>Kapabilitas OpenMetadata 2.0.7 yang sudah terpasang tetapi belum dipakai</h3>
+  <h3>Kapabilitas server katalog (versi <span data-v="live.versi_katalog"></span>) yang sudah terpasang tetapi belum dipakai</h3>
   <table class="t">
     <tr><th style="width:52mm">Kapabilitas</th><th>Bukti di server</th><th style="width:30mm">Dipakai untuk</th></tr>
     <tr><td>Governance workflow (persetujuan)</td><td>tabel <code>act_*</code> (Flowable), 1 workflowDefinition</td><td>Q5 sertifikasi, ST-4</td></tr>
@@ -185,42 +190,68 @@ code{font-size:8pt;background:#eef1f4;padding:0 1.2mm}
 </section>
 
 <section class="pb">
-  <h2><span>§6</span>Medallion dan panel Data Siap Pakai</h2>
+  <h2><span>§6</span>Lakehouse Medallion dan Visualisasi</h2>
+  <p><b>Aturan data:</b> setiap dataset yang dipakai aplikasi hanya tinggal di Trino lakehouse <code data-v="gold.katalog"></code>
+  (<code>datahub.len.co.id:443</code>, Iceberg/Lakekeeper). Berkas CSV/XLSX hanya masukan Bronze sebelum ETL, bukan tempat pengguna membaca data.
+  Postgres dan OpenSearch di stack ini hanya menyimpan status internal platform (katalog, Superset).</p>
   <div class="grid2">
-    <div class="card"><h4>Lokasi</h4>
-      <p><code>deploy/lendatagovernance/medallion/build_medallion.py</code>: Bronze → Silver → Gold (stdlib + openpyxl).<br>
-      Bronze/Silver: <code>/srv/lendatagovernance/medallion/work/&lt;rid&gt;/</code>. Hanya di server, tidak disajikan.<br>
-      Gold + panel: <code>/srv/lendatagovernance/medallion/panel/</code>, di-mount <i>read-only</i> ke gateway sebagai <code>/unduh/</code>.</p></div>
-    <div class="card"><h4>Akses panel</h4>
-      <p>nginx <code>auth_basic</code>. Hash di <code>/srv/lendatagovernance/secrets/unduh.htpasswd</code>. Saat ini ada
-      <b data-v="live.panel_akun"></b> akun. Satu akun untuk satu orang:
-      <code>scripts/panel-account.sh &lt;user&gt;</code>. Kata sandi hanya tampil sekali.
-      Target T4: SSO IDS (oauth2-proxy) menggantikan basic auth.</p></div>
+    <div class="card"><h4>Loader</h4>
+      <p><code>deploy/lendatagovernance/medallion/lakehouse.py</code>: <code>ingest</code>, <code>inbox</code>, <code>retry</code>, <code>rebuild</code>, <code>status</code>.
+      Skema tabel: <code>medallion/schema/medallion_repository.sql</code> (sumber kebenaran). <code>build_medallion.py</code> kini hanya menyediakan
+      fungsi <code>silver()</code>/<code>gold()</code> untuk workbook dan tidak menulis berkas. Kredensial hanya di <code>/srv/lendatagovernance/secrets/trino.env</code>.</p></div>
+    <div class="card"><h4>Inbox (masukan Bronze)</h4>
+      <p>Letakkan berkas di <code>/srv/lendatagovernance/medallion/inbox/</code>. Timer systemd <code>lendatagovernance-lakehouse-inbox.timer</code>
+      (tiap 10 menit) memuatnya ke Bronze, membangun ulang Silver/Gold, menyinkronkan katalog, lalu memindahkan berkas ke <code>inbox/selesai/</code>.
+      Sumber dikenali: <code>DG_WORKBOOK</code> dan <code>EGRC</code>. Berkas lain hanya masuk Bronze (<code>FILE</code>).</p></div>
   </div>
-  <h3>Aturan Silver</h3>
+  <h3>Isi lakehouse saat rilis</h3>
+  <table class="t" id="tbl-lapisan"><tr><th style="width:40mm">Lapisan</th><th class="n" style="width:16mm">Objek</th><th>Keterangan</th></tr></table>
+  <table class="t" id="tbl-sumber"><tr><th style="width:40mm">Sumber terakhir</th><th>Berkas</th><th style="width:30mm">Dimuat (UTC)</th></tr></table>
+  <h3>Aturan Silver (workbook tata kelola)</h3>
   <table class="t">
     <tr><th style="width:52mm">Aturan</th><th>Catatan rilis ini</th></tr>
     <tr><td>Trim spasi, rapikan spasi ganda</td><td>semua sheet kecuali Library</td></tr>
     <tr><td>Placeholder <code>0</code>, <code>Not Found</code>, <code>-</code>, <code>n/a</code> menjadi kosong</td><td>mis. SYSTEM_NAME "0", TABLE_NAME "Not Found"</td></tr>
     <tr><td>Hapus baris kembar identik</td><td>—</td></tr>
-    <tr><td>Kolom <code>catatan_mutu</code> untuk referensi rusak</td><td id="silver-notes"></td></tr>
+    <tr><td>Referensi rusak dicatat di <code>silver_fact_meta_baseline_correction</code></td><td id="silver-notes"></td></tr>
   </table>
-  <h3>Dataset Gold rilis <span data-v="rilis"></span></h3>
-  <table class="t" id="tbl-gold"><tr><th style="width:38mm">Berkas</th><th class="n" style="width:12mm">Baris</th><th>Kolom</th></tr></table>
-  <h3>Menambah dataset Gold</h3>
-  <p>Tambahkan entri di <code>GOLD_INFO</code> (nama, isi, pertanyaan yang dijawab) dan bangun barisnya di fungsi <code>gold()</code>.
-  Panel, XLSX, manifest, dan Manual Staf Bab 4 mengikuti otomatis pada rilis berikutnya. Saat T1 berjalan, tambahkan dataset dari data transaksi
-  dengan pola yang sama: Bronze = ekstrak mentah, Silver = tipe dan referensi diperiksa, Gold = model bintang untuk dashboard.</p>
+  <h3>Tabel Gold rilis <span data-v="rilis"></span></h3>
+  <table class="t" id="tbl-gold"><tr><th style="width:38mm">Tabel</th><th class="n" style="width:12mm">Baris</th><th>Kolom</th></tr></table>
+  <h3>Katalog ERM di atas tabel Trino</h3>
+  <p>Layanan katalog terpisah "LenO ERM" (CustomDatabase, 18 tabel <code>erm_*</code>) sudah dihapus. Deskripsi, tag Sensitivitas, istilah glosarium,
+  owner, definisi uji mutu, dan lineage ke layar LenO kini menempel pada tabel Trino padanannya di layanan <code>len_lakehouse_trino</code> ›
+  <code>lakekeeper</code> › <code>medallion_repository</code>, misalnya <code>erm_riskregister</code> → <code>silver_dim_erm_risk</code>,
+  <code>erm_riskinherent</code> + <code>erm_riskresidual</code> → <code>silver_fact_erm_risk_assessment</code> (peta lengkap: <code>loader/workbook.py</code> <code>TABLE_MAP</code>).
+  Layar LenO tetap berupa dashboard di layanan dashboard "LenO ERM". Data ERM lama dari schema <code>lakekeeper.erm</code>, <code>erm_bronze</code>,
+  <code>erm_silver</code> sudah disalin ke <code>medallion_repository</code> sebagai <code>bronze_erm_*</code>, <code>silver_dim_erm_risk_level_matrix</code>, dan seterusnya
+  (<code>medallion/migrate_legacy_erm.py</code>).</p>
+  <h3>Visualisasi (Superset 6 di dalam aplikasi)</h3>
+  <table class="t">
+    <tr><th style="width:44mm">Aspek</th><th>Ketentuan</th></tr>
+    <tr><td>Letak</td><td>Menu <b>Visualisasi</b> di sidebar membuka panel di area konten (<code>ui/leno-theme/leno-menu.js</code>), isi dari <code>:8585/visualisasi/</code> (<code>SUPERSET_APP_ROOT</code>) di belakang gateway. Tidak ada port atau kredensial terpisah. Tema LenO: <code>leno-superset.css</code>.</td></tr>
+    <tr><td>Login</td><td>SSO dari sesi aplikasi: token sesi diteruskan ke cookie <code>dg_token</code> (path <code>/visualisasi</code>), diverifikasi <code>superset/dg_sso.py</code>. Admin → Admin; pengguna lain otomatis Gamma + sql_lab. Login kata sandi Superset dimatikan.</td></tr>
+    <tr><td>Koneksi</td><td>Hanya Trino. Koneksi basis data selain <code>trino://</code> ditolak saat dibuat, diubah, atau diuji.</td></tr>
+    <tr><td>Tulis data</td><td>Semua pengguna boleh membuat tabel, hanya di schema <code>lakekeeper.workspace</code>: CREATE TABLE/CTAS/INSERT/UPDATE/DELETE/DROP pada <code>workspace.&lt;tabel&gt;</code> (nama schema wajib ditulis) dan unggah CSV/XLSX ke <code>workspace</code>. Tulis ke schema lain, termasuk <code>medallion_repository</code> milik loader, ditolak (<code>dg_sql_guard</code>, <code>SQL_QUERY_MUTATOR</code>).</td></tr>
+    <tr><td>Dashboard awal</td><td><code>scripts/superset-setup.py</code> membuat koneksi, dataset Gold, dan dashboard awal (login SSO memakai <code>LDG_TOKEN</code>).</td></tr>
+  </table>
+  <h3>Menambah tabel Gold</h3>
+  <p>Definisikan tabelnya di <code>medallion_repository.sql</code>, lalu bangun barisnya di <code>lakehouse.py</code> (workbook: fungsi <code>gold()</code> dan <code>GOLD_INFO</code>
+  di <code>build_medallion.py</code>; E-GRC: <code>egrc.py</code>). Jalankan <code>lakehouse.py rebuild</code>, tambahkan dataset/dashboard di Visualisasi.
+  Manual Staf Bab 4 mengikuti otomatis pada rilis berikutnya. Penyuntingan langsung di <code>silver_*</code>/<code>gold_*</code> akan tertimpa pada pemuatan berikutnya.</p>
 </section>
 
 <section>
-  <h2><span>§7</span>Rilis dokumen dan data (YYMMDD CC)</h2>
-  <p>Satu perintah menghasilkan rilis Gold dan tiga manual dengan nomor yang sama. <b>CC</b> adalah iterasi global: nilai CC tertinggi
-  dari PDF di <code>docs/manuals/</code> dan dari folder rilis panel, ditambah 1. Rilis lama tidak pernah ditimpa: build berhenti bila folder rilis sudah ada.</p>
+  <h2><span>§7</span>Rilis dokumen (YYMMDD CC)</h2>
+  <p>Satu perintah menghasilkan tiga manual dengan nomor yang sama. <b>CC</b> adalah iterasi global: nilai CC tertinggi
+  dari PDF di <code>docs/manuals/</code>, ditambah 1. Rilis lama tidak pernah ditimpa. Rilis tidak membangun data: angka Gold dibaca dari Trino
+  (hanya SELECT) setelah loader <code>lakehouse.py</code> memuatnya.</p>
 <pre class="c"><span class="cm"># lihat nomor rilis berikutnya</span>
-python3 docs/manuals/src/rilis.py --dry-run
-<span class="cm"># rilis: Gold → panel /unduh/, status langsung, 3 PDF "YYMMDD CC [Nama Dokumen].pdf", indeks docs/manuals/README.md</span>
-python3 docs/manuals/src/rilis.py [--workbook "templates/&lt;workbook&gt;.xlsx"]</pre>
+PY=/srv/lendatagovernance/medallion/.venv/bin/python      <span class="cm"># venv berisi trino + openpyxl</span>
+$PY docs/manuals/src/rilis.py --dry-run
+<span class="cm"># rilis: status Gold dari Trino + status katalog langsung → 3 PDF "YYMMDD CC [Nama Dokumen].pdf" + indeks docs/manuals/README.md</span>
+$PY docs/manuals/src/rilis.py
+<span class="cm"># cetak ulang dari build/data.js terakhir untuk memeriksa tata letak</span>
+$PY docs/manuals/src/rilis.py --preview &lt;dir&gt;</pre>
   <table class="t">
     <tr><th style="width:52mm">Berkas sumber</th><th>Isi</th></tr>
     <tr><td><code>src/pengembang.html</code></td><td>manual ini: status, akses, tindak lanjut, arah, operasi</td></tr>
@@ -234,34 +265,48 @@ python3 docs/manuals/src/rilis.py [--workbook "templates/&lt;workbook&gt;.xlsx"]
 
 <section class="pb">
   <h2><span>§8</span>Runbook operasi</h2>
-  <p>Semua perintah dijalankan dari salinan live <code>/opt/lendatagovernance/deploy</code> (project compose <code>openmetadata</code>). Ubah di repo, lalu salin ke salinan live.</p>
+  <p>Semua perintah dijalankan dari salinan live <code>/opt/lendatagovernance/deploy</code> (project compose <code>lendatagovernance</code>,
+  layanan <code>ldg-server</code>, <code>ldg-migrate</code>, <code>postgresql</code>, <code>opensearch</code>, <code>superset</code>, <code>gateway</code>;
+  jaringan <code>ldg-internal</code>/<code>ldg-egress</code>). Ubah di repo, lalu salin ke salinan live. Rencana: <code>plan/lendatagovernance_deployment_plan.md</code>.
+  Setelan non-rahasia: <code>lendatagovernance.base.env</code>; rahasia: <code>/srv/lendatagovernance/secrets/lendatagovernance.env</code>
+  (direktori data dapat diganti dengan <code>LDG_DATA_DIR</code>). Basis data katalog: <code>lendatagovernance_db</code>, role <code>lendatagovernance_user</code>
+  (dibuat oleh <code>postgres/init/10-lendatagovernance.sh</code>).</p>
+  <p style="font-size:8pt;color:var(--muted)">Catatan: server katalog memakai image open-source upstream <code>docker.getcollate.io/openmetadata/server:2.0.7</code>;
+  nama image, path di dalam image, kunci variabel lingkungan, dan path URL seperti <code>/settings/...</code> berasal dari upstream dan tidak dapat diganti namanya.</p>
 <pre class="c"><span class="cm"># kesehatan</span>
-sudo docker compose -p openmetadata ps ; scripts/verify.sh
+sudo docker compose -p lendatagovernance ps ; scripts/verify.sh
 curl -s http://127.0.0.1/_gateway/health
 <span class="cm"># mulai / henti / log</span>
-sudo docker compose -p openmetadata up -d ; sudo docker compose -p openmetadata stop
-sudo docker compose -p openmetadata logs -f --tail=200 openmetadata-server
-<span class="cm"># terapkan perubahan gateway (nginx.conf, tema, mount panel)</span>
-sudo docker compose -p openmetadata up -d gateway ; sudo docker compose -p openmetadata exec gateway nginx -t
-<span class="cm"># backup (timer harian 01:30 → /srv/lendatagovernance/backup) dan pemulihan</span>
+sudo docker compose -p lendatagovernance up -d ; sudo docker compose -p lendatagovernance stop
+sudo docker compose -p lendatagovernance logs -f --tail=200 ldg-server
+<span class="cm"># terapkan perubahan gateway (nginx.conf = bind-mount berkas, jadi wajib recreate)</span>
+sudo docker compose -p lendatagovernance up -d --force-recreate gateway ; sudo docker compose -p lendatagovernance exec gateway nginx -t
+<span class="cm"># backup (timer harian 01:30 → /srv/lendatagovernance/backup, simpan 14 hari) dan pemulihan</span>
 sudo scripts/backup.sh
-sudo docker compose -p openmetadata stop openmetadata-server
-sudo docker compose -p openmetadata exec -T postgresql pg_restore -U postgres -d openmetadata_db --clean --if-exists \
-  &lt; /srv/lendatagovernance/backup/openmetadata_db-&lt;waktu&gt;.dump      <span class="cm"># butuh openmetadata.env + jwt/ yang sama</span>
-sudo docker compose -p openmetadata start openmetadata-server   <span class="cm"># lalu Settings › Applications › Search Indexing › Run</span>
-<span class="cm"># token loader: UI › Settings › Bots/Users › admin › Access Token (60–90 hari) → OM_TOKEN di secrets/loader.env</span>
-scripts/reload-workbook.sh "templates/&lt;workbook&gt;.xlsx"       <span class="cm"># muat ulang + selisih cacat</span>
-<span class="cm"># akun panel /unduh/</span>
-scripts/panel-account.sh &lt;user&gt; ; scripts/panel-account.sh --remove &lt;user&gt;
+sudo docker compose -p lendatagovernance stop ldg-server
+sudo docker compose -p lendatagovernance exec -T postgresql pg_restore -U postgres -d lendatagovernance_db --clean --if-exists \
+  &lt; /srv/lendatagovernance/backup/lendatagovernance_db-&lt;YYYYMMDD-HHMM&gt;.dump   <span class="cm"># butuh lendatagovernance.env + jwt/ yang sama</span>
+sudo docker compose -p lendatagovernance start ldg-server   <span class="cm"># lalu Settings › Applications › Search Indexing › Run</span>
+<span class="cm"># token loader: profil admin › Access Token (60–90 hari) → LDG_TOKEN di secrets/loader.env</span>
+scripts/reload-workbook.sh "templates/&lt;workbook&gt;.xlsx"       <span class="cm"># muat ulang katalog (catalog_loader.py) + selisih cacat</span>
+<span class="cm"># lakehouse Trino (Bronze → Silver → Gold)</span>
+PY=/srv/lendatagovernance/medallion/.venv/bin/python; LH=medallion/lakehouse.py
+cp "&lt;berkas.xlsx&gt;" /srv/lendatagovernance/medallion/inbox/  <span class="cm"># dimuat timer dalam 10 menit</span>
+$PY $LH ingest "&lt;berkas.xlsx&gt;" ; $PY $LH retry ; $PY $LH rebuild ; $PY $LH status
+$PY loader/catalog_trino.py                                  <span class="cm"># sinkron katalog ↔ Trino (juga otomatis setelah pemuatan)</span>
+<span class="cm"># Visualisasi (Superset 6)</span>
+sudo docker compose -p lendatagovernance build superset &amp;&amp; sudo docker compose -p lendatagovernance up -d superset
+$PY scripts/superset-setup.py [--force]                      <span class="cm"># koneksi Trino + dataset + dashboard awal</span>
 <span class="cm"># fase 2: IDS (butuh client IDS + DNS dev-data.len.co.id)</span>
 scripts/enable-ids.sh</pre>
   <h3>Gangguan umum</h3>
   <table class="t">
     <tr><th style="width:56mm">Gejala</th><th>Penyebab dan tindakan</th></tr>
-    <tr><td>Halaman "sedang memulai" (502/503)</td><td>Server OM belum sehat. Cek <code>ps</code>/<code>logs</code>. OpenSearch butuh RAM: lihat <code>mem_limit</code>.</td></tr>
-    <tr><td>Loader: HTTP 401 "Expired token!"</td><td>Token kedaluwarsa. Buat token baru (ST-8).</td></tr>
-    <tr><td>/unduh/ meminta login terus</td><td>Akun belum ada atau hash salah. Jalankan ulang <code>panel-account.sh</code>. Periksa mount <code>unduh.htpasswd</code>.</td></tr>
-    <tr><td>/unduh/ 404</td><td>Belum ada rilis atau mount panel belum aktif. Jalankan <code>rilis.py</code>, lalu <code>up -d gateway</code>.</td></tr>
+    <tr><td>Halaman "sedang memulai" (502/503)</td><td>Server katalog (<code>ldg-server</code>) belum sehat. Cek <code>ps</code>/<code>logs</code>. OpenSearch butuh RAM: lihat <code>mem_limit</code>.</td></tr>
+    <tr><td>Loader: HTTP 401 "Expired token!"</td><td>Token kedaluwarsa. Buat token baru dan simpan sebagai <code>LDG_TOKEN</code> (ST-8).</td></tr>
+    <tr><td>Lakehouse: galat commit/metadata Lakekeeper</td><td>Sementara: loader mencoba ulang hingga 8 kali. Berkas berstatus PARTIAL dilengkapi dengan <code>lakehouse.py retry</code>. Bandingkan dengan <code>lakehouse.py status</code>.</td></tr>
+    <tr><td>Visualisasi meminta login atau kosong</td><td>Sesi aplikasi berakhir atau cookie <code>dg_token</code> belum terpasang: muat ulang aplikasi lalu buka menu Visualisasi lagi. Cek log <code>superset</code>.</td></tr>
+    <tr><td>SQL Lab: pernyataan tulis ditolak</td><td>Sesuai aturan: tulis hanya ke <code>workspace.&lt;tabel&gt;</code> dengan nama schema tertulis lengkap.</td></tr>
     <tr><td>Tema atau nama Len hilang</td><td>Mount <code>./ui/leno-theme</code> atau <code>sub_filter</code> gateway berubah. Cek <code>nginx -t</code>.</td></tr>
   </table>
 </section>
@@ -277,15 +322,15 @@ window.render = (R) => {
   document.getElementById('tok').textContent = tokenTxt;
   document.getElementById('svg-rel').textContent = R.rilis;
   document.getElementById('cover-pre').textContent =
-    `rilis      ${R.rilis}  (${R.tanggal})\nkatalog    ${L.versi_om} · auth ${L.auth.provider} · self-signup ${L.auth.self_signup}\n` +
-    `gold       ${R.gold.gold.length} dataset · ${R.gold.gold.reduce((a, d) => a + d.baris, 0).toLocaleString('id-ID')} baris · panel /unduh/\n` +
+    `rilis      ${R.rilis}  (${R.tanggal})\nkatalog    ${L.versi_katalog} · auth ${L.auth.provider} · self-signup ${L.auth.self_signup}\n` +
+    `gold       ${R.gold.tabel.length} tabel · ${R.gold.tabel.reduce((a, d) => a + Math.max(d.baris, 0), 0).toLocaleString('id-ID')} baris · ${R.gold.katalog}\n` +
     `diambil    ${L.diambil}`;
 
   const auth = L.auth.provider === 'basic';
-  [['Fase 1 · Katalog', 'Berjalan', `OpenMetadata ${L.versi_om}, login ${L.auth.provider}, gateway + tema Len, backup harian (${L.jumlah_backup} dump, terakhir ${L.backup_terakhir}).`, 'UV-3'],
+  [['Fase 1 · Katalog', 'Berjalan', `Katalog Len Data Governance (server ${L.versi_katalog}), login ${L.auth.provider}, gateway + tema Len, backup harian (${L.jumlah_backup} dump, terakhir ${L.backup_terakhir}).`, 'UV-3'],
    ['Fase 2 · IDS SSO', auth ? 'Terblokir' : 'Selesai', auth ? `Menunggu client IDS (P2-1) dan DNS dev-data.len.co.id (${L.dns}) (P2-2). Setelah itu jalankan enable-ids.sh (P2-3).` : 'IDS aktif.', 'Tim IDS, Tim Jaringan, UV-3'],
    ['Fase 3 · Workbook', 'Dimuat, ada cacat', `${e.tabel} tabel, ${e.kolom_katalog} kolom, ${e.dashboard} layar, ${e.istilah_glosarium} istilah, ${e.test_case} test case. ${Object.values(L.cacat).reduce((a, b) => a + b, 0)} cacat. Token loader ${tokenTxt}.`, 'UG-1 / UV-1, UV-3'],
-   ['Fase 3b · Medallion', 'Berjalan', `Rilis ${R.rilis}: ${R.gold.gold.length} dataset Gold, panel /unduh/ dengan login (${L.panel_akun} akun).`, 'UV-3'],
+   ['Fase 3b · Lakehouse + Visualisasi', 'Berjalan', `Trino ${R.gold.katalog}: Bronze ${R.gold.lapisan.bronze}, Silver ${R.gold.lapisan.silver}, Gold ${R.gold.lapisan.gold} tabel/view. KPI terakhir ${R.gold.kpi_tanggal}. Menu Visualisasi (Superset 6, SSO).`, 'UV-3'],
    ['Fase 4 · Konteks lengkap', has(e.domain) || has(e.kontrak_data) ? 'Berjalan' : 'Belum mulai', `Domain ${e.domain}, produk data ${e.produk_data}, kontrak ${e.kontrak_data}, hasil uji ${e.hasil_uji}, pipeline ${e.pipeline}, metrik ${e.metrik}.`, 'UV-1, UV-3'],
   ].forEach(([f, s, k, o]) => row('tbl-fase', [`<b>${f}</b>`, chip(s), k, o]));
 
@@ -318,20 +363,20 @@ window.render = (R) => {
     row('tbl-rules', [`<code>${esc(p)}</code>`, esc(r.rule), esc(r.resource), esc(r.operasi), esc(r.kondisi)])));
 
   const T = [];
-  if (L.auth.self_signup === 'true') T.push(['TINGGI', 'Self-signup aktif pada login basic. Siapa pun di jaringan bisa mendaftar dan langsung mendapat DataConsumer.', '<code>AUTHENTICATION_ENABLE_SELF_SIGNUP=false</code> di secrets/openmetadata.env, lalu restart server. Akun dibuat Admin sampai IDS aktif.']);
+  if (L.auth.self_signup === 'true') T.push(['TINGGI', 'Self-signup aktif pada login basic. Siapa pun di jaringan bisa mendaftar, langsung mendapat DataConsumer, dan lewat SSO ikut masuk Visualisasi (Gamma + sql_lab, tulis ke workspace).', '<code>AUTHENTICATION_ENABLE_SELF_SIGNUP=false</code> di secrets/lendatagovernance.env, lalu restart <code>ldg-server</code>. Akun dibuat Admin sampai IDS aktif.']);
   T.push(['TINGGI', 'DataConsumerPolicy-EditRule memberi semua akun EditDescription, EditTags, EditTier, EditCertification, EditGlossaryTerms. Pengguna bisa mengubah keterangan resmi tanpa persetujuan.', 'Sisakan ViewAll + Task. Perubahan lewat Request description/tags yang disetujui pemilik.']);
   T.push(['TINGGI', 'OrganizationPolicy-Owner-Rule: isOwner() → All. Setelah keanggotaan tim diimpor, semua anggota tim pemilik (mis. UG-1) bisa menghapus aset.', 'Ganti dengan Edit* untuk owner, lalu tambah rule deny Delete untuk non-admin.']);
   T.push(['SEDANG', 'OrganizationPolicy-NoOwner-Rule: siapa pun boleh mengklaim kepemilikan aset yang belum punya owner. Aset baru dari ingestion (T1) akan terdampak.', 'Batasi ke tim UV-1, atau tetapkan owner otomatis saat ingestion.']);
   if (L.anggota_uv1 === 0) T.push(['TINGGI', 'Tim UV-1 belum punya anggota, sehingga hak DG_UV_1 tidak dipakai siapa pun.', 'ST-1: tambahkan Staf ke UV-1.']);
   if (L.nonadmin_dengan_role_bot > 0) T.push(['SEDANG', `${L.nonadmin_dengan_role_bot} akun non-admin memegang role bot (GovernanceBotRole, ApplicationBotRole, ApplicationBotImpersonationRole).`, 'Cabut role bot dari akun manusia. Gunakan DataGovernance_UV_1 lewat tim.']);
   if (L.akun.admin > 2) T.push(['SEDANG', `${L.akun.admin} akun manusia berstatus admin.`, 'Least privilege: admin hanya operator UV-3. Lainnya lewat peran tim.']);
-  T.push(['SEDANG', 'Lalu lintas HTTP tanpa TLS (port 80/8585), termasuk login basic dan panel.', 'Sertifikat internal di gateway bersamaan dengan IDS.']);
-  T.push(['RENDAH', 'Panel /unduh/ memakai basic auth terpisah dari katalog.', 'Satu akun per orang sekarang. SSO IDS pada T4.']);
+  T.push(['SEDANG', 'Lalu lintas HTTP tanpa TLS (port 80/8585), termasuk login basic dan token sesi (cookie dg_token untuk Visualisasi).', 'Sertifikat internal di gateway bersamaan dengan IDS.']);
+  T.push(['RENDAH', 'Semua pengguna menulis ke lakekeeper.workspace lewat satu koneksi Trino bersama, sehingga tabel milik orang lain bisa ditimpa atau dihapus. Belum ada konvensi nama atau pembersihan.', 'Konvensi awalan nama tabel per pengguna/unit, pembersihan berkala, atau impersonasi pengguna Trino.']);
   T.forEach(([s, f, a], i) => row('tbl-temuan', [`A${i + 1}`, sev(s), f, a]));
 
   const S = (ok, a = 'Tersedia', b = 'Belum ada') => (ok ? a : b);
   [['Arti metrik dan cara hitung', 'Tersedia / ' + S(has(e.metrik)), 'Isi 8 istilah kosong (UG-1). Buat entitas Metric dengan rumus untuk KPI risiko (T3).'],
-   ['Dataset yang mengisi dashboard', S(has(e.lineage_edge)), 'Daftarkan dashboard non-ERM (Power BI/Excel) sebagai dashboard service + lineage (T1).'],
+   ['Dataset yang mengisi dashboard', S(has(e.lineage_edge)), 'Daftarkan dashboard Visualisasi (Superset) dan dashboard non-ERM (Power BI/Excel) sebagai dashboard service + lineage ke tabel Gold (T1).'],
    ['Pemilik produk data', 'Tersedia / ' + S(has(e.produk_data)), 'ST-5: Domain + Data Product dari workbook.'],
    ['Kontrak data', S(has(e.kontrak_data)), 'ST-4.'],
    ['Segar, teruji, sertifikasi, terpercaya', S(has(e.hasil_uji), 'Tersedia', 'Belum bisa'), 'ST-2, ST-3, alur sertifikasi (T3). Tier sudah ada di sebagian aset.'],
@@ -341,8 +386,13 @@ window.render = (R) => {
    ['Keputusan, asumsi, insiden, percakapan', 'Tersedia / ' + S(has(e.percakapan)), 'Konvensi KEPUTUSAN:/ASUMSI:/INSIDEN: sudah ada di Manual Pengguna. Pertimbangkan Announcement dan Incident Manager (T2).'],
   ].forEach(([q, s, a], i) => row('tbl-q9', [i + 1, q, s.split(' / ').map(chip).join(' '), a]));
 
-  for (const d of R.gold.gold) row('tbl-gold', [`<code>${esc(d.file)}</code>`, `<span style="font-family:monospace">${fmt(d.baris)}</span>`,
+  for (const d of R.gold.tabel) row('tbl-gold', [`<code>${esc(d.tabel)}</code>${d.jenis === 'view' ? ' (view)' : ''}`,
+    `<span style="font-family:monospace">${d.baris < 0 ? 'galat' : fmt(d.baris)}</span>`,
     `<span style="font-size:7.4pt;color:var(--text2)">${esc(d.kolom.join(', '))}</span>`]);
+  const lap = { bronze: 'bronze_repository + baris mentah per sumber/sheet + karantina header', silver: 'silver_dim_* / silver_fact_*, bertipe dan bersih',
+    gold: 'gold_meta_* (tata kelola), gold_erm_* (risiko), *_snapshot = riwayat harian' };
+  Object.entries(R.gold.lapisan).forEach(([k, v]) => row('tbl-lapisan', [`<b>${k[0].toUpperCase() + k.slice(1)}</b>`, `<span style="font-family:monospace">${v}</span>`, lap[k] || '']));
+  R.gold.sumber.forEach((x) => row('tbl-sumber', [`<code>${esc(x.sistem)}</code>`, esc(x.berkas), esc(x.dimuat)]));
   document.getElementById('silver-notes').textContent = Object.entries(R.gold.silver_catatan_mutu).filter(([, v]) => v)
     .map(([k, v]) => `${k}: ${v} baris`).join('; ') || 'tidak ada';
 };

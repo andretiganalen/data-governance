@@ -131,7 +131,7 @@ Muat dari Google Fonts dengan `display=swap`; tanpa internet tetap jatuh ke Sego
 
 | Aplikasi | File |
 | :-- | :-- |
-| OpenMetadata (dev-data) | `deploy/ui/leno-theme/leno.css` (disisipkan gateway) + Settings › Preferences › Theme: Primary `#194A80`, Info `#0562C9`, Success `#1E7B34`, Warning `#B26A00`, Error `#DA0000` |
+| Len Data Governance (dev-data) | `deploy/ui/leno-theme/leno.css` (disisipkan gateway) + Settings › Preferences › Theme: Primary `#194A80`, Info `#0562C9`, Success `#1E7B34`, Warning `#B26A00`, Error `#DA0000` |
 | Landing dev-data | `deploy/lendatagovernance/gateway/html/index.html` |
 | Aplikasi baru | Salin §6 ke stylesheet global; ikuti §4–§5 |
 

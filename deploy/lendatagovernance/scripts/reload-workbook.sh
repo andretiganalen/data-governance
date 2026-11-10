@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Reload Workbook Governance into OpenMetadata and compare defect counts with the previous run.
+# Reload Workbook Governance into the Len Data Governance catalog and compare defect counts with the previous run.
 # Usage: scripts/reload-workbook.sh [path/to/workbook.xlsx]
 set -euo pipefail
 WB=${1:-"/home/ubuntu/data-governance/templates/261016 Rev.0.1_Data Governance_ERM.xlsx"}
@@ -10,7 +10,7 @@ PREV=$(ls -t $REP/workbook-defects-*.md 2>/dev/null | grep -v -- '-dry' | head -
 BEFORE=$( [[ -n $PREV ]] && count "$PREV" || echo "-" )
 [[ -n $PREV ]] && cp "$PREV" "$PREV.prev"
 cd "$(dirname "$0")/../loader"
-python3 om_loader.py workbook "$WB"
+python3 catalog_loader.py workbook "$WB"
 NOW=$(ls -t $REP/workbook-defects-*.md | grep -v -- '-dry' | head -1)
 echo; echo "Defects: before=$BEFORE  after=$(count "$NOW")"
 defects() { sed -n '/^## Cacat/,$p' "$1" | grep '^- ' | sort; }

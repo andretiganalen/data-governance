@@ -1,10 +1,10 @@
 """E-GRC → Medallion: Bronze (Excel apa adanya) → Silver (dim/fact/bridge) → Gold (siap dashboard).
 
-Dipanggil oleh build_medallion.py (--egrc <xlsx>). Standar penamaan & field_id: docs/adr/dg-0002-medallion-penamaan-field-id.md.
+Dipanggil oleh lakehouse.py (keluaran CSV/XLSX hanya di direktori sementara, lalu dimuat ke Trino). Standar penamaan & field_id: docs/adr/dg-0002-medallion-penamaan-field-id.md.
 - Setiap kolom keluaran WAJIB terdaftar di registry/field_registry.csv (satu nama kolom = satu field_id = satu arti).
 - Kunci deterministik dari kode bisnis (risiko_key = '2026-RDF001'); hash SHA-1 hanya bila sumber tidak punya kode.
 - ETL tidak "membetulkan" isi bisnis diam-diam: nilai sumber disimpan, nilai hitung ulang di kolom terpisah, temuan dicatat.
-Isi E-GRC bersifat Confidential: Silver/Gold hanya di server; Gold disajikan di /unduh/ dengan akun khusus E-GRC.
+Isi E-GRC bersifat Confidential: Silver/Gold hanya di Trino lakehouse (lakekeeper.medallion_repository).
 """
 from __future__ import annotations
 

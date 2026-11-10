@@ -72,7 +72,8 @@ table.t td{border-bottom:1px solid var(--soft);padding:2mm 2.5mm;vertical-align:
 <!-- 1. Pimpinan -->
 <section>
   <h2><b>1</b>Ringkasan untuk Pimpinan</h2>
-  <p class="lead">Katalog data perusahaan saat ini mencakup aplikasi <b>ERM (manajemen risiko)</b> di LenO. Angka di bawah dihitung dari rilis data <b data-v="rilis"></b>.</p>
+  <p class="lead">Katalog data perusahaan saat ini mencakup aplikasi <b>ERM (manajemen risiko)</b> di LenO. Angka di bawah dihitung dari data Gold
+  di lakehouse data perusahaan saat rilis <b data-v="rilis"></b>.</p>
   <div class="kpis">
     <div><b data-kpi="Tabel"></b><span>tabel tercatat</span></div>
     <div><b data-kpi="Elemen data (kolom)"></b><span>elemen data (kolom)</span></div>
@@ -112,12 +113,14 @@ table.t td{border-bottom:1px solid var(--soft);padding:2mm 2.5mm;vertical-align:
     <tr><td>Mengubah alur data (lineage)</td><td>—</td><td>✔</td><td>✔</td><td>✔</td></tr>
     <tr><td>Membuat dan mengubah aturan mutu</td><td>—</td><td>✔</td><td>✔</td><td>✔</td></tr>
     <tr><td>Menyetujui atau menolak permintaan atas aset</td><td>—</td><td>✔</td><td>✔ <sup>3</sup></td><td>✔</td></tr>
-    <tr><td>Mengunduh data siap pakai (panel)</td><td>—</td><td>melalui Staf</td><td>✔ <sup>4</sup></td><td>✔</td></tr>
+    <tr><td>Melihat data siap pakai dan membuat grafik (menu Visualisasi)</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td></tr>
+    <tr><td>Membuat tabel kerja sendiri di schema <b>workspace</b> (SQL Lab)</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td></tr>
+    <tr><td>Mengubah data resmi (Bronze, Silver, Gold)</td><td>—</td><td>—</td><td>— <sup>4</sup></td><td>— <sup>4</sup></td></tr>
     <tr><td>Membuat akun, mengatur tim dan peran</td><td>—</td><td>—</td><td>—</td><td>✔</td></tr>
   </table>
   <p style="font-size:8.5pt;color:var(--muted)"><sup>1</sup> Pengguna diarahkan untuk mengajukan permintaan, bukan mengubah sendiri. Bila pengguna mengubah langsung,
   Staf meninjau perubahan itu di riwayat aset (Prosedur S1). <sup>2</sup> Untuk istilah yang dimiliki unitnya.
-  <sup>3</sup> Untuk permintaan yang ditugaskan kepada Staf. <sup>4</sup> Dengan akun panel yang diberikan Administrator.</p>
+  <sup>3</sup> Untuk permintaan yang ditugaskan kepada Staf. <sup>4</sup> Data resmi hanya diperbarui dengan memuat ulang berkas sumber (Prosedur S9), tidak disunting langsung.</p>
 
   <div class="keep"><h3>Yang sudah bisa dan belum bisa dilakukan Staf</h3>
   <div class="cols">
@@ -129,14 +132,15 @@ table.t td{border-bottom:1px solid var(--soft);padding:2mm 2.5mm;vertical-align:
       <li>Menulis aturan mutu per kolom</li>
       <li>Memberi Tier dan sertifikasi</li>
       <li>Menanggapi permintaan pengguna dan mencatat keputusan</li>
-      <li>Mengunduh data siap pakai untuk dashboard</li>
+      <li>Melihat data siap pakai dan membuat grafik di menu Visualisasi</li>
+      <li>Membuat tabel kerja sendiri di schema workspace</li>
     </ul></div>
     <div class="panel na"><h3>Belum bisa</h3><ul>
       <li>Menjalankan pemeriksaan mutu dan melihat hasilnya</li>
       <li>Menampilkan kesegaran data (waktu pembaruan terakhir)</li>
       <li>Membuat kontrak data</li>
       <li>Membentuk domain dan produk data</li>
-      <li>Melihat isi transaksi data dari katalog</li>
+      <li>Menampilkan data SDM dan keuangan (sumbernya belum dimuat)</li>
       <li>Menautkan dokumen kebijakan dan standar ke aset</li>
     </ul></div>
   </div></div>
@@ -152,38 +156,41 @@ table.t td{border-bottom:1px solid var(--soft);padding:2mm 2.5mm;vertical-align:
 <section class="pb">
   <h2><b>4</b>Data siap pakai untuk dashboard</h2>
   <p class="lead">Data siap pakai (lapisan <b>Gold</b>) adalah data yang sudah dibersihkan, diberi nama kolom yang konsisten, dan bisa langsung dipakai
-  di Excel, Power BI, atau Looker Studio. Setiap rilis diberi nomor <b>YYMMDD CC</b> dan rilis lama tetap tersimpan.</p>
+  untuk dashboard. Semua data ini tersimpan di <b>lakehouse data perusahaan</b> dan dibuka lewat menu <span class="ui">Visualisasi</span> di aplikasi.
+  Data diperbarui otomatis setiap kali berkas sumber dimuat ulang.</p>
   <h3>Yang sudah ada sampai rilis <span data-v="rilis"></span></h3>
   <table class="t ds" id="tbl-gold"><tr><th>Dataset</th><th>Isi</th><th style="width:16mm;text-align:right">Baris</th></tr></table>
   <div class="keep"><h3>Yang belum ada</h3>
-  <table class="t">
+  <table class="t" id="tbl-belum">
     <tr><th style="width:56mm">Data</th><th>Keterangan</th></tr>
-    <tr><td>Isi transaksi ERM (risiko, mitigasi, realisasi per unit)</td><td><span class="chip na">Belum bisa</span> Rilis ini memuat keterangan tata kelola, bukan isi transaksi.</td></tr>
     <tr id="row-nodata"><td>Data karyawan dan struktur organisasi dari sistem SDM</td><td><span class="chip no">Belum ada</span> Dataset tercatat di workbook tetapi belum punya tabel sumber.</td></tr>
     <tr><td>Hasil pemeriksaan mutu dan kesegaran data</td><td><span class="chip na">Belum bisa</span></td></tr>
   </table></div>
 </section>
 
 <section>
-  <h3>Cara mengunduh</h3>
+  <h3>Cara membuka data siap pakai</h3>
   <ol>
-    <li>Buka <b data-v="panel"></b> dari jaringan kantor.</li>
-    <li>Masuk dengan <b>akun panel</b> yang diberikan Administrator. Akun ini berbeda dari akun katalog dan tidak boleh dipinjamkan.</li>
-    <li>Klik <b>Unduh semua (XLSX)</b> untuk satu berkas berisi semua dataset, atau klik <b>CSV</b> per dataset.</li>
-    <li>Nama berkas memuat nomor rilis, misalnya <i><span data-v="rilis"></span> Data Siap Pakai (Gold).xlsx</i>. Simpan nomor ini di dashboard Anda sebagai sumber.</li>
+    <li>Masuk ke aplikasi Len Data Governance seperti biasa, lalu klik menu <span class="ui">Visualisasi</span> di sisi kiri. Tidak perlu kata sandi lain.</li>
+    <li>Pilih tab <i>Risiko ERM</i> atau <i>Tata Kelola Data</i> untuk dashboard yang sudah jadi, atau <i>Semua dashboard</i> untuk daftar lengkap.</li>
+    <li>Untuk grafik baru, buka tab <i>Grafik</i>, pilih dataset Gold (nama diawali <b>gold_</b>), lalu pilih jenis grafik.</li>
+    <li>Untuk kueri sendiri, buka tab <i>SQL Lab</i>. Semua tabel resmi hanya bisa dibaca. Simpan hasil olahan Anda sebagai tabel di schema
+      <b>workspace</b>, dengan menulis nama lengkapnya, misalnya <i>CREATE TABLE workspace.risiko_unit_saya AS SELECT …</i>.
+      Berkas CSV/XLSX pribadi juga bisa diunggah, hanya ke <b>workspace</b>.</li>
   </ol>
   <h3>Usulan dashboard dan cara menghubungkan tabelnya</h3>
   <table class="t">
-    <tr><th style="width:44mm">Dashboard</th><th>Dataset yang dipakai</th><th style="width:44mm">Kunci penghubung</th></tr>
-    <tr><td><b>Kematangan Tata Kelola</b><br>untuk pimpinan</td><td>kpi_tata_kelola (kartu angka), ringkasan_tabel (% definisi per tabel)</td><td>tabel</td></tr>
-    <tr><td><b>Peta Sensitivitas</b></td><td>kamus_data (sensitivitas per kolom), organisasi</td><td>field_id; unit_pemilik → org_id</td></tr>
-    <tr><td><b>Siapa Memakai Data</b></td><td>hak_akses (unit × layar × izin), organisasi (direktorat, divisi)</td><td>org_id</td></tr>
-    <tr><td><b>Dampak Perubahan</b></td><td>lineage (kolom → layar), ringkasan_layar</td><td>field_id, layar</td></tr>
-    <tr><td><b>Kesiapan Mutu</b></td><td>aturan_mutu (otomatis atau deskriptif), kamus_data</td><td>field_id</td></tr>
+    <tr><th style="width:44mm">Dashboard</th><th>Tabel yang dipakai</th><th style="width:44mm">Kunci penghubung</th></tr>
+    <tr><td><b>Kematangan Tata Kelola</b><br>untuk pimpinan</td><td>gold_meta_governance_kpi_snapshot (kartu angka dan tren), gold_meta_table_summary (% definisi per tabel)</td><td>table_name</td></tr>
+    <tr><td><b>Peta Sensitivitas</b></td><td>gold_meta_data_dictionary (sensitivitas per kolom), silver_dim_organization</td><td>field_id; owner_unit → unit kerja</td></tr>
+    <tr><td><b>Siapa Memakai Data</b></td><td>gold_meta_access_matrix (unit × layar × izin), silver_dim_organization (direktorat, divisi)</td><td>org_id</td></tr>
+    <tr><td><b>Dampak Perubahan</b></td><td>gold_meta_lineage (kolom → layar), gold_meta_screen_summary</td><td>field_id, target_screen = screen</td></tr>
+    <tr><td><b>Kesiapan Mutu</b></td><td>gold_meta_dq_rule (otomatis atau deskriptif), gold_meta_data_dictionary</td><td>field_id</td></tr>
+    <tr><td><b>Profil Risiko</b></td><td>gold_erm_risk_register, gold_erm_risk_heatmap_monthly, gold_erm_executive_summary_monthly</td><td>perusahaan, tahun, bulan</td></tr>
   </table>
-  <div class="note"><b>Excel:</b> buka XLSX. Setiap sheet sudah punya filter dan baris judul yang dibekukan.
-  <b>Power BI:</b> <i>Get Data › Excel</i>, centang semua sheet kecuali <i>Info</i>, lalu buat relasi lewat kunci di atas.
-  Bila memakai CSV, pilih encoding <b>UTF-8</b>.</div>
+  <div class="note"><b>Catatan:</b> tabel <b>gold_</b> dan <b>silver_</b> adalah data resmi dan hanya bisa dibaca. Perbaikan isi dilakukan di berkas sumber
+  (Prosedur S9), bukan di tabel. Tabel di <b>workspace</b> bisa dibuat siapa saja dan bukan sumber resmi: beri nama yang jelas dan hapus bila tidak dipakai.
+  Bila butuh koneksi langsung dari alat lain (misalnya DBeaver atau Power BI), hubungi Administrator.</div>
 </section>
 
 <!-- 5. Pesan standar -->
@@ -195,14 +202,14 @@ table.t td{border-bottom:1px solid var(--soft);padding:2mm 2.5mm;vertical-align:
   <div class="quote"><b>Hasil uji dan kesegaran</b> — "Aturan mutu tabel ini sudah tercatat di tab Data Observability. Hasil pemeriksaannya belum bisa ditampilkan.
     Untuk keputusan penting, mohon konfirmasi ke <i>@unit pemilik</i>."</div>
   <div class="quote"><b>Definisi kosong</b> — "Definisi istilah ini belum ada. Kami lengkapi bersama <i>@unit pemilik</i> paling lambat <i>tanggal</i>."</div>
-  <div class="quote"><b>Data siap pakai</b> — "Data untuk dashboard tersedia pada rilis <i>YYMMDD CC</i>. Berkasnya kami kirim, atau Anda bisa meminta akun panel ke Administrator."</div>
-  <div class="quote"><b>Isi data</b> — "Katalog memuat keterangan data, bukan isinya. Isi data dibuka di aplikasi asal sesuai hak akses unit Anda."</div>
+  <div class="quote"><b>Data siap pakai</b> — "Data untuk dashboard tersedia di menu <b>Visualisasi</b>, tab <i>Risiko ERM</i> atau <i>Tata Kelola Data</i>. Masuk dengan akun Anda yang sama, tanpa kata sandi lain."</div>
+  <div class="quote"><b>Isi data</b> — "Halaman katalog memuat keterangan data. Angka siap pakai bisa dilihat di menu <b>Visualisasi</b>. Isi transaksi rinci dibuka di aplikasi asal sesuai hak akses unit Anda."</div>
 
   <h3>Lampiran A — Elemen data yang belum punya definisi</h3>
   <table class="t" id="tbl-nodef"><tr><th style="width:20mm">Elemen</th><th>Istilah</th></tr></table>
   <h3>Lampiran B — Perbaikan isi workbook yang menjadi tanggung jawab Staf dan Pemilik</h3>
   <table class="t" id="tbl-cacat"><tr><th>Jenis perbaikan</th><th style="width:16mm;text-align:right">Jumlah</th><th>Yang dilakukan</th></tr></table>
-  <p style="font-size:8.5pt;color:var(--muted)">Setelah workbook diperbaiki, kirim berkasnya ke Administrator untuk dimuat ulang. Hasilnya tampil di katalog dan di rilis data berikutnya.</p>
+  <p style="font-size:8.5pt;color:var(--muted)">Setelah workbook diperbaiki, kirim berkasnya ke Administrator untuk dimuat ulang. Hasilnya tampil di katalog dan di menu Visualisasi setelah dimuat ulang.</p>
 </section>
 
 <script src="build/data.js"></script>
@@ -276,13 +283,14 @@ window.render = (R) => {
     ['S9', 'Memperbarui workbook governance', 'per siklus perubahan',
      ['Perbaiki isi workbook (Lampiran B): definisi, tabel, klasifikasi, kolom kembar.',
       'Simpan dengan nama versi baru, misalnya <i>YYMMDD Rev.x</i>.',
-      'Kirim ke Administrator untuk dimuat ulang. Periksa hasilnya di katalog.'],
+      'Kirim ke Administrator untuk dimuat ulang. Data Gold dan katalog diperbarui otomatis. Periksa hasilnya di katalog dan di menu Visualisasi.'],
      'Semua jawaban konsisten dengan sumber resmi.', 'Workbook tetap menjadi sumber kebenaran.'],
     ['S10', 'Menyiapkan data untuk dashboard', 'per permintaan',
-     ['Pastikan rilis terbaru di panel sudah memuat perbaikan terakhir. Bila belum, minta Administrator membuat rilis baru.',
-      'Unduh XLSX atau CSV yang dibutuhkan (Bab 4).',
-      'Kirim ke peminta dengan menyebut nomor rilis.'],
-     'Pengguna mendapat data rapi tanpa menyusun ulang.', 'Tidak meneruskan akun panel.'],
+     ['Buka menu <span class="ui">Visualisasi</span>. Periksa apakah dashboard yang diminta sudah ada di tab <i>Risiko ERM</i>, <i>Tata Kelola Data</i>, atau <i>Semua dashboard</i>.',
+      'Bila belum ada, buat grafik dari tabel Gold di tab <i>Grafik</i>, lalu susun menjadi dashboard (Bab 4).',
+      'Bila perlu gabungan data sendiri, tulis kueri di <i>SQL Lab</i> dan simpan hasilnya sebagai tabel <b>workspace.&lt;nama_tabel&gt;</b>.',
+      'Kirim nama dashboard ke peminta. Peminta membukanya dengan akun yang sama.'],
+     'Pengguna mendapat data rapi tanpa menyusun ulang.', 'Angka resmi hanya dari tabel Gold. Tabel workspace adalah tabel kerja, bukan sumber resmi.'],
   ];
   const sec = document.getElementById('prosedur');
   for (const [n, title, when, steps, out, rule] of P) {
@@ -295,11 +303,17 @@ window.render = (R) => {
   }
 
   const g = document.getElementById('tbl-gold');
-  for (const d of R.gold.gold) {
+  for (const d of R.gold.tabel.filter((x) => x.baris > 0)) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${esc(d.nama)}<br><span style="color:var(--muted);font-weight:400;font-size:8pt">${esc(d.file)}</span></td>
-      <td>${esc(d.isi)}<br><i style="color:var(--blue)">Menjawab: ${esc(d.menjawab)}</i></td><td style="text-align:right">${fmt(d.baris)}</td>`;
+    tr.innerHTML = `<td>${esc(d.nama)}<br><span style="color:var(--muted);font-weight:400;font-size:8pt">${esc(d.tabel)}</span></td>
+      <td>${esc(d.isi)}${d.menjawab ? `<br><i style="color:var(--blue)">Menjawab: ${esc(d.menjawab)}</i>` : ''}</td><td style="text-align:right">${fmt(d.baris)}</td>`;
     g.appendChild(tr);
+  }
+  const belum = document.getElementById('tbl-belum');
+  for (const d of R.gold.tabel.filter((x) => x.baris === 0)) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${esc(d.nama)}<br><span style="color:var(--muted);font-size:8pt">${esc(d.tabel)}</span></td><td>${chip('Belum ada')} Tabel sudah disiapkan, sumber datanya belum dimuat.</td>`;
+    belum.appendChild(tr);
   }
   const none = R.dataset.filter((d) => d.status !== 'Tersedia').map((d) => d.dataset);
   if (none.length) document.querySelector('#row-nodata td').textContent = none.join(', ');

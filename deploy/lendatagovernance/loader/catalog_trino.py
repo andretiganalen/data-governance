@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-"""Sinkron katalog OpenMetadata dengan Trino lakehouse (lakekeeper.medallion_repository).
+"""Sinkron katalog Len Data Governance dengan Trino lakehouse (lakekeeper.medallion_repository).
 
-OpenMetadata di stack ini tidak punya komponen ingestion (Airflow), jadi metadata didorong lewat API:
+Katalog di stack ini tidak punya komponen ingestion (Airflow), jadi metadata didorong lewat API:
   layanan "Len Lakehouse (Trino)" › database lakekeeper › schema medallion_repository › semua tabel,
   dengan kolom + tipe + komentar dari Trino, dan jumlah baris (profil tabel) per waktu sinkron.
-Tabel yang sudah tidak ada di Trino dihapus (soft delete) dari katalog.
+Tabel yang sudah tidak ada di Trino dihapus (soft delete) dari katalog. Metadata Workbook ERM yang dipasang
+catalog_loader.py (blok deskripsi "Workbook ERM", tag Sensitivitas/glosarium, pemilik) dipertahankan.
 
 Tujuan: admin bisa mencocokkan :8585 dengan DBeaver — daftar tabel, kolom, dan jumlah baris harus sama.
 Dipanggil otomatis di akhir lakehouse.py (bila token ada); bisa juga manual:
-  /srv/lendatagovernance/medallion/.venv/bin/python loader/om_trino.py
-Butuh: OM_TOKEN admin di /srv/lendatagovernance/secrets/loader.env, kredensial Trino di secrets/trino.env.
+  /srv/lendatagovernance/medallion/.venv/bin/python loader/catalog_trino.py
+Butuh: LDG_TOKEN admin di /srv/lendatagovernance/secrets/loader.env, kredensial Trino di secrets/trino.env.
 """
 from __future__ import annotations
 
@@ -22,13 +23,14 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path[:0] = [str(HERE), str(HERE.parent / "medallion")]
-from om_loader import OM, q  # noqa: E402
+import workbook as W  # noqa: E402
+from catalog_loader import Catalog, q  # noqa: E402
 
 SERVICE = "len_lakehouse_trino"
 WIB = timezone(timedelta(hours=7))
 
 
-def om_type(t: str) -> dict:
+def catalog_type(t: str) -> dict:
     t = t.lower()
     m = re.match(r"decimal\((\d+),\s*(\d+)\)", t)
     if m:
@@ -49,14 +51,14 @@ def layer(name: str) -> str:
 def main() -> None:
     from lakehouse import Trino  # kredensial & koneksi yang sama dengan loader
     tq = Trino()
-    om = OM(dry=False)
+    om = Catalog(dry=False)
     now = datetime.now(timezone.utc)
     stamp = now.astimezone(WIB).strftime("%Y-%m-%d %H:%M WIB")
 
     om.put("/v1/services/databaseServices", {
         "name": SERVICE, "displayName": "Len Lakehouse (Trino)", "serviceType": "Trino",
         "description": "Trino lakehouse Len (Iceberg/Lakekeeper) — sistem rekam data aplikasi Data Governance. "
-                       "Metadata disinkronkan oleh loader/om_trino.py (bukan ingestion OpenMetadata).",
+                       "Metadata disinkronkan oleh loader/catalog_trino.py (tanpa komponen ingestion).",
         "connection": {"config": {"type": "Trino", "hostPort": f"{tq.conn.host}:{tq.conn.port}", "username": tq.conn.user,
                                   "catalog": tq.catalog}}})
     db = om.put("/v1/databases", {"name": tq.catalog, "service": SERVICE, "displayName": tq.catalog,
@@ -83,8 +85,22 @@ def main() -> None:
         desc = (tcomment.get(t) or "").strip()
         n = f"**{counts[t]:,}**" if counts[t] is not None else "**tidak terbaca** (Lakekeeper gagal membaca metadata)"
         desc = (desc + "\n\n" if desc else "") + f"Lapisan **{layer(t)}**. Jumlah baris di Trino: {n} (sinkron {stamp})."
-        body = {"name": t, "databaseSchema": sch["fullyQualifiedName"], "tableType": "Iceberg", "description": desc,
-                "columns": [{"name": c, **om_type(dt), **({"description": cm} if cm else {})} for c, dt, cm in cols[t]]}
+        cur = om.find(f"/v1/tables/name/{q(sch['fullyQualifiedName'] + '.' + t)}?fields=columns,tags,owners") or {}
+        keep = {c["name"]: c for c in cur.get("columns", [])}   # pengayaan Workbook ERM (catalog_loader.py)
+
+        def enrich(c: str, base: str | None) -> dict:
+            k = keep.get(c, {})
+            extra = (k.get("description") or "").partition(W.WORKBOOK_MARK)
+            d = (base or "") + (extra[1] + extra[2] if extra[1] else "")
+            tags = [{x: g[x] for x in ("tagFQN", "source", "labelType", "state") if x in g} for g in k.get("tags", [])]
+            return {**({"description": d} if d else {}), **({"tags": tags} if tags else {})}
+
+        wb = (cur.get("description") or "").partition(W.WORKBOOK_MARK)
+        body = {"name": t, "databaseSchema": sch["fullyQualifiedName"], "tableType": "Iceberg",
+                "description": desc + (wb[1] + wb[2] if wb[1] else ""),
+                "columns": [{"name": c, **catalog_type(dt), **enrich(c, cm)} for c, dt, cm in cols[t]]}
+        if cur.get("owners"):
+            body["owners"] = [{"id": o["id"], "type": o["type"]} for o in cur["owners"]]
         tb = om.put("/v1/tables", body)
         if counts[t] is not None:
             om.call("PUT", f"/v1/tables/{tb['id']}/tableProfile", {
@@ -94,7 +110,7 @@ def main() -> None:
     gone = [x for x in existing if x["name"] not in cols]
     for x in gone:
         om.call("DELETE", f"/v1/tables/{x['id']}")
-    print(f"OpenMetadata ↔ Trino: {len(names)} tabel disinkron, {len(gone)} dihapus, {sum(v for v in counts.values() if v):,} baris, {sum(1 for v in counts.values() if v is None)} tak terbaca ({stamp})")
+    print(f"Katalog ↔ Trino: {len(names)} tabel disinkron, {len(gone)} dihapus, {sum(v for v in counts.values() if v):,} baris, {sum(1 for v in counts.values() if v is None)} tak terbaca ({stamp})")
 
 
 def defaultdict_list():

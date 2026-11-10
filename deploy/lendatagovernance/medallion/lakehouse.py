@@ -44,7 +44,7 @@ import build_medallion as bm  # noqa: E402  silver(), gold() untuk workbook tata
 import egrc  # noqa: E402               Silver/Gold E-GRC (ditulis ke CSV sementara, lalu dipetakan)
 import workbook as wbmod  # noqa: E402
 
-DATA = Path(os.environ.get("OM_DATA_DIR", "/srv/lendatagovernance"))
+DATA = Path(os.environ.get("LDG_DATA_DIR", "/srv/lendatagovernance"))
 SCHEMA_FILE = HERE / "schema" / "medallion_repository.sql"
 REF = HERE / "reference"
 CONTRACT_VERSION = "v1.0"
@@ -986,13 +986,13 @@ def status(tq: Trino) -> None:
         log(f"{t:55s} {n}  {when}")
 
 
-def sync_openmetadata() -> None:
+def sync_catalog() -> None:
     """Katalog :8585 ikut diperbarui (tabel, kolom, jumlah baris). Gagal sinkron tidak membatalkan pemuatan."""
     try:
-        import om_trino
-        om_trino.main()
-    except (Exception, SystemExit) as e:  # noqa: BLE001 — token kedaluwarsa/OM mati: cukup diberi tahu
-        log(f"  ! sinkron OpenMetadata dilewati: {str(e)[:200]}")
+        import catalog_trino
+        catalog_trino.main()
+    except (Exception, SystemExit) as e:  # noqa: BLE001 — token kedaluwarsa/katalog mati: cukup diberi tahu
+        log(f"  ! sinkron katalog dilewati: {str(e)[:200]}")
 
 
 def main() -> None:
@@ -1021,8 +1021,10 @@ def main() -> None:
     now = datetime.now(timezone.utc)
     batch_id = str(uuid.uuid4())
     names: dict[Path, str] = {}
-    if a.cmd in ("ingest", "inbox", "rebuild", "retry"):
-        ensure_base(tq, schema)
+    inbox = DATA / "medallion" / "inbox"
+    if a.cmd == "inbox" and not any(f.is_file() and f.suffix.lower() in (".xlsx", ".xlsm", ".csv") for f in inbox.glob("*")):
+        return                                   # timer tiap 10 menit: inbox kosong → Trino tidak disentuh sama sekali
+    ensure_base(tq, schema)
     files: list[Path] = []
     if a.cmd == "ingest":
         files = [Path(f) for f in a.files]
@@ -1052,7 +1054,7 @@ def main() -> None:
             shutil.move(str(f), done / f"{now.strftime('%Y%m%d-%H%M%S')}__{f.name}")
     if a.cmd == "rebuild" or (new and not getattr(a, "no_rebuild", False)):
         rebuild(tq, schema, batch_id, now)
-        sync_openmetadata()
+        sync_catalog()
     elif files:
         log("Tidak ada berkas baru dari sumber yang dikenali — Silver/Gold tidak diubah.")
 

@@ -1,4 +1,4 @@
-# Superset — menu Visualisasi Gold di dalam OpenMetadata (http://<host>:8585/visualisasi/), Len Data Governance.
+# Superset — menu Visualisasi di dalam Len Data Governance (http://<host>:8585/visualisasi/).
 # Tidak ada port terpisah: gateway nginx meneruskan /visualisasi/ ke kontainer superset:8088 (internal).
 # Rahasia dibaca dari environment (secrets/superset.env, tidak di git). Data dibaca dari Trino lakehouse;
 # Postgres di stack hanya menyimpan metadata Superset (pengguna, grafik, dashboard).
@@ -7,7 +7,7 @@ from datetime import timedelta
 
 from flask_appbuilder.security.manager import AUTH_REMOTE_USER
 
-from dg_om_sso import OMSecurityManager, dg_guard
+from dg_sso import LDGSecurityManager, dg_guard, dg_sql_guard
 
 APP_ROOT = os.environ.get("SUPERSET_APP_ROOT", "/visualisasi")
 
@@ -43,9 +43,9 @@ THEME_DEFAULT = {
 }
 THEME_DARK = None
 
-# Login = sesi Len Data Governance (OpenMetadata); tidak ada kata sandi/akun Superset terpisah (dg_om_sso.py).
+# Login = sesi Len Data Governance; tidak ada kata sandi/akun Superset terpisah (dg_sso.py).
 AUTH_TYPE = AUTH_REMOTE_USER
-CUSTOM_SECURITY_MANAGER = OMSecurityManager
+CUSTOM_SECURITY_MANAGER = LDGSecurityManager
 FLASK_APP_MUTATOR = dg_guard
 PERMANENT_SESSION_LIFETIME = timedelta(hours=8)
 # Ditampilkan di dalam kerangka Len Data Governance (iframe, origin sama).
@@ -53,7 +53,7 @@ HTTP_HEADERS = {"X-Frame-Options": "SAMEORIGIN"}
 
 # Di belakang gateway nginx (:8585). TLS menyusul bersama IDS (fase 2).
 ENABLE_PROXY_FIX = True
-SESSION_COOKIE_NAME = "dg_visualisasi_session"   # beda dari cookie OpenMetadata di origin yang sama
+SESSION_COOKIE_NAME = "dg_visualisasi_session"   # beda dari cookie aplikasi utama di origin yang sama
 SESSION_COOKIE_PATH = APP_ROOT
 SESSION_COOKIE_SECURE = False
 SESSION_COOKIE_SAMESITE = "Lax"
@@ -68,6 +68,12 @@ FEATURE_FLAGS = {
     "ENABLE_TEMPLATE_PROCESSING": True,
     "ALERT_REPORTS": False,
 }
+
+# Aturan data: hanya Trino; tulis (CREATE/INSERT/…/unggah berkas) hanya ke lakekeeper.workspace (dg_sso.py).
+SQL_QUERY_MUTATOR = dg_sql_guard
+MUTATE_AFTER_SPLIT = False
+PREFERRED_DATABASES = ["Trino"]
+SQLLAB_CTAS_NO_LIMIT = True
 
 ROW_LIMIT = 50_000
 SQL_MAX_ROW = 100_000

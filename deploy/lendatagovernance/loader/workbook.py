@@ -1,7 +1,7 @@
-"""Workbook Governance (Rev.0.1) → OpenMetadata, per plan §7.
+"""Workbook Governance (Rev.0.1) → Len Data Governance catalog, per plan §7.
 
-Pure functions: read the .xlsx (stdlib), validate, and build OpenMetadata payloads.
-No network here — om_loader.py does the writes.
+Pure functions: read the .xlsx (stdlib), validate, and build catalog API payloads.
+No network here — catalog_loader.py does the writes.
 """
 from __future__ import annotations
 
@@ -10,16 +10,43 @@ import zipfile
 import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
+from pathlib import Path
 
 NS = {"m": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
 REL_ID = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id"
 
-SERVICE = "LenO_ERM"
-DATABASE = "ERM"
-SCHEMA = "erm"
+SERVICE = "LenO_ERM"                # layanan dashboard: layar Aplikasi ERM LenO (tanpa koneksi)
+LEGACY_DB_SERVICE = "LenO_ERM"      # layanan database lama (CustomDatabase) — dihapus, tabelnya pindah ke Trino
+LAKEHOUSE_SERVICE = "len_lakehouse_trino"   # = catalog_trino.SERVICE
+LAKEHOUSE_SCHEMA_FQN = f"{LAKEHOUSE_SERVICE}.lakekeeper.medallion_repository"
+SCHEMA_SQL = Path(__file__).resolve().parent.parent / "medallion" / "schema" / "medallion_repository.sql"
+WORKBOOK_MARK = "\n\n---\n**Workbook ERM**"   # awal blok metadata workbook pada deskripsi tabel/kolom katalog
+
+# Tabel Aplikasi ERM LenO (sheet Database_Object) → tabel padanannya di lakekeeper.medallion_repository.
+# Kolom dipetakan lewat kode Elemen Data (F0xx) di komentar kolom skema (DG-0002, pembaruan 2026-11-09).
+TABLE_MAP = {
+    "erm_masterrisk": "silver_dim_erm_risk_taxonomy",
+    "erm_heatmap": "silver_dim_erm_risk_matrix",
+    "erm_dasarsasaran": "silver_dim_erm_objective_basis",
+    "erm_sasaran": "silver_dim_erm_objective",
+    "erm_penerimaanrisiko": "silver_fact_erm_risk_appetite",
+    "erm_kriteriadampakkuantitatif": "silver_dim_erm_impact_criteria_quantitative",
+    "erm_kriteriadampakkualitatif": "silver_dim_erm_impact_criteria_qualitative",
+    "erm_kriteriakemungkinan": "silver_dim_erm_likelihood_criteria",
+    "erm_efektivitas": "silver_dim_erm_control_effectiveness",
+    "erm_kecukupan": "silver_dim_erm_control_adequacy",
+    "erm_riskregister": "silver_dim_erm_risk",
+    "erm_penyebabrisiko": "silver_dim_erm_risk_cause",
+    "erm_riskinherent": "silver_fact_erm_risk_assessment",
+    "erm_riskresidual": "silver_fact_erm_risk_assessment",
+    "erm_analisaswot": "silver_fact_erm_swot_analysis",
+    "erm_existingcontrol": "silver_fact_erm_existing_control",
+    "erm_rencanamitigasi": "silver_fact_erm_mitigation_plan_monthly",
+    "erm_realisasimitigasi": "silver_fact_erm_mitigation_realization",
+}
 GLOSSARY = "ERM"
 CLASSIFICATION = "Sensitivitas"
-ROOT_TEAM = "Organization"          # OpenMetadata's root team == "Seluruh Unit Kerja"
+ROOT_TEAM = "Organization"          # the catalog's root team == "Seluruh Unit Kerja"
 ROOT_DISPLAY = "Seluruh Unit Kerja"
 
 # Workbook classification → tag name in classification "Sensitivitas"
@@ -31,7 +58,7 @@ SENSITIVITY_TAG = {
     "Strictly Confidential": "StrictlyConfidential",
 }
 
-# Workbook DATA_TYPE (sheet Library) → OpenMetadata column dataType
+# Workbook DATA_TYPE (sheet Library) → catalog column dataType
 DATA_TYPE = {
     "Text/String": "STRING",
     "Integer": "INT",
@@ -46,7 +73,7 @@ DATA_TYPE = {
     "Enum": "ENUM",
 }
 
-# DG-* rights (ADR 0001: enforced as OpenMetadata policy). LenO screen rights stay reference metadata.
+# DG-* rights (ADR 0001: enforced as catalog policy). LenO screen rights stay reference metadata.
 DG_OPERATIONS = {
     "DG-Assign Owner": [("all", ["EditOwners"])],
     "DG-Assign Steward": [("glossary", ["EditReviewers"]), ("glossaryTerm", ["EditReviewers"])],
@@ -57,7 +84,7 @@ DG_OPERATIONS = {
     "DG-Classify Data": [("all", ["EditTags"])],
 }
 
-# Workbook VALIDATION → OpenMetadata test definition (definition only, not executed)
+# Workbook VALIDATION → catalog test definition (definition only, not executed)
 def dq_test(validation: str):
     v = validation.strip()
     if v == "Not Null":
@@ -213,7 +240,7 @@ def build(wb: dict[str, list[dict[str, str]]]) -> Plan:
         a = assign.get(fid, {})
         stewards = sorted(a.get("Data Steward", ()))
         owners = sorted(a.get("Data Owner", ()))
-        # OpenMetadata allows ONE reviewer team per term: prefer the business steward (also Data Owner).
+        # The catalog allows ONE reviewer team per term: prefer the business steward (also Data Owner).
         # All stewards are kept in the custom property "Data Steward".
         reviewer = next((s for s in stewards if s in owners), stewards[0] if stewards else None)
         p.terms.append({
@@ -366,5 +393,72 @@ def build(wb: dict[str, list[dict[str, str]]]) -> Plan:
     p.stats["dg_roles"] = len(p.dg_policies)
 
     # de-duplicate defects, keep order
+    p.defects = list(dict.fromkeys(p.defects))
+    return p
+
+
+# ---------------------------------------------------------------- tabel ERM → Trino lakehouse
+def schema_field_columns(path: Path = SCHEMA_SQL) -> dict[str, list[tuple[str, str]]]:
+    """{tabel: [(kolom, kode F0xx)]} dari komentar kolom berkas skema medallion_repository.sql."""
+    out: dict[str, list[tuple[str, str]]] = {}
+    for m in re.finditer(r"CREATE TABLE (\w+) \(\n(.*?)\n\)", path.read_text(), re.S):
+        for line in m.group(2).split("\n"):
+            mm = re.match(r"\s+(\w+) .*? COMMENT 'F(\d{3})(?:[–-]F(\d{3}))?\b", line)   # 'F009 …' atau 'F049–F060 …'
+            if mm:
+                lo = int(mm.group(2))
+                for n in range(lo, int(mm.group(3) or lo) + 1):
+                    out.setdefault(m.group(1), []).append((mm.group(1), f"F{n:03d}"))
+    return out
+
+
+def to_lakehouse(p: Plan, path: Path = SCHEMA_SQL) -> Plan:
+    """Pindahkan tabel ERM LenO ke tabel padanannya di Trino: kolom = kolom Trino yang membawa kode F0xx yang sama.
+    Tabel/kolom yang tidak berpadanan dicatat sebagai cacat. Lineage dan uji mutu ikut dipetakan."""
+    fcols = schema_field_columns(path)
+    colmap: dict[tuple[str, str], str] = {}          # (tabel ERM, kolom ERM) → kolom Trino
+    merged: dict[str, dict] = {}
+    for t in p.tables:
+        target = TABLE_MAP.get(t["name"])
+        if not target or target not in fcols:
+            p.defects.append(("Tabel tanpa padanan Trino", f"{t['name']} → {target or '-'}"))
+            continue
+        m = merged.setdefault(target, {"name": target, "sources": [], "descriptions": [], "columns": {}, "owners": set()})
+        m["sources"].append(t["name"])
+        m["descriptions"].append(f"`{t['name']}` — {t['description']}")
+        m["owners"] |= set(t["owners"])
+        for c in t["columns"]:
+            tcol = next((n for n, f in fcols[target] if f == c["_field"]), None)
+            if not tcol:
+                p.defects.append(("Kolom tanpa padanan Trino", f"{t['name']}.{c['name']} ({c['_field']}) → {target}"))
+                continue
+            colmap[(t["name"], c["name"])] = tcol
+            have = m["columns"].get(tcol)
+            if have is None:
+                m["columns"][tcol] = {**c, "name": tcol, "description": f"Kolom LenO `{t['name']}.{c['name']}`. " + c["description"]}
+            else:
+                have["description"] += f"\n\nJuga kolom LenO `{t['name']}.{c['name']}`."
+                have["tags"] += [g for g in c["tags"] if g["tagFQN"] not in {x["tagFQN"] for x in have["tags"]}]
+    p.tables = [{"name": m["name"], "description": "Tabel Aplikasi ERM LenO: " + "; ".join(m["descriptions"]),
+                 "columns": list(m["columns"].values()), "owners": sorted(m["owners"]), "sources": m["sources"]}
+                for m in merged.values()]
+    lineage = []
+    for e in p.lineage:
+        target = TABLE_MAP.get(e["table"])
+        cols = [{"from": sorted({colmap[(e["table"], s)] for s in c["from"] if (e["table"], s) in colmap}), "to": c["to"]}
+                for c in e["columns"]]
+        cols = [c for c in cols if c["from"]]
+        if target and cols:
+            lineage.append({**e, "table": target, "columns": cols})
+    p.lineage = lineage
+    tests = []
+    for tc in p.tests:
+        tcol = colmap.get((tc["table"], tc["column"]))
+        if tcol:
+            tests.append({**tc, "table": TABLE_MAP[tc["table"]], "column": tcol})
+    p.tests = tests
+    p.stats["tables"] = len(p.tables)
+    p.stats["columns"] = sum(len(t["columns"]) for t in p.tables)
+    p.stats["dq_test_cases"] = len(p.tests)
+    p.stats["lineage_edges"] = len(p.lineage)
     p.defects = list(dict.fromkeys(p.defects))
     return p

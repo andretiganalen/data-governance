@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Isi awal Superset (modul Visualisasi Gold):
-  1. koneksi "Len Lakehouse (Trino)" ke lakekeeper (hanya baca: allow_dml mati),
+  1. koneksi "Len Lakehouse (Trino)" ke lakekeeper — satu-satunya koneksi yang diizinkan. Semua pengguna boleh
+     membuat tabel (SQL Lab CREATE/CTAS, unggah CSV/XLSX), hanya di schema workspace (dijaga dg_sso.py),
   2. dataset untuk setiap tabel gold_* + dimensi pendukung di lakekeeper.medallion_repository,
   3. dua dashboard awal — Risiko ERM dan Tata Kelola Data — dengan contoh grafik
      (tren waktu, batang bertumpuk, donut, histogram, heatmap, angka besar, tabel).
@@ -9,8 +10,8 @@ Aman diulang: koneksi diperbarui, dataset yang sudah ada dilewati, dashboard han
 (pakai --force untuk membuat ulang dashboard awal; dashboard buatan admin lain tidak disentuh).
 
 Pemakaian (di server):  /srv/lendatagovernance/medallion/.venv/bin/python scripts/superset-setup.py [--force]
-  Login: SSO dengan token admin Len Data Governance (OM_TOKEN di secrets/loader.env) — tanpa kata sandi Superset.
-Kredensial: $DATA/secrets/loader.env (token OM) dan $DATA/secrets/trino.env (tidak pernah di git).
+  Login: SSO dengan token admin Len Data Governance (LDG_TOKEN di secrets/loader.env) — tanpa kata sandi Superset.
+Kredensial: $DATA/secrets/loader.env (token admin) dan $DATA/secrets/trino.env (tidak pernah di git).
 """
 from __future__ import annotations
 
@@ -24,10 +25,11 @@ from urllib.parse import quote
 
 import requests
 
-DATA = Path(os.environ.get("OM_DATA_DIR", "/srv/lendatagovernance"))
+DATA = Path(os.environ.get("LDG_DATA_DIR", "/srv/lendatagovernance"))
 BASE = os.environ.get("SUPERSET_URL", "http://127.0.0.1:8585/visualisasi")
 DB_NAME = "Len Lakehouse (Trino)"
 SCHEMA = "medallion_repository"
+WRITE_SCHEMA = "workspace"   # schema tabel buatan pengguna (CREATE / CTAS / unggah berkas)
 EXTRA_DATASETS = ["silver_dim_date", "silver_dim_organization", "silver_dim_erm_risk_matrix", "bronze_repository"]
 
 
@@ -37,16 +39,16 @@ def env(name: str) -> dict[str, str]:
 
 
 class API:
-    """Login lewat SSO Len Data Governance: token admin OpenMetadata (secrets/loader.env, OM_TOKEN) sebagai cookie
-    dg_om_token → /visualisasi/login/ → sesi Superset. Tidak ada kata sandi Superset."""
+    """Login lewat SSO Len Data Governance: token admin (secrets/loader.env, LDG_TOKEN) sebagai cookie
+    dg_token → /visualisasi/login/ → sesi Superset. Tidak ada kata sandi Superset."""
     def __init__(self):
-        token = os.environ.get("OM_TOKEN") or env("loader.env")["OM_TOKEN"]
+        token = os.environ.get("LDG_TOKEN") or env("loader.env")["LDG_TOKEN"]
         host = BASE.split("/")[2].split(":")[0]
         self.s = requests.Session()
-        self.s.cookies.set("dg_om_token", token, domain=host, path="/visualisasi")
+        self.s.cookies.set("dg_token", token, domain=host, path="/visualisasi")
         r = self.s.get(f"{BASE}/login/", allow_redirects=False)
         if r.status_code != 302:
-            raise SystemExit(f"SSO gagal ({r.status_code}): token OM_TOKEN kedaluwarsa atau bukan admin.")
+            raise SystemExit(f"SSO gagal ({r.status_code}): token LDG_TOKEN kedaluwarsa atau bukan admin.")
         self.s.headers["X-CSRFToken"] = self.s.get(f"{BASE}/api/v1/security/csrf_token/").json()["result"]
         self.s.headers["Referer"] = BASE
 
@@ -66,10 +68,11 @@ def setup_database(api: API) -> int:
     t = env("trino.env")
     uri = (f"trino://{quote(t['TRINO_USER'], safe='')}:{quote(t['TRINO_PASSWORD'], safe='')}"
            f"@{t['TRINO_HOST']}:{t.get('TRINO_PORT', '443')}/{t['TRINO_CATALOG']}")
-    body = {"database_name": DB_NAME, "sqlalchemy_uri": uri, "expose_in_sqllab": True, "allow_dml": False,
-            "allow_ctas": False, "allow_cvas": False, "allow_run_async": False, "allow_file_upload": False,
+    body = {"database_name": DB_NAME, "sqlalchemy_uri": uri, "expose_in_sqllab": True, "allow_dml": True,
+            "allow_ctas": True, "allow_cvas": True, "allow_run_async": False, "allow_file_upload": True,
+            "force_ctas_schema": WRITE_SCHEMA,
             "extra": json.dumps({"engine_params": {"connect_args": {"http_scheme": "https", "source": "lendatagovernance-superset"}},
-                                 "metadata_params": {}, "schemas_allowed_for_file_upload": [],
+                                 "metadata_params": {}, "schemas_allowed_for_file_upload": [WRITE_SCHEMA],
                                  "metadata_cache_timeout": {"schema_cache_timeout": 600, "table_cache_timeout": 600}})}
     db = api.find("database", "database_name", DB_NAME)
     if db:

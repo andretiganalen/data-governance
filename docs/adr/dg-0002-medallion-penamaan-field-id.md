@@ -12,6 +12,11 @@
 > `<DOMAIN>-F<4 digit>`) tetap berlaku untuk keluaran berkas `egrc.py` dan `field_registry.csv`, tetapi **tidak** untuk
 > tabel lakehouse. Definisi tabel lakehouse: `deploy/lendatagovernance/medallion/schema/medallion_repository.sql`;
 > pemuat: `medallion/lakehouse.py`. ADR pengganti yang menyatukan keduanya perlu ditulis.
+>
+> **Pembaruan 2026-11-10.** Rilis berkas CSV/XLSX dan panel `/unduh/` dihentikan: tabel Lapisan di bawah dan §8
+> (lokasi `work/`/`panel/`, akun panel) **tidak berlaku lagi**. Bronze/Silver/Gold hanya di `lakekeeper.medallion_repository`;
+> berkas sumber hanya masukan Bronze (inbox) sebelum ETL. Akses data lewat Trino (menu Visualisasi, DBeaver); tabel
+> buatan pengguna hanya di schema `lakekeeper.workspace`.
 
 ## Konteks
 Data akan datang dari banyak sistem (ERM, E-GRC, SDM, keuangan, …) selama bertahun-tahun, dikerjakan oleh orang yang berganti-ganti.
@@ -23,7 +28,7 @@ Workbook ERM memakai `F001…F105` per workbook. Pola itu hanya muat 999 elemen 
 | :-- | :-- | :-- | :-- |
 | Bronze | Berkas sumber apa adanya + CSV per sheet (nomor baris asli) + SHA-256 | `/srv/lendatagovernance/medallion/work/<rid>/bronze/<sistem>/` | server saja |
 | Silver | Data bersih: dim, fact, bridge. Satu fakta satu tempat. Nilai sumber tidak diubah diam-diam. | `…/work/<rid>/silver/<sistem>/` | server saja |
-| Gold | Tabel datar siap dashboard + kamus data + temuan mutu | `…/panel/rilis/<rid>/[<domain>/]` | panel `/unduh/` sesuai sensitivitas |
+| Gold | Tabel datar siap dashboard + kamus data + temuan mutu | `…/panel/rilis/<rid>/[<domain>/]` (dihentikan 2026-11-10) | panel `/unduh/` (ditutup 2026-11-10) |
 
 `<rid>` = nomor rilis `YYMMDD-CC`. Rilis tidak pernah ditimpa.
 
@@ -108,7 +113,7 @@ Format: `<DOMAIN>-F<NNNN>`, contoh `GRC-F0012`, `CMN-F0013`. Regex: `^[A-Z]{3,4}
 - Asumsi (mis. satuan juta rupiah) dicatat sebagai temuan sampai dikonfirmasi pemilik data.
 
 ## 8. Sensitivitas dan akses
-- `sensitivitas_kategori` per kolom di registry. Dataset dengan kolom Confidential disajikan di folder domain dengan login tersendiri (`/unduh/rilis/<rid>/grc/`, akun `panel-account.sh --grc`).
+- `sensitivitas_kategori` per kolom di registry. Dataset dengan kolom Confidential disajikan di folder domain dengan login tersendiri (`/unduh/rilis/<rid>/grc/`, akun panel E-GRC) — **dihentikan 2026-11-10**; sensitivitas kini ditegakkan lewat tag Sensitivitas di katalog.
 - Berkas sumber dan hasil Silver/Gold tidak pernah masuk repo (repo publik; `*.xlsx` dan `/srv` di luar git).
 
 ## Konsekuensi

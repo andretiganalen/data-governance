@@ -1,14 +1,16 @@
-/* Len Data Governance — modul Visualisasi di dalam aplikasi utama (OpenMetadata UI).
+/* Len Data Governance — aplikasi utama: modul Visualisasi + nama merek di seluruh antarmuka.
  * Disisipkan gateway (nginx sub_filter) bersama leno.css.
  *  1. Menu "Visualisasi" di sidebar kiri (disalin dari item bawaan agar gaya sama).
  *  2. Klik → dashboard Gold tampil DI DALAM kerangka Len Data Governance (header & sidebar tetap), dengan tab.
  *     Isi dari Superset 6 di /visualisasi/ (origin sama, tanpa menu Superset — lihat leno-superset.css).
  *  3. Tanpa kredensial baru: token sesi Len Data Governance (Bearer yang dipakai UI) diteruskan lewat cookie
- *     `dg_om_token` (path /visualisasi) dan diverifikasi server Visualisasi ke OpenMetadata. Logout → cookie dihapus.
+ *     `dg_token` (path /visualisasi) dan diverifikasi server Visualisasi ke API Len Data Governance. Logout → cookie dihapus.
+ *  4. Nama merek: teks bawaan aplikasi dasar yang masih menyebut nama produk upstream (label, judul, tooltip,
+ *     placeholder) ditampilkan sebagai "Len Data Governance". Isi yang sedang diedit pengguna tidak disentuh.
  */
 (function () {
   "use strict";
-  var ITEM_ID = "len-menu-visualisasi", PANEL_ID = "len-visualisasi", COOKIE = "dg_om_token";
+  var ITEM_ID = "len-menu-visualisasi", PANEL_ID = "len-visualisasi", COOKIE = "dg_token";
   var TABS = [
     ["risiko", "Risiko ERM", "/visualisasi/superset/dashboard/risiko-erm/?standalone=1"],
     ["tata-kelola", "Tata Kelola Data", "/visualisasi/superset/dashboard/tata-kelola-data/?standalone=1"],
@@ -151,7 +153,7 @@
     var m = /^#visualisasi(?:=([\w-]+))?/.exec(location.hash);
     if (m) show(m[1] || TABS[0][0]);
   }
-  ["pushState", "replaceState"].forEach(function (k) {   // navigasi OpenMetadata ke halaman lain → tutup panel
+  ["pushState", "replaceState"].forEach(function (k) {   // navigasi aplikasi ke halaman lain → tutup panel
     var orig = history[k];
     history[k] = function (s, t, url) {
       var r = orig.apply(this, arguments);
@@ -160,6 +162,36 @@
     };
   });
   window.addEventListener("popstate", function () { if (!/^#visualisasi/.test(location.hash)) hide(); });
-  new MutationObserver(ensure).observe(document.documentElement, { childList: true, subtree: true });
-  document.addEventListener("DOMContentLoaded", ensure);
+  // ---- nama merek
+  var UPSTREAM = new RegExp(["Open", "Metadata"].join(""), "g"), BRAND = "Len Data Governance";
+  var SKIP = "script,style,textarea,input,code,pre,[contenteditable=true],[contenteditable=''],.ProseMirror,.ql-editor";
+  var ATTRS = ["title", "placeholder", "alt", "aria-label", "data-tooltip"];
+  function rebrand(root) {
+    if (!root || !document.body) return;
+    if (UPSTREAM.test(document.title)) document.title = document.title.replace(UPSTREAM, BRAND);
+    UPSTREAM.lastIndex = 0;
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), n;
+    while ((n = w.nextNode())) {
+      if (n.nodeValue.indexOf("Metadata") < 0 || !UPSTREAM.test(n.nodeValue)) { UPSTREAM.lastIndex = 0; continue; }
+      UPSTREAM.lastIndex = 0;
+      var el = n.parentElement;
+      if (el && !el.closest(SKIP)) n.nodeValue = n.nodeValue.replace(UPSTREAM, BRAND);
+    }
+    if (root.querySelectorAll) root.querySelectorAll("[" + ATTRS.join("],[") + "]").forEach(function (el) {
+      if (el.closest(SKIP) && el.tagName !== "INPUT" && el.tagName !== "TEXTAREA") return;
+      ATTRS.forEach(function (a) {
+        var v = el.getAttribute(a);
+        if (v && v.indexOf("Metadata") >= 0) el.setAttribute(a, v.replace(UPSTREAM, BRAND));
+      });
+    });
+  }
+  var pending = false;
+  function schedule() {
+    if (pending) return;
+    pending = true;
+    (window.requestAnimationFrame || setTimeout)(function () { pending = false; rebrand(document.body); });
+  }
+  new MutationObserver(function () { ensure(); schedule(); })
+    .observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+  document.addEventListener("DOMContentLoaded", function () { ensure(); schedule(); });
 })();

@@ -1,15 +1,15 @@
 ---
 title: LenO Interface — Ekstraksi Tema dari LPMS-III (dev-lpms.len.co.id)
-tags: [ui, theme, leno, openmetadata]
+tags: [ui, theme, leno, lendatagovernance]
 dibuat: 2026-11-04
 sumber: https://dev-lpms.len.co.id (LPMS-III · Dashboard), dibaca read-only lewat browser
 ---
 
 # LenO Interface — Ekstraksi Tema
 
-> [!important] Cakupan pemakaian di OpenMetadata
+> [!important] Cakupan pemakaian di Len Data Governance
 > **Dipakai:** §1 token warna & tipografi, §2 gaya header, §3 gaya sidebar (ukuran, warna, item aktif/hover), §5 gaya kartu. Diterapkan lewat `deploy/ui/leno-theme/leno.css`.
-> **Tidak dipakai:** susunan/grup menu LPMS (Overview, Portofolio, Administrasi) dan pola User Access §4 (menu terkunci dengan catatan peran). Menu dan hak akses tetap milik OpenMetadata.
+> **Tidak dipakai:** susunan/grup menu LPMS (Overview, Portofolio, Administrasi) dan pola User Access §4 (menu terkunci dengan catatan peran). Menu dan hak akses tetap milik aplikasi dasar Len Data Governance.
 
 Acuan tampilan "LenO Interface" diambil dari aplikasi LPMS-III (Project Monitoring). Teknologinya Blazor + Ant Design Blazor + Bootstrap, dengan stylesheet `app.css` dan `Len.Apps.UI.LPMS.styles.css`.
 

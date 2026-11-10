@@ -1,4 +1,4 @@
 # secrets & data live in /srv/lendatagovernance — never in git
 *.env
-!openmetadata.base.env
+!lendatagovernance.base.env
 __pycache__/

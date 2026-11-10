@@ -1,32 +1,18 @@
-"""Workbook Governance → Medallion (Bronze → Silver → Gold) + panel unduh "Data Siap Pakai".
+"""Workbook Governance → Silver/Gold (fungsi murni, dipakai medallion/lakehouse.py).
 
-Usage:
-  python3 build_medallion.py --release "261106 01" --workbook <file.xlsx> [--egrc <E-GRC.xlsx>]
-                             [--root /srv/lendatagovernance/medallion] [--manifest-out <path.json>]
+  silver(wb)  sheet workbook (wbmod.read_xlsx) → baris bersih per sheet + kolom catatan mutu
+  gold(s)     Silver → tabel metadata siap pakai (kamus data, lineage, hak akses, glosarium, aturan mutu, ...)
 
-Layout under --root:
-  work/<rid>/bronze/*.csv     sheet workbook apa adanya (hanya di server)
-  work/<rid>/silver/*.csv     dibersihkan + kolom catatan_mutu (hanya di server)
-  panel/rilis/<rid>/          GOLD metadata: *.csv + "<YYMMDD CC> Data Siap Pakai (Gold).xlsx" + manifest.json
-  panel/rilis/<rid>/grc/      GOLD E-GRC (egrc.py) — Confidential, login terpisah (unduh-grc.htpasswd)
-  work/<rid>/{bronze,silver}/egrc/  Bronze/Silver E-GRC (hanya di server)
-  panel/index.html            panel unduh (disajikan gateway di /unduh/, dengan login)
-<rid> = release with the space replaced by "-" (e.g. 261106-01).
+Tidak menulis berkas: hasilnya dimuat lakehouse.py ke Trino lakekeeper.medallion_repository (satu-satunya
+sistem rekam data). Rilis CSV/XLSX + panel /unduh/ lama dihentikan 2026-11-10.
 
-Isi Gold = metadata tata kelola (kamus data, lineage, hak akses, glosarium, aturan mutu, ...),
-bukan isi transaksi aplikasi ERM: belum ada koneksi ke basis data ERM.
+Isi Gold = metadata tata kelola, bukan isi transaksi aplikasi ERM.
 """
 from __future__ import annotations
 
-import argparse
 import csv
-import hashlib
-import html
-import json
-import shutil
 import sys
 from collections import Counter, defaultdict
-from datetime import datetime
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -42,16 +28,6 @@ def clean(v: str | None) -> str:
     return "" if v.lower() in MISSING else " ".join(v.split())
 
 
-def write_csv(path: Path, rows: list[dict], cols: list[str] | None = None) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    cols = cols or (list(rows[0].keys()) if rows else [])
-    with path.open("w", newline="", encoding="utf-8-sig") as f:  # BOM → Excel membuka UTF-8 dengan benar
-        w = csv.DictWriter(f, fieldnames=cols, extrasaction="ignore")
-        w.writeheader()
-        w.writerows(rows)
-
-
-# ------------------------------------------------------------------ Silver
 def silver(wb: dict[str, list[dict]]) -> dict[str, list[dict]]:
     """Trim, normalise placeholders ('0', 'Not Found') to empty, drop exact duplicates, flag broken references."""
     out: dict[str, list[dict]] = {}
@@ -301,201 +277,3 @@ def gold(s: dict[str, list[dict]]) -> dict[str, list[dict]]:
     return {"gold_kamus_data": kamus, "gold_ringkasan_tabel": rt, "gold_ringkasan_layar": rl,
             "gold_lineage": lin, "gold_hak_akses": ha, "gold_glosarium": gl, "gold_aturan_mutu": am,
             "gold_organisasi": og, "gold_kpi_tata_kelola": kpi}
-
-
-# ------------------------------------------------------------------ XLSX
-def write_xlsx(path: Path, g: dict[str, list[dict]], release: str, source: str) -> None:
-    from openpyxl import Workbook
-    from openpyxl.styles import Alignment, Font, PatternFill
-    from openpyxl.utils import get_column_letter
-
-    wb = Workbook()
-    info = wb.active
-    info.title = "Info"
-    head = Font(bold=True, color="FFFFFF")
-    fill = PatternFill("solid", fgColor="194A80")
-    info.append(["Len Data Governance — Data Siap Pakai (Gold)"])
-    info["A1"].font = Font(bold=True, size=14, color="194A80")
-    info.append([f"Rilis {release}", f"Sumber: {source}"])
-    info.append(["Isi: metadata tata kelola data ERM (bukan isi transaksi aplikasi)."])
-    info.append([])
-    info.append(["Sheet", "Nama", "Isi", "Menjawab", "Baris"])
-    for c in info[5]:
-        c.font, c.fill = head, fill
-    for key, rows in g.items():
-        name, desc, ans = GOLD_INFO[key]
-        info.append([key.removeprefix("gold_")[:31], name, desc, ans, len(rows)])
-    for col, w in zip("ABCDE", (24, 28, 90, 60, 8)):
-        info.column_dimensions[col].width = w
-    for key, rows in g.items():
-        ws = wb.create_sheet(key.removeprefix("gold_")[:31])
-        cols = list(rows[0].keys()) if rows else []
-        ws.append(cols)
-        for c in ws[1]:
-            c.font, c.fill = head, fill
-            c.alignment = Alignment(vertical="center")
-        for r in rows:
-            ws.append([r[c] for c in cols])
-        ws.freeze_panes = "A2"
-        if cols:
-            ws.auto_filter.ref = f"A1:{get_column_letter(len(cols))}{len(rows) + 1}"
-        for i, c in enumerate(cols, 1):
-            width = max([len(str(c))] + [len(str(r[c])) for r in rows[:300]])
-            ws.column_dimensions[get_column_letter(i)].width = min(max(10, width + 2), 60)
-    wb.save(path)
-
-
-# ------------------------------------------------------------------ Panel
-PANEL_CSS = """
-@font-face{font-family:Montserrat;font-weight:400;src:url(_aset/montserrat-400.woff2) format('woff2')}
-@font-face{font-family:Montserrat;font-weight:600;src:url(_aset/montserrat-600.woff2) format('woff2')}
-@font-face{font-family:Montserrat;font-weight:700;src:url(_aset/montserrat-700.woff2) format('woff2')}
-@font-face{font-family:'Open Sans';font-weight:600;src:url(_aset/opensans-600.woff2) format('woff2')}
-:root{--navy:#194A80;--navy7:#12375F;--navy50:#EEF3F9;--red:#DA0000;--blue:#0562C9;--ink:#3B3B3B;--text:#515151;
---muted:#838282;--line:#E6E6E6;--bg:#F5F6F8;--ok:#1E7B34}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:400 14px/1.55 Montserrat,Arial,sans-serif}
-header{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.08);display:flex;align-items:center;gap:14px;padding:12px 28px}
-header img{height:34px}header .brand{font:600 15px 'Open Sans',Arial;color:var(--ink)}header .brand b{color:var(--navy)}
-header nav{margin-left:auto;font:600 14px 'Open Sans',Arial}header nav a{color:var(--navy);text-decoration:none}
-main{max-width:1180px;margin:0 auto;padding:28px 20px 60px}
-h1{color:var(--ink);font:700 24px/1.25 Montserrat;margin:0 0 4px;letter-spacing:-.3px}
-.sub{color:var(--muted);margin:0 0 22px}
-.rel{background:#fff;border:1px solid var(--line);border-left:3px solid var(--red);padding:18px 22px;display:flex;
-flex-wrap:wrap;gap:18px;align-items:center;margin-bottom:22px}
-.rel .id{font:700 22px Montserrat;color:var(--navy)}.rel .meta{color:var(--muted);font-size:13px}
-.btn{display:inline-block;background:var(--navy);color:#fff;font:600 14px Montserrat;padding:9px 16px;text-decoration:none;
-border:0}.btn:hover{background:var(--navy7)}.btn.sec{background:#fff;color:var(--navy);border:1px solid var(--navy)}
-.rel .btn{margin-left:auto}
-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line)}
-th{background:var(--navy);color:#fff;text-align:left;font:600 13px 'Open Sans',Arial;padding:9px 12px}
-td{border-top:1px solid var(--line);padding:10px 12px;vertical-align:top}
-td .n{font-weight:700;color:var(--ink)}td .q{color:var(--blue);font-size:13px}td.num{text-align:right;white-space:nowrap}
-td a{color:var(--navy);font-weight:600}
-.note{margin-top:18px;padding:12px 16px;background:var(--navy50);border:1px solid #d6e2ef;font-size:13px}
-h2{color:var(--ink);font:700 17px Montserrat;margin:34px 0 10px}
-.conf{font:700 11px 'Open Sans',Arial;color:#fff;background:var(--red);padding:2px 8px;vertical-align:middle;margin-left:6px}
-footer{background:#000;color:#fff;font-size:12px;padding:14px 28px}
-@media(max-width:720px){header{padding:10px 16px}main{padding:20px 16px}.rel .btn{margin-left:0}
-table,thead,tbody,tr,td{display:block}thead{display:none}tr{border-top:1px solid var(--line)}td{border:0}}
-"""
-
-
-def grc_section(m: dict) -> str:
-    g = m.get("grc")
-    if not g:
-        return ""
-    e, rid = html.escape, m["rid"]
-    rows = "".join(
-        f"<tr><td><div class='n'>{e(d['nama'])}</div>{e(d['isi'])}<div class='q'>Menjawab: {e(d['menjawab'])}</div></td>"
-        f"<td class='num'>{d['baris']:,}".replace(",", ".") +
-        f"</td><td class='num'><a href='rilis/{rid}/grc/{d['file']}' download='{e(m['release'])} {d['file']}'>CSV</a></td></tr>"
-        for d in g["gold"])
-    return f"""<h2>E-GRC: Manajemen Risiko Korporat <span class="conf">CONFIDENTIAL</span></h2>
-<p class="sub" style="margin-bottom:12px">Sumber: {e(g['sumber'])}. Unduhan meminta <b>akun E-GRC</b> tersendiri (diberikan atas persetujuan pemilik data Risk Management).
-Nilai uang dalam juta rupiah. Arti setiap kolom ada di <i>Kamus Data E-GRC</i>.</p>
-<div class="rel"><div><div class="meta">E-GRC rilis</div><div class="id">{e(m['release'])}</div></div>
-<div class="meta">{g['ringkas']['risiko']} risiko · {g['ringkas']['parameter']} parameter profil · {len(g['temuan'])} temuan mutu sumber</div>
-<a class="btn" href="rilis/{rid}/grc/{e(g['xlsx'])}" download>Unduh E-GRC (XLSX)</a></div>
-<table><thead><tr><th>Dataset</th><th style="width:90px;text-align:right">Baris</th><th style="width:80px;text-align:right">Unduh</th></tr></thead>
-<tbody>{rows}</tbody></table>"""
-
-
-def panel_index(panel: Path, releases: list[dict]) -> str:
-    latest = releases[0]
-    rid = latest["rid"]
-    e = html.escape
-    rows = "".join(
-        f"<tr><td><div class='n'>{e(d['nama'])}</div>{e(d['isi'])}<div class='q'>Menjawab: {e(d['menjawab'])}</div></td>"
-        f"<td class='num'>{d['baris']:,}".replace(",", ".") +
-        f"</td><td class='num'><a href='rilis/{rid}/{d['file']}' download='{e(latest['release'])} {d['file']}'>CSV</a></td></tr>"
-        for d in latest["gold"])
-    hist = "".join(
-        f"<tr><td>{e(r['release'])}</td><td>{e(r['dibuat'])}</td><td>{e(r['sumber'])}</td>"
-        f"<td class='num'><a href='rilis/{r['rid']}/{e(r['xlsx'])}' download>XLSX</a></td></tr>" for r in releases)
-    return f"""<!doctype html><html lang="id"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Data Siap Pakai — Len Data Governance</title>
-<style>{PANEL_CSS}</style></head><body>
-<header><img src="_aset/len-logo.png" alt="Len"><div class="brand"><b>Len</b> Data Governance · Data Siap Pakai</div>
-<nav><a href="/">Ke katalog data</a></nav></header>
-<main>
-<h1>Data Siap Pakai (Gold)</h1>
-<p class="sub">Data bersih dan terstruktur untuk dashboard (Power BI, Excel, Looker Studio). Hanya rilis resmi yang ditampilkan.</p>
-<div class="rel"><div><div class="meta">Rilis terbaru</div><div class="id">{e(latest['release'])}</div></div>
-<div class="meta">Dibuat {e(latest['dibuat'])}<br>Sumber: {e(latest['sumber'])}</div>
-<a class="btn" href="rilis/{rid}/{e(latest['xlsx'])}" download>Unduh semua (XLSX)</a></div>
-<table><thead><tr><th>Dataset</th><th style="width:90px;text-align:right">Baris</th><th style="width:80px;text-align:right">Unduh</th></tr></thead>
-<tbody>{rows}</tbody></table>
-<div class="note"><b>Catatan isi.</b> Rilis ini berisi <b>metadata tata kelola</b> aplikasi ERM: kamus data, alur data,
-hak akses, glosarium, aturan mutu, dan indikator. Isi transaksi aplikasi ERM di LenO belum tersedia.
-CSV memakai UTF-8 dan pemisah koma. Pertanyaan tentang isi data: Staf Data Governance (UV-1).</div>
-{grc_section(latest)}
-<h2>Riwayat rilis</h2>
-<table><thead><tr><th>Rilis</th><th>Dibuat</th><th>Sumber</th><th style="width:80px;text-align:right">Unduh</th></tr></thead>
-<tbody>{hist}</tbody></table>
-</main><footer>© PT Len Industri (Persero) · Len Data Governance</footer></body></html>"""
-
-
-def main() -> None:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--release", required=True, help='"YYMMDD CC"')
-    ap.add_argument("--workbook", required=True)
-    ap.add_argument("--root", default="/srv/lendatagovernance/medallion")
-    ap.add_argument("--assets", default=str(HERE / "panel-assets"), help="fonts + logo for the panel")
-    ap.add_argument("--egrc", help="Bronze E-GRC (.xlsx) → Silver/Gold E-GRC (egrc.py)")
-    ap.add_argument("--manifest-out")
-    a = ap.parse_args()
-    release, root, src = a.release, Path(a.root), Path(a.workbook)
-    rid = release.replace(" ", "-")
-    work, rel_dir = root / "work" / rid, root / "panel" / "rilis" / rid
-    if rel_dir.exists():
-        sys.exit(f"Rilis {release} sudah ada: {rel_dir} — rilis tidak ditimpa, gunakan nomor CC berikutnya.")
-
-    raw = wbmod.read_xlsx(str(src))
-    for sheet, rows in raw.items():
-        write_csv(work / "bronze" / f"{sheet}.csv", rows)
-    s = silver(raw)
-    for sheet, rows in s.items():
-        write_csv(work / "silver" / f"{sheet}.csv", rows)
-    g = gold(s)
-
-    rel_dir.mkdir(parents=True)
-    xlsx = f"{release} Data Siap Pakai (Gold).xlsx"
-    gold_meta = []
-    for key, rows in g.items():
-        write_csv(rel_dir / f"{key}.csv", rows)
-        name, desc, ans = GOLD_INFO[key]
-        gold_meta.append({"key": key, "file": f"{key}.csv", "nama": name, "isi": desc, "menjawab": ans,
-                          "baris": len(rows), "kolom": list(rows[0].keys()) if rows else [],
-                          "sha256": hashlib.sha256((rel_dir / f"{key}.csv").read_bytes()).hexdigest()[:16]})
-    write_xlsx(rel_dir / xlsx, g, release, src.name)
-    silver_notes = {k: sum(1 for r in v if r["catatan_mutu"]) for k, v in s.items()}
-    manifest = {
-        "release": release, "rid": rid, "dibuat": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "sumber": src.name, "xlsx": xlsx, "gold": gold_meta,
-        "bronze": {k: len(v) for k, v in raw.items()}, "silver": {k: len(v) for k, v in s.items()},
-        "silver_catatan_mutu": silver_notes,
-        "kpi": g["gold_kpi_tata_kelola"],
-        "glosarium_belum_ada": [x["field_id"] + " " + x["istilah_bisnis"] for x in g["gold_glosarium"]
-                                if x["status_definisi"] == "Belum ada"],
-    }
-    if a.egrc:
-        import egrc
-        manifest["grc"] = egrc.run(a.egrc, release, work, rel_dir / "grc")
-    (rel_dir / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1))
-
-    panel = root / "panel"
-    (panel / "_aset").mkdir(exist_ok=True)
-    for f in Path(a.assets).glob("*"):
-        shutil.copy2(f, panel / "_aset" / f.name)
-    releases = []
-    for m in sorted((panel / "rilis").glob("*/manifest.json"), reverse=True):
-        releases.append(json.loads(m.read_text()))
-    (panel / "index.html").write_text(panel_index(panel, releases))
-    if a.manifest_out:
-        Path(a.manifest_out).parent.mkdir(parents=True, exist_ok=True)
-        Path(a.manifest_out).write_text(json.dumps(manifest, ensure_ascii=False, indent=1))
-    print(f"Rilis {release}: gold → {rel_dir} ({sum(d['baris'] for d in gold_meta)} baris, {len(gold_meta)} dataset)")
-
-
-if __name__ == "__main__":
-    main()
