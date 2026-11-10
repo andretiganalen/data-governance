@@ -14,6 +14,8 @@
   var TABS = [
     ["risiko", "Risiko ERM", "/visualisasi/superset/dashboard/risiko-erm/?standalone=1"],
     ["tata-kelola", "Tata Kelola Data", "/visualisasi/superset/dashboard/tata-kelola-data/?standalone=1"],
+    ["sdm", "SDM", "/visualisasi/superset/dashboard/sdm-headcount/?standalone=1"],
+    ["kesegaran", "Kesegaran Data", "/visualisasi/superset/dashboard/kesegaran-data/?standalone=1"],
     ["dashboard", "Semua dashboard", "/visualisasi/dashboard/list/"],
     ["grafik", "Grafik", "/visualisasi/chart/list/"],
     ["sql", "SQL Lab", "/visualisasi/sqllab/"]

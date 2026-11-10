@@ -207,9 +207,78 @@ def charts_meta() -> list[tuple]:
     ]
 
 
+def f_sql(expr: str) -> dict:
+    return {"expressionType": "SQL", "sqlExpression": expr, "clause": "WHERE"}
+
+
+def m_sql(expr: str, label: str) -> dict:
+    return {"expressionType": "SQL", "sqlExpression": expr, "label": label}
+
+
+ACTIVE = f_sql("is_active AND contract_flag IN ('Kontrak', 'Non Kontrak')")
+LAST_MONTH = f_eq("is_latest_complete_month", True)   # Superset menolak subquery di filter SQL kustom
+HEAD = m("headcount", "SUM", "Jumlah karyawan")
+FRESH_COLS = ["target_table", "source_system", "freshness_status", "source_last_change_at", "source_replicated_at",
+              "last_etl_grab_at", "hours_since_grab", "row_count", "status_note"]
+
+
+def charts_sdm() -> list[tuple]:
+    """SDM dari Aplikasi LenO (gold_sdm_headcount_monthly, posisi akhir bulan) + kesegaran data SDM."""
+    big = lambda sub, *flt: {"viz_type": "big_number_total", "metric": HEAD, "subheader": sub,  # noqa: E731
+                             "adhoc_filters": [ACTIVE, LAST_MONTH, *flt], "y_axis_format": "SMART_NUMBER"}
+    return [
+        ("Karyawan aktif per bulan (tren)", "gold_sdm_headcount_monthly",
+         {"viz_type": "big_number", "x_axis": "period_date", "time_grain_sqla": "P1M", "metric": HEAD, "adhoc_filters": [ACTIVE],
+          "subheader": "Kontrak + Non Kontrak, posisi akhir bulan", "show_trend_line": True, "start_y_axis_at_zero": False,
+          "y_axis_format": "SMART_NUMBER"}, 3, 30),
+        ("Perempuan aktif (bulan lengkap terakhir)", "gold_sdm_headcount_monthly", big("perempuan", f_eq("gender", "Perempuan")), 3, 30),
+        ("Karyawan kontrak (bulan lengkap terakhir)", "gold_sdm_headcount_monthly", big("kontrak", f_eq("contract_flag", "Kontrak")), 3, 30),
+        ("Umur rata-rata (bulan lengkap terakhir)", "gold_sdm_headcount_monthly",
+         {"viz_type": "big_number_total", "metric": m_sql("SUM(age_avg * headcount) / NULLIF(SUM(headcount), 0)", "Umur rata-rata"),
+          "subheader": "tahun", "adhoc_filters": [ACTIVE, LAST_MONTH], "y_axis_format": ",.1f"}, 3, 30),
+        ("Karyawan aktif per bulan: Kontrak vs Non Kontrak", "gold_sdm_headcount_monthly",
+         ts("echarts_timeseries_bar", "period_date", [HEAD], ["contract_flag"], stack="Stack", adhoc_filters=[ACTIVE]), 8, 55),
+        ("Komposisi status kepegawaian (bulan lengkap terakhir)", "gold_sdm_headcount_monthly",
+         {"viz_type": "pie", "groupby": ["employment_status"], "metric": HEAD, "donut": True, "show_labels": True,
+          "label_type": "key_percent", "labels_outside": True, "innerRadius": 40, "outerRadius": 75, "sort_by_metric": True,
+          "adhoc_filters": [ACTIVE, LAST_MONTH]}, 4, 55),
+        ("Kelompok umur × gender (bulan lengkap terakhir)", "gold_sdm_headcount_monthly",
+         {"viz_type": "echarts_timeseries_bar", "x_axis": "age_group", "metrics": [HEAD], "groupby": ["gender"],
+          "adhoc_filters": [ACTIVE, LAST_MONTH], "x_axis_sort_asc": True, "show_legend": True, "legendOrientation": "top",
+          "show_value": True, "y_axis_format": "SMART_NUMBER"}, 6, 55),
+        ("Unit kerja terbesar (bulan lengkap terakhir)", "gold_sdm_headcount_monthly",
+         {"viz_type": "table", "query_mode": "aggregate", "groupby": ["org_id", "unit_name"], "metrics": [HEAD],
+          "adhoc_filters": [ACTIVE, LAST_MONTH], "timeseries_limit_metric": HEAD, "order_desc": True, "row_limit": 15,
+          "show_cell_bars": True}, 6, 55),
+        ("Kesegaran data SDM (grab ETL terakhir)", "gold_meta_data_freshness",
+         {"viz_type": "table", "query_mode": "raw", "all_columns": FRESH_COLS, "adhoc_filters": [f_eq("domain", "SDM")],
+          "row_limit": 100, "table_timestamp_format": "%Y-%m-%d %H:%M"}, 12, 35),
+    ]
+
+
+def charts_freshness() -> list[tuple]:
+    """Kesegaran seluruh tabel Gold: sumber berubah, replika CDC, grab ETL terakhir, status."""
+    cnt = lambda sub, st: {"viz_type": "big_number_total", "metric": "count", "subheader": sub,  # noqa: E731
+                           "adhoc_filters": [f_eq("freshness_status", st)], "y_axis_format": "SMART_NUMBER"}
+    return [
+        ("Tabel Gold segar", "gold_meta_data_freshness", cnt("Gold = data sumber terbaru", "Segar"), 3, 30),
+        ("Menunggu ETL", "gold_meta_data_freshness", cnt("sumber lebih baru dari grab", "Menunggu ETL"), 3, 30),
+        ("Sumber CDC tidak diperbarui", "gold_meta_data_freshness", cnt("replika LenoDB > 48 jam", "Sumber CDC tidak diperbarui"), 3, 30),
+        ("Grab ETL terakhir", "gold_meta_data_freshness",
+         {"viz_type": "big_number_total", "metric": m_sql("max(last_etl_grab_at)", "Grab terakhir"), "subheader": "waktu server (UTC)",
+          "y_axis_format": "SMART_NUMBER", "time_format": "%Y-%m-%d %H:%M"}, 3, 30),
+        ("Kesegaran per tabel Gold", "gold_meta_data_freshness",
+         {"viz_type": "table", "query_mode": "raw", "all_columns": ["domain", *FRESH_COLS, "checked_at"],
+          "order_by_cols": [json.dumps(["domain", True])], "row_limit": 500, "include_search": True,
+          "table_timestamp_format": "%Y-%m-%d %H:%M"}, 12, 80),
+    ]
+
+
 DASHBOARDS = [
     ("risiko-erm", "Risiko ERM — Ringkasan (Gold)", charts_erm),
     ("tata-kelola-data", "Tata Kelola Data — Metadata (Gold)", charts_meta),
+    ("sdm-headcount", "SDM — Headcount & Umur (Gold, LenoDB)", charts_sdm),
+    ("kesegaran-data", "Kesegaran Data — Grab ETL terakhir (Gold)", charts_freshness),
 ]
 
 
@@ -228,8 +297,10 @@ def layout(chart_rows: list[list[tuple[int, str, int, int]]]) -> dict:
     return pos
 
 
-def setup_dashboards(api: API, ds: dict[str, int], force: bool) -> None:
+def setup_dashboards(api: API, ds: dict[str, int], force: bool, only: list[str] | None = None) -> None:
     for slug, title, spec in DASHBOARDS:
+        if only and slug not in only:
+            continue
         old = api.find("dashboard", "slug", slug)
         if old and not force:
             print(f"dashboard sudah ada: {title} → /superset/dashboard/{slug}/ (pakai --force untuk membuat ulang)")
@@ -263,11 +334,15 @@ def setup_dashboards(api: API, ds: dict[str, int], force: bool) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--force", action="store_true", help="buat ulang dashboard awal")
+    ap.add_argument("--only", nargs="+", metavar="SLUG", help="hanya dashboard ini (mis. sdm-headcount kesegaran-data)")
     a = ap.parse_args()
     api = API()
     db_id = setup_database(api)
     ds = setup_datasets(api, db_id)
-    setup_dashboards(api, ds, a.force)
+    for d in api.call("GET", "/api/v1/dataset/?q=(page_size:500)")["result"]:   # kolom baru di tabel Gold → segarkan dataset
+        if d["table_name"].startswith("gold_"):
+            api.call("PUT", f"/api/v1/dataset/{d['id']}/refresh")
+    setup_dashboards(api, ds, a.force, a.only)
 
 
 if __name__ == "__main__":

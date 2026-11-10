@@ -17,6 +17,7 @@ Perintah:
   lakehouse.py retry                   lengkapi Bronze berstatus PARTIAL (tabel mentah yang tertunda)
   lakehouse.py rebuild                 bangun ulang Silver/Gold dari berkas terbaru di bronze_repository
   lakehouse.py status                  jumlah baris + snapshot terakhir setiap tabel (pembanding DBeaver)
+  lakehouse.py cdc                     ambil ulang ERM + SDM dari LenoDB bila replika CDC berubah (timer tiap 15 menit)
 
 Skema tabel: schema/medallion_repository.sql (sumber kebenaran). Kredensial: $DATA/secrets/trino.env.
 """
@@ -72,7 +73,8 @@ class Trino:
             auth=trino.auth.BasicAuthentication(env["TRINO_USER"], env["TRINO_PASSWORD"]),
             catalog=self.catalog, schema=self.schema, source="lendatagovernance-lakehouse")
 
-    RETRYABLE = ("ICEBERG_COMMIT_ERROR", "ICEBERG_CATALOG_ERROR", "Error processing metadata for table", "Failed to open input stream")
+    RETRYABLE = ("ICEBERG_COMMIT_ERROR", "ICEBERG_CATALOG_ERROR", "Error processing metadata for table", "Failed to open input stream",
+                 "Failed to query OPA backend")   # layanan otorisasi (OPA) Trino sesaat tidak menjawab
 
     def q(self, sql: str, attempts: int = 8) -> list:
         """Galat commit/katalog/S3 Lakekeeper yang sementara dicoba ulang (jeda 30 s … 5 menit, total ±20 menit).
@@ -941,6 +943,41 @@ def rebuild(tq: Trino, schema: dict, batch_id: str, now: datetime) -> None:
     leno_erm.build(tq, schema, batch_id, now)
     leno_sdm.build(tq, schema, batch_id, now)   # memakai bronze_leno_hr_unitkerja dari leno_erm
     astacita.build(tq, schema, batch_id, now)
+    record_freshness(tq, schema, ["SDM", "CORP", "EGRC", "DG_WORKBOOK", "LENO_ERM", "LENO_SDM", "ASTACITA"], batch_id, now, "rebuild")
+
+
+def record_freshness(tq: Trino, schema: dict, systems: list[str], batch_id: str, grab_at: datetime, trigger: str) -> None:
+    """Catat grab tiap sumber (silver_fact_meta_etl_run) lalu hitung ulang gold_meta_data_freshness. Gagal tidak membatalkan ETL."""
+    import freshness
+    for s in systems:
+        try:
+            freshness.record_runs(tq, schema, [s], batch_id, grab_at, trigger)
+        except Exception as e:  # noqa: BLE001 — mis. lenodb tak terjangkau
+            log(f"  ! log grab {s} dilewati: {str(e)[:120]}")
+    n = freshness.build_gold(tq, schema, batch_id)
+    log(f"  gold_meta_data_freshness                      {n:6d} baris")
+
+
+def cdc(tq: Trino, schema: dict, batch_id: str, now: datetime) -> None:
+    """Siklus CDC (timer tiap 15 menit): bila replika LenoDB (lenodb.silver) berubah sejak grab terakhir, ambil ulang
+    ERM + SDM LenO → Silver/Gold, catat grab, perbarui kesegaran, sinkron katalog. Bila tidak ada perubahan, hanya
+    menyegarkan gold_meta_data_freshness (paling sering 1×/jam)."""
+    import freshness
+    import leno_erm
+    import leno_sdm
+    changed = {s: freshness.cdc_changed(tq, s) for s in ("LENO_ERM", "LENO_SDM")}
+    if any(changed.values()):
+        log(f"batch {batch_id} — CDC berubah: " + "; ".join(f"{s}: {', '.join(v)}" for s, v in changed.items() if v))
+        ensure_base(tq, schema)
+        leno_erm.build(tq, schema, batch_id, now)
+        leno_sdm.build(tq, schema, batch_id, now)
+        record_freshness(tq, schema, ["LENO_ERM", "LENO_SDM"], batch_id, now, "cdc")
+        sync_catalog()
+        return
+    last = tq.q(f"SELECT max(checked_at) FROM {tq.fq('gold_meta_data_freshness')}") if "gold_meta_data_freshness" in set(tq.tables()) else [[None]]
+    if last[0][0] is None or (now - last[0][0]).total_seconds() > 3600:
+        n = freshness.build_gold(tq, schema, batch_id)
+        log(f"CDC tidak berubah; kesegaran diperbarui ({n} baris)")
 
 
 def rebuild_files(tq: Trino, schema: dict, batch_id: str, now: datetime) -> None:
@@ -1024,6 +1061,7 @@ def main() -> None:
     sub.add_parser("retry", help="lengkapi berkas berstatus PARTIAL dari staging")
     sub.add_parser("rebuild")
     sub.add_parser("status")
+    sub.add_parser("cdc", help="ambil ulang data LenoDB bila replika CDC berubah (timer tiap 15 menit)")
     a = ap.parse_args()
     tq = Trino()
     if a.cmd == "status":
@@ -1040,6 +1078,8 @@ def main() -> None:
     now = datetime.now(timezone.utc)
     batch_id = str(uuid.uuid4())
     names: dict[Path, str] = {}
+    if a.cmd == "cdc":
+        return cdc(tq, schema, batch_id, now)
     inbox = DATA / "medallion" / "inbox"
     if a.cmd == "inbox" and not any(f.is_file() and f.suffix.lower() in (".xlsx", ".xlsm", ".csv") for f in inbox.glob("*")):
         return                                   # timer tiap 10 menit: inbox kosong → Trino tidak disentuh sama sekali

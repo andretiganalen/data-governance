@@ -2325,6 +2325,8 @@ CREATE TABLE gold_sdm_headcount_monthly (
    period_year integer,
    period_month integer,
    period_date date COMMENT 'Hari pertama bulan',
+   position_date date COMMENT 'Tanggal posisi: akhir bulan; untuk bulan berjalan = hari ETL',
+   is_latest_complete_month boolean COMMENT 'TRUE untuk bulan lengkap terakhir (dipakai kartu "bulan terakhir" di dashboard)',
    date_key integer,
    company_id varchar,
    company_name varchar,
@@ -2346,3 +2348,37 @@ CREATE TABLE gold_sdm_headcount_monthly (
    _loaded_at timestamp(6) with time zone COMMENT 'lineage'
 )
 COMMENT 'Gold SDM: jumlah karyawan per bulan (posisi akhir bulan) menurut perusahaan, unit, gender, kontrak/non kontrak, status, kelompok umur — dengan umur min/maks/rata-rata. Tanpa data pribadi.';
+
+-- ==== Kesegaran data (data freshness), 2026-11-10. Dibangun medallion/freshness.py setiap rebuild / siklus CDC.
+
+CREATE TABLE silver_fact_meta_etl_run (
+   run_id varchar COMMENT 'batch_id ETL',
+   source_system varchar COMMENT 'LENO_ERM | LENO_SDM | EGRC | DG_WORKBOOK | ASTACITA | SDM | CORP',
+   source_object varchar COMMENT 'Tabel CDC (lenodb.silver.<tabel>) atau nama berkas sumber',
+   source_last_change_at timestamp(6) with time zone COMMENT 'Perubahan terakhir di sistem sumber (CDC last_source_ts) / berkas masuk',
+   source_replicated_at timestamp(6) with time zone COMMENT 'Replika CDC LenoDB diperbarui (_cdc_watermarks.updated_at); NULL untuk berkas',
+   etl_grab_at timestamp(6) with time zone COMMENT 'Waktu ETL mengambil (grab) data sumber',
+   etl_finished_at timestamp(6) with time zone,
+   trigger_kind varchar COMMENT 'cdc | rebuild | inbox',
+   status varchar COMMENT 'SUCCESS | FAILED'
+)
+COMMENT 'Log setiap pengambilan data sumber oleh ETL (append).';
+
+CREATE TABLE gold_meta_data_freshness (
+   target_table varchar COMMENT 'Tabel Gold',
+   domain varchar COMMENT 'ERM | SDM | ASTACITA | META | KORPORASI',
+   source_system varchar,
+   source_objects varchar COMMENT 'Tabel/berkas sumber',
+   row_count bigint,
+   source_last_change_at timestamp(6) with time zone COMMENT 'Perubahan terakhir di sumber',
+   source_replicated_at timestamp(6) with time zone COMMENT 'Replika CDC LenoDB terakhir diperbarui',
+   last_etl_grab_at timestamp(6) with time zone COMMENT 'Terakhir ETL mengambil data → isi tabel Gold ini',
+   hours_since_grab double COMMENT 'Jam sejak grab terakhir (pada checked_at)',
+   hours_replica_age double COMMENT 'Jam sejak replika CDC terakhir diperbarui (pada checked_at)',
+   freshness_status varchar COMMENT 'Segar | Menunggu ETL | Sumber CDC tidak diperbarui | Berkas statis',
+   status_note varchar,
+   checked_at timestamp(6) with time zone,
+   _batch_id varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Gold: kesegaran setiap tabel Gold — kapan sumber berubah, kapan replika CDC diperbarui, kapan ETL terakhir mengambil data.';

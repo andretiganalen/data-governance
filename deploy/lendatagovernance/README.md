@@ -125,7 +125,20 @@ Panel unduhan berkas `/unduh/` (rilis CSV/XLSX) ditutup 2026-11-10: data Gold di
   Pegawai `aktif = 0` yang statusnya tak pernah ditutup diakhiri pada absensi terakhir (perkiraan) atau perubahan data terakhir.
   Contoh: `SELECT contract_flag, sum(headcount), min(age_min), max(age_max) FROM gold_sdm_headcount_monthly WHERE period_year = 2026
   AND period_month = 10 AND gender = 'Perempuan' AND contract_flag IN ('Kontrak','Non Kontrak') AND is_active GROUP BY 1`.
-- Urutan `lakehouse.py rebuild`: SDM/korporasi → berkas Workbook/E-GRC → ERM LenO → SDM LenO → Asta Cita → sinkron katalog.
+- Urutan `lakehouse.py rebuild`: SDM/korporasi → berkas Workbook/E-GRC → ERM LenO → SDM LenO → Asta Cita → kesegaran → sinkron katalog.
+
+**Selalu mutakhir dari CDC LenoDB** — timer `host/systemd/lendatagovernance-lakehouse-cdc.timer` (tiap 15 menit) menjalankan
+`lakehouse.py cdc`: watermark `lenodb.silver._cdc_watermarks` dibandingkan dengan grab terakhir (`silver_fact_meta_etl_run`);
+bila replika berubah → ERM + SDM LenO diambil ulang (Bronze → Silver → Gold), grab dicatat, kesegaran dihitung, katalog disinkron.
+Pasang: `sudo cp host/systemd/lendatagovernance-lakehouse-cdc.* /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable --now lendatagovernance-lakehouse-cdc.timer`.
+Log: `/srv/lendatagovernance/medallion/logs/cdc.log`.
+
+**Kesegaran data** — `gold_meta_data_freshness` (`medallion/freshness.py`): per tabel Gold (dan per sumber) perubahan sumber terakhir,
+replika CDC terakhir, **grab ETL terakhir**, umur (jam), status `Segar | Menunggu ETL | Sumber CDC tidak diperbarui (> 48 jam) | Berkas statis`.
+Dashboard: Visualisasi › tab **Kesegaran Data** dan tabel kesegaran di tab **SDM**.
+
+**Dashboard SDM** (`superset-setup.py --force --only sdm-headcount` untuk membuat ulang): karyawan aktif per bulan, bulan lengkap terakhir
+(`is_latest_complete_month`), Kontrak vs Non Kontrak, komposisi status, umur × gender, unit terbesar, kesegaran SDM.
 
 ## Visualisasi — di dalam aplikasi utama (`superset/`, `../ui/leno-theme/leno-menu.js`)
 Pengguna hanya melihat Len Data Governance (:8585). Menu **Visualisasi** di sidebar membuka panel di area konten

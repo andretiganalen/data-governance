@@ -1,0 +1,8 @@
+[Unit]
+Description=Len Data Governance: cek replika CDC LenoDB tiap 15 menit
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=15min
+Persistent=true
+[Install]
+WantedBy=timers.target

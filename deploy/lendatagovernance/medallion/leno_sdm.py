@@ -138,7 +138,7 @@ def silver(tq: L.Trino, batch_id: str, now: datetime) -> dict[str, dict[str, str
 def gold(tq: L.Trino, batch_id: str, now: datetime) -> dict[str, dict[str, str]]:
     E, ST, UA = (tq.fq(t) for t in ("silver_dim_sdm_employee", "silver_fact_sdm_employment_status", "silver_fact_sdm_unit_assignment"))
     src = f"_source_system = '{SRC}'"
-    months = (f"(SELECT d AS ms, last_day_of_month(d) AS me FROM "
+    months = (f"(SELECT d AS ms, least(last_day_of_month(d), current_date) AS me FROM "   # bulan berjalan: posisi hari ini
               f"UNNEST(sequence(DATE '{START}', CAST(date_trunc('month', current_date) AS date), INTERVAL '1' MONTH)) AS t(d))")
     # posisi akhir bulan: status yang berlaku pada hari terakhir bulan (TMT terbaru bila tumpang tindih)
     pos = (f"(SELECT * FROM (SELECT s.*, m.ms, m.me, row_number() OVER (PARTITION BY s.employee_id, m.ms "
@@ -154,10 +154,12 @@ def gold(tq: L.Trino, batch_id: str, now: datetime) -> dict[str, dict[str, str]]
     grp = "ms, org_id, unit_name, gender, employment_class, contract_flag, status_name, is_employee, is_active, " + age_group("age")
     return {"gold_sdm_headcount_monthly": {
         "_from": f"(SELECT ms, org_id, unit_name, gender, employment_class, contract_flag, status_name, is_employee, is_active, "
-                 f"{age_group('age')} AS ag, count(*) AS n, min(age) AS amin, max(age) AS amax, avg(age) AS aavg FROM {x} GROUP BY {grp}) g",
-        "period_year": "year(g.ms)", "period_month": "month(g.ms)", "period_date": "g.ms",
+                 f"{age_group('age')} AS ag, count(*) AS n, min(age) AS amin, max(age) AS amax, avg(age) AS aavg, max(me) AS me "
+                 f"FROM {x} GROUP BY {grp}) g",
+        "period_year": "year(g.ms)", "period_month": "month(g.ms)", "period_date": "g.ms", "position_date": "g.me",
+        "is_latest_complete_month": "g.ms = date_add('month', -1, CAST(date_trunc('month', current_date) AS date))",
         "date_key": "year(g.ms) * 10000 + month(g.ms) * 100 + 1", "company_id": L.sq(COMPANY[0]), "company_name": L.sq(COMPANY[1]),
-        "org_id": "g.org_id", "unit_name": "g.unit_name", "gender": "g.gender", "employment_class": "g.employment_class",
+        "org_id": "g.org_id", "unit_name": "coalesce(g.unit_name, '(unit tidak tercatat)')", "gender": "g.gender", "employment_class": "g.employment_class",
         "contract_flag": "g.contract_flag", "employment_status": "g.status_name", "is_employee": "g.is_employee",
         "is_active": "g.is_active", "age_group": "g.ag", "headcount": "g.n", "age_min": "g.amin", "age_max": "g.amax",
         "age_avg": "g.aavg", "_source_system": L.sq(SRC), "_batch_id": L.sq(batch_id), "_loaded_at": L.lit(now, "timestamp")}}

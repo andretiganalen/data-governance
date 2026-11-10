@@ -1,0 +1,10 @@
+[Unit]
+Description=Len Data Governance: ambil ulang ERM + SDM dari replika CDC LenoDB bila berubah (Bronze -> Silver -> Gold) + kesegaran data
+After=network-online.target
+[Service]
+Type=oneshot
+User=ubuntu
+Environment=LDG_DATA_DIR=/srv/lendatagovernance
+ExecStart=/srv/lendatagovernance/medallion/.venv/bin/python -u /opt/lendatagovernance/deploy/medallion/lakehouse.py cdc
+StandardOutput=append:/srv/lendatagovernance/medallion/logs/cdc.log
+StandardError=append:/srv/lendatagovernance/medallion/logs/cdc.log
