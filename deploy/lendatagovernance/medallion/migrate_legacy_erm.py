@@ -97,8 +97,14 @@ def main() -> None:
             if left:
                 L.log(f"  ! {cat}.{s} masih berisi {[r[0] for r in left]} — schema tidak dihapus")
             else:
-                tq.q(f"DROP SCHEMA {cat}.{s}")
-                L.log(f"  - schema {cat}.{s} dihapus")
+                try:
+                    tq.q(f"DROP SCHEMA {cat}.{s}", attempts=1)
+                    L.log(f"  - schema {cat}.{s} dihapus")
+                except Exception as e:  # noqa: BLE001 — mis. namespace diproteksi di Lakekeeper
+                    if "protected" not in str(e):
+                        raise
+                    L.log(f"  ! {cat}.{s} kosong tetapi diproteksi di Lakekeeper — minta admin Lakekeeper "
+                          f"melepas proteksi namespace (atau drop dengan force), lalu jalankan ulang skrip ini")
 
 
 if __name__ == "__main__":

@@ -24,3 +24,12 @@ Angka diisi otomatis dari `build/data.js` (dibuat saat rilis):
 - `R.live` — status langsung katalog (project compose `lendatagovernance`, basis data `lendatagovernance_db`).
 
 Butuh: venv di atas + `/srv/lendatagovernance/secrets/trino.env`, node 22, google-chrome, dan `sudo docker` untuk membaca status katalog.
+
+## SRS (Software Requirements Specification)
+Sumber: `srs/usecases.js` (60 use case) dan `srs/build-srs.js` (bab, kebutuhan fungsional/non-fungsional, keterlacakan, isu).
+Butuh paket npm `docx` (v9); bila belum terpasang global, pasang di folder sementara lalu arahkan `NODE_PATH`:
+```bash
+npm install --prefix /tmp/docxjs docx@9
+NODE_PATH=/tmp/docxjs/node_modules node docs/manuals/src/srs/build-srs.js "docs/manuals/<YYMMDD CC> SRS Len Data Governance.docx" "<YYMMDD CC>"
+```
+Perbarui `usecases.js`/`build-srs.js` setiap kali fitur, aturan data, atau isu terbuka berubah.

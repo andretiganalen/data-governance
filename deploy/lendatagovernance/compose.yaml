@@ -32,7 +32,7 @@ services:
       retries: 12
 
   opensearch:
-    image: opensearchproject/opensearch:3.2.0
+    image: opensearchproject/opensearch:3.4.0   # ≥ 3.4.0 wajib: 3.2–3.3 punya bug Lucene 10 (script_score di dis_max → NPE, pencarian HTTP 500)
     restart: unless-stopped
     environment:
       - discovery.type=single-node

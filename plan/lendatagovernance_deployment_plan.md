@@ -73,7 +73,7 @@ flowchart LR
     UI["gateway (nginx)<br/>proxy + sisip leno.css"] --> LDG["ldg-server 2.0.7<br/>(UI + API, admin :8586 internal)"]
     MIG["ldg-migrate<br/>(sekali jalan saat up)"] --> PG
     LDG --> PG[("PostgreSQL 15<br/>lendatagovernance_db")]
-    LDG --> OS[("OpenSearch 3.2.0<br/>indeks pencarian")]
+    LDG --> OS[("OpenSearch 3.4.0<br/>indeks pencarian")]
     BK["lendatagovernance-backup.timer<br/>pg_dump harian"] --> PG
   end
   LDG -. "fase 2: OIDC" .-> IDS["IDS (SSO internal)"]
@@ -87,14 +87,14 @@ Aplikasi ERM LenO ditampilkan hanya sebagai konteks: **tidak ada panah ke LenO**
 | Service | Image | Network | Port host | Batas memori |
 | :-- | :-- | :-- | :-- | :-- |
 | postgresql | `postgres:15-bookworm` | ldg-internal | — | 1 GB |
-| opensearch | `opensearchproject/opensearch:3.2.0` (heap 1 GB) | ldg-internal | — | 2 GB |
+| opensearch | `opensearchproject/opensearch:3.4.0` (heap 1 GB) | ldg-internal | — | 2 GB |
 | ldg-migrate | `docker.getcollate.io/openmetadata/server:2.0.7` | ldg-internal | — | — (sekali jalan) |
 | ldg-server | `docker.getcollate.io/openmetadata/server:2.0.7` (heap 1,5 GB) | ldg-internal, ldg-egress | — | 2,5 GB |
 | gateway | `nginx:1.27-alpine` | ldg-egress | **0.0.0.0:80**, **0.0.0.0:8585** | 128 MB |
 
 - **Total batas memori ≈ 5,6 GB.** Jitsi memiliki ≈ 10 GiB tersedia.
 - **Subnet tetap:** `ldg-internal` 172.28.10.0/24 (tanpa rute keluar) dan `ldg-egress` 172.28.11.0/24. Keduanya tidak bertabrakan dengan network yang sudah ada (172.17–172.21, Podman 10.89.0.0/24, LAN 192.168.x).
-- **Versi** mengikuti matriks resmi katalog upstream 2.0.x: OpenSearch 3.2.0 dan PostgreSQL 15. Elasticsearch (ELv2/AGPL) dan MySQL (GPL) tidak dipakai.
+- **Versi** mengikuti matriks resmi katalog upstream 2.0.x: OpenSearch ≥ 3.4.0 (3.2–3.3 punya bug Lucene 10 pada pencarian; dinaikkan 2026-11-10) dan PostgreSQL 15. Elasticsearch (ELv2/AGPL) dan MySQL (GPL) tidak dipakai.
 
 ---
 
@@ -283,7 +283,7 @@ Keanggotaan team diimpor berkala dari CSV HR/IDS (`email, ORG_ID`).
 
 | # | Butir | Dampak bila salah | Tindakan |
 | :-- | :-- | :-- | :-- |
-| V-1 | Tag `opensearchproject/opensearch:3.2.0`, `postgres:15-bookworm`, `openmetadata/server:2.0.7` tersedia | `pin-images.sh` gagal | Pakai patch terdekat yang tersedia dalam versi matriks |
+| V-1 | Tag `opensearchproject/opensearch:3.4.0` (Docker Hub; bila CDN-nya terblokir, tarik dari `public.ecr.aws/opensearchproject/opensearch:3.4.0` lalu `docker tag`), `postgres:15-bookworm`, `openmetadata/server:2.0.7` tersedia | `pin-images.sh` gagal | Pakai patch terdekat yang tersedia dalam versi matriks |
 | V-2 | Kredensial admin bawaan basic auth = `admin@<domain>` / `admin` | Tidak bisa login pertama | Cek log server / dokumentasi basic auth 2.0 |
 | V-3 | `PIPELINE_SERVICE_CLIENT_ENABLED=false` tanpa efek samping selain menu ingestion | Peringatan di UI | Abaikan; ingestion memang tidak dipakai |
 | V-4 | IDS mengizinkan redirect URI HTTP | Fase 2 terhambat | Tambahkan TLS self-signed di depan gateway |

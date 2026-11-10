@@ -17,7 +17,7 @@ upstream — everything else carries the Len Data Governance name.
 
 | Path | Content |
 |---|---|
-| `compose.yaml` | postgresql 15 (`lendatagovernance_db`, `superset`), opensearch 3.2.0, ldg-migrate, ldg-server, superset 6.0.0 (internal), gateway (nginx :80, :8585) |
+| `compose.yaml` | postgresql 15 (`lendatagovernance_db`, `superset`), opensearch 3.4.0, ldg-migrate, ldg-server, superset 6.0.0 (internal), gateway (nginx :80, :8585) |
 | `lendatagovernance.base.env` | Non-secret settings (git); secrets in `/srv/lendatagovernance/secrets/lendatagovernance.env` |
 | `/srv/lendatagovernance/secrets/` | DB passwords, Fernet key, JWT keys, IDS client (NOT in git — back up to vault) |
 | `/srv/lendatagovernance/{postgres,opensearch,backup}` | Data |
