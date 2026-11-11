@@ -113,6 +113,7 @@ table.t td{border-bottom:1px solid var(--soft);padding:2mm 2.5mm;vertical-align:
     <tr><td>Mengubah alur data (lineage)</td><td>—</td><td>✔</td><td>✔</td><td>✔</td></tr>
     <tr><td>Membuat dan mengubah aturan mutu</td><td>—</td><td>✔</td><td>✔</td><td>✔</td></tr>
     <tr><td>Menyetujui atau menolak permintaan atas aset</td><td>—</td><td>✔</td><td>✔ <sup>3</sup></td><td>✔</td></tr>
+    <tr><td>Menghapus aset atau istilah (dipindah ke Tempat Sampah) dan memulihkannya dalam 20 hari</td><td>—</td><td>✔ <sup>2</sup></td><td>✔</td><td>✔</td></tr>
     <tr><td>Melihat data siap pakai dan membuat grafik (menu Visualisasi)</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td></tr>
     <tr><td>Membuat tabel kerja sendiri di schema <b>workspace</b> (SQL Lab)</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td></tr>
     <tr><td>Mengubah data resmi (Bronze, Silver, Gold)</td><td>—</td><td>—</td><td>— <sup>4</sup></td><td>— <sup>4</sup></td></tr>
@@ -134,6 +135,8 @@ table.t td{border-bottom:1px solid var(--soft);padding:2mm 2.5mm;vertical-align:
       <li>Menanggapi permintaan pengguna dan mencatat keputusan</li>
       <li>Melihat data siap pakai dan membuat grafik di menu Visualisasi</li>
       <li>Membuat tabel kerja sendiri di schema workspace</li>
+      <li>Menghapus ke Tempat Sampah dan memulihkan dalam 20 hari</li>
+      <li>Mengelola Glosarium Fungsi Generik; PDF-nya terbit otomatis dengan riwayat revisi</li>
     </ul></div>
     <div class="panel na"><h3>Belum bisa</h3><ul>
       <li>Menjalankan pemeriksaan mutu dan melihat hasilnya</li>
@@ -142,6 +145,7 @@ table.t td{border-bottom:1px solid var(--soft);padding:2mm 2.5mm;vertical-align:
       <li>Membentuk domain dan produk data</li>
       <li>Menampilkan data SDM dan keuangan (sumbernya belum dimuat)</li>
       <li>Menautkan dokumen kebijakan dan standar ke aset</li>
+      <li>Membatasi unduh data per Tier dan memetakan akun ke unit (disetujui, menunggu data pemetaan)</li>
     </ul></div>
   </div></div>
 </section>
@@ -291,6 +295,20 @@ window.render = (R) => {
       'Bila perlu gabungan data sendiri, tulis kueri di <i>SQL Lab</i> dan simpan hasilnya sebagai tabel <b>workspace.&lt;nama_tabel&gt;</b>.',
       'Kirim nama dashboard ke peminta. Peminta membukanya dengan akun yang sama.'],
      'Pengguna mendapat data rapi tanpa menyusun ulang.', 'Angka resmi hanya dari tabel Gold. Tabel workspace adalah tabel kerja, bukan sumber resmi.'],
+    ['S11', 'Menghapus dan memulihkan data (Tempat Sampah)', 'saat ada data keliru atau tidak terpakai',
+     ['Buka aset atau istilahnya, pilih menu titik tiga lalu <span class="ui">Delete</span>. Aplikasi menampilkan penjelasan: baca, lalu pilih <span class="ui">Ya, pindahkan</span>, atau <span class="ui">Batal</span> bila ragu.',
+      'Data pindah ke <b>Tempat Sampah selama 20 hari</b>. Ia tidak tampil di pencarian, daftar, dan dashboard, dan tautannya ke aset lain nonaktif sementara. Data sumber tidak berubah.',
+      'Untuk memulihkan, buka menu <span class="ui">Tempat Sampah</span> di sidebar lalu pilih <span class="ui">Pulihkan</span> pada barisnya. Kolom <i>Sisa waktu</i> menunjukkan berapa hari lagi bisa dipulihkan.',
+      'Sebelum menghapus aset milik Fungsi lain, beri tahu pemiliknya dengan <b>@</b> di tab <span class="ui">Activity Feeds &amp; Tasks</span>.',
+      'Setelah 20 hari data dihapus permanen otomatis dan tidak bisa dipulihkan. Bila ada yang keliru dihapus, pulihkan sebelum batas itu.'],
+     'Kesalahan hapus bisa dikembalikan tanpa kehilangan data.', 'Tidak ada tombol hapus permanen untuk pengguna; penghapusan permanen hanya otomatis setelah 20 hari.'],
+    ['S12', 'Mengelola Glosarium Fungsi Generik', 'saat ada perubahan Fungsi, dan mingguan',
+     ['Buka <span class="ui">Govern</span> › <span class="ui">Glossary</span> › <b>Organisasi dan Fungsi</b> › <b>Fungsi Generik</b>. Setiap Fungsi adalah satu istilah, dan Data Owner-nya adalah Fungsi itu sendiri (tanpa awalan &ldquo;Fungsi&rdquo;).',
+      'Lengkapi dulu istilah yang definisinya bertuliskan <b>&ldquo;Perlu input manual dari Data Governance&rdquo;</b>: tulis tugas Fungsi pada skala perusahaan dalam satu atau dua kalimat. Hal yang sama berlaku untuk <i>Struktur Organisasi Saat Ini</i> dan <i>Kadaluarsa</i> (aturan kadaluarsa dan pemiliknya).',
+      'Isi <span class="ui">Reviewers</span> dan tautkan istilah ke kolom tabel yang memakainya. Setiap suntingan membuat versi baru; riwayatnya terlihat di aset.',
+      'PDF <i>Glosarium Fungsi Generik Rev NN</i> terbit otomatis di menu <span class="ui">Referensi</span> setiap ada perubahan nama, definisi, atau pemilik, lengkap dengan riwayat revisi. Revisi lama tetap tersedia.',
+      'Pantau kemajuan lewat tabel Gold <b>gold_meta_glossary_ringkasan</b> (per glosarium) dan <b>gold_meta_glossary_status</b> (per istilah) di menu <span class="ui">Visualisasi</span>: keduanya menunjukkan istilah yang belum tuntas dan apa yang kurang.'],
+     'Semua Fungsi punya definisi, pemilik, peninjau, dan tautan kolom.', 'Isi yang belum diketahui ditulis &ldquo;Perlu input manual dari Data Governance&rdquo;, bukan dikarang.'],
   ];
   const sec = document.getElementById('prosedur');
   for (const [n, title, when, steps, out, rule] of P) {
