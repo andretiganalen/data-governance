@@ -1,5 +1,5 @@
 [Unit]
-Description=Len Data Governance: catat Glosarium aplikasi ke Trino (gold_meta_glossary)
+Description=Len Data Governance: catat Glosarium aplikasi ke Trino (gold_meta_glossary_app)
 After=network-online.target
 [Service]
 Type=oneshot

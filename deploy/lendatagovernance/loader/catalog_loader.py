@@ -189,7 +189,7 @@ def load_workbook(om: Catalog, path: str):
             sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "medallion"))
             import lakehouse as _L
             _t = _L.Trino()
-            app_edited = {r[0] for r in _t.q(f"SELECT field_id FROM {_t.fq('gold_meta_glossary')} WHERE sumber_perubahan = 'Aplikasi'")}
+            app_edited = {r[0] for r in _t.q(f"SELECT field_id FROM {_t.fq('gold_meta_glossary_app')} WHERE sumber_perubahan = 'Aplikasi'")}
         except Exception as e:  # noqa: BLE001 — tanpa Trino: hanya aturan updatedBy
             print(f"  ! daftar istilah hasil edit aplikasi tidak terbaca ({str(e)[:80]})")
     kept = 0

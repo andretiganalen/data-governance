@@ -2383,7 +2383,7 @@ CREATE TABLE gold_meta_data_freshness (
 )
 COMMENT 'Gold: kesegaran setiap tabel Gold — kapan sumber berubah, kapan replika CDC diperbarui, kapan ETL terakhir mengambil data.';
 
-CREATE TABLE gold_meta_glossary (
+CREATE TABLE gold_meta_glossary_app (
    field_id varchar COMMENT 'Kode istilah (FIELD_ID, mis. F009); istilah baru dari aplikasi memakai nama istilahnya',
    business_term varchar COMMENT 'Nama istilah bisnis',
    definisi varchar COMMENT 'Definisi istilah (bahasa Indonesia)',

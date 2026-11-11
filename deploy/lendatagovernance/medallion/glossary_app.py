@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Glosarium di aplikasi -> Trino (gold_meta_glossary). Searah: aplikasi adalah sumber setelah admin Data Governance
+"""Glosarium di aplikasi -> Trino (gold_meta_glossary_app). Searah: aplikasi adalah sumber setelah admin Data Governance
 mengubahnya; tabel ini mencatat keadaan terkini (tiap 10 menit lewat timer, dan di akhir rebuild).
 sumber_perubahan = "Aplikasi" bila definisi/nama berbeda dari Workbook (silver_dim_meta_glossary) atau istilah tidak ada di Workbook."""
 from __future__ import annotations
@@ -46,7 +46,7 @@ def build(tq: L.Trino, schema: dict, batch_id: str) -> int:
                      "diubah_oleh": t.get("updatedBy"),
                      "diubah_pada": datetime.fromtimestamp(t["updatedAt"] / 1000, timezone.utc) if t.get("updatedAt") else None,
                      "sumber_perubahan": "Workbook" if same else "Aplikasi", "_batch_id": batch_id, "_loaded_at": now})
-    name = "gold_meta_glossary"
+    name = "gold_meta_glossary_app"
     L.ensure_table(tq, name, schema[name], set(tq.tables()), managed=True)
     L.replace_rows(tq, name, schema[name], rows)
     return len(rows)
@@ -56,7 +56,7 @@ def main() -> None:
     import uuid
     tq = L.Trino()
     n = build(tq, L.load_schema(), uuid.uuid4().hex[:12])
-    L.log(f"gold_meta_glossary: {n} istilah dicatat dari aplikasi")
+    L.log(f"gold_meta_glossary_app: {n} istilah dicatat dari aplikasi")
 
 
 if __name__ == "__main__":
