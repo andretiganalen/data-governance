@@ -22,19 +22,19 @@ LOGO_TARGET_PATH = f"{APP_ROOT}/dashboard/list/"
 LOGO_TOOLTIP = "Len Data Governance"
 FAVICONS = [{"href": "/static/assets/images/len-logo.png"}]   # Superset menambahkan APP_ROOT sendiri
 
-# Tema standar Len (plan/interface-menu.md): navy utama, merah aksen, biru tautan; hanya mode terang.
+# Tema standar Len = UIx (plan/interface-menu.md): merah utama #ae2524, Poppins, radius 8; hanya mode terang.
 THEME_DEFAULT = {
     "algorithm": "default",
     "token": {
-        "colorPrimary": "#194A80",
-        "colorLink": "#0562C9",
-        "colorError": "#DA0000",
-        "colorSuccess": "#1E7B34",
-        "colorWarning": "#F28C00",
-        "colorTextBase": "#3B3B3B",
-        "colorBgLayout": "#F5F6F8",
-        "borderRadius": 4,
-        "fontFamily": "Montserrat, 'Open Sans', 'Segoe UI', Arial, sans-serif",
+        "colorPrimary": "#ae2524",
+        "colorLink": "#ae2524",
+        "colorError": "#e7000b",
+        "colorSuccess": "#008236",
+        "colorWarning": "#bb4d00",
+        "colorTextBase": "#364153",
+        "colorBgLayout": "#f9fafb",
+        "borderRadius": 8,
+        "fontFamily": "'UIx Poppins', 'Segoe UI', Arial, sans-serif",
         "brandLogoUrl": f"{APP_ROOT}/static/assets/images/len-logo.png",
         "brandLogoAlt": "Len Data Governance",
         "brandLogoHref": f"{APP_ROOT}/dashboard/list/",

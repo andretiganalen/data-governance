@@ -153,7 +153,7 @@ Pengguna hanya melihat Len Data Governance (:8585). Menu **Visualisasi** di side
   (CREATE/CTAS/INSERT/UPDATE/DELETE/DROP/ALTER/MERGE) dan unggah CSV/XLSX hanya ke schema `lakekeeper.workspace`
   — tulis lengkap `workspace.<tabel>`; schema lain (termasuk `medallion_repository` milik loader) ditolak
   (`dg_sql_guard`, `SQL_QUERY_MUTATOR`).
-- **Tema:** `leno-superset.css` (font Montserrat/Open Sans, navy/merah Len, kartu 4px) + `THEME_DEFAULT` Superset;
+- **Tema:** `leno-superset.css` (UIx: Poppins, merah #ae2524, kartu 12px) + `THEME_DEFAULT` Superset;
   menu atas Superset disembunyikan saat tampil di dalam aplikasi (`leno-superset.js`).
 - Metadata Superset (grafik, dashboard) di database `superset` pada Postgres stack ini. Rahasia: `secrets/superset.env`
   (`SUPERSET_SECRET_KEY`, `SUPERSET_DB_PASSWORD`).

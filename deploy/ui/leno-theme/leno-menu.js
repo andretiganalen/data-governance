@@ -60,17 +60,17 @@
     var s = document.createElement("style");
     s.id = PANEL_ID + "-css";
     s.textContent =
-      "#" + PANEL_ID + "{position:fixed;z-index:400;background:#F5F6F8;display:flex;flex-direction:column}" +
-      "#" + PANEL_ID + " .lv-bar{display:flex;align-items:flex-end;gap:4px;padding:12px 20px 0;background:#fff;border-bottom:1px solid #E6E6E6}" +
-      "#" + PANEL_ID + " .lv-title{font:700 18px Montserrat,Arial,sans-serif;color:#3B3B3B;margin:0 20px 10px 0}" +
-      "#" + PANEL_ID + " .lv-tab{font:500 14px 'Open Sans',Arial,sans-serif;color:#515151;background:none;border:0;" +
-      "border-bottom:3px solid transparent;padding:8px 12px 9px;cursor:pointer}" +
-      "#" + PANEL_ID + " .lv-tab:hover{color:#194A80}" +
-      "#" + PANEL_ID + " .lv-tab[aria-selected=true]{color:#194A80;font-weight:600;border-bottom-color:#CF0000}" +
-      "#" + PANEL_ID + " iframe{flex:1;width:100%;border:0;background:#F5F6F8}" +
+      "#" + PANEL_ID + "{position:fixed;z-index:400;background:#f9fafb;display:flex;flex-direction:column}" +
+      "#" + PANEL_ID + " .lv-bar{display:flex;align-items:flex-end;gap:4px;padding:12px 20px 0;background:#fff;border-bottom:1px solid #e5e7eb}" +
+      "#" + PANEL_ID + " .lv-title{font:600 18px 'UIx Poppins',Arial,sans-serif;color:#101828;margin:0 20px 10px 0}" +
+      "#" + PANEL_ID + " .lv-tab{font:400 13px 'UIx Poppins',Arial,sans-serif;color:#364153;background:none;border:0;" +
+      "border-bottom:2px solid transparent;padding:8px 12px 9px;cursor:pointer}" +
+      "#" + PANEL_ID + " .lv-tab:hover{color:#101828}" +
+      "#" + PANEL_ID + " .lv-tab[aria-selected=true]{color:#ae2524;font-weight:500;border-bottom-color:#ae2524}" +
+      "#" + PANEL_ID + " iframe{flex:1;width:100%;border:0;background:#f9fafb}" +
       "html.dg-vis-open .left-sidebar-menu .ant-menu-item-selected:not(#" + ITEM_ID + "){background:transparent!important}" +
       "html.dg-vis-open .left-sidebar-menu .ant-menu-item-selected:not(#" + ITEM_ID + ")::after{display:none!important}" +
-      "html.dg-vis-open #" + ITEM_ID + "{background:var(--len-navy-50,#EEF3F9)!important}";
+      "html.dg-vis-open #" + ITEM_ID + "{background:var(--uix-surface-muted,#f3f4f6)!important}";
     document.head.appendChild(s);
   }
   function place(panel) {

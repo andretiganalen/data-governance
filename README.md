@@ -7,7 +7,7 @@ data-governance/
 ├── deploy/
 │   ├── lendatagovernance/  Len Data Governance stack (mirrored live at /home/ubuntu/data-governance/deploy/lendatagovernance)
 │   └── ui/                 Len theme + Visualisasi menu injected by the gateway
-├── plan/               Deployment plans and UI standard (Len classic)
+├── plan/               Deployment plans and UI standard (UIx)
 ├── docs/adr/           Architecture decision records
 └── templates/          Reusable templates
 ```

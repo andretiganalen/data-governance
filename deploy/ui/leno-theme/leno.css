@@ -1,163 +1,177 @@
-/* Len classic theme for Len Data Governance (upstream catalog UI 2.0.7) — look of https://www.len.co.id
- * Standard: plan/interface-menu.md. Positions: plan/leno_interface_theme.md.
- * Menus, content and access stay the upstream UI's. Selectors verified on the upstream UI 2.0.7 (rendered DOM).
- * Primary/brand colour comes from Settings › Preferences › Theme (customUiThemePreference) — not forced here,
- * so Ant Design + Untitled UI (--tw-color-brand-*) keep deriving their palettes from it.
+/* UIx theme for Len Data Governance (upstream catalog UI 2.0.7) — token & komponen mengikuti UIx (Len internal web apps).
+ * Standar: plan/interface-menu.md (UIx, 2026-11-11). Posisi (header atas, sidebar kiri): plan/leno_interface_theme.md.
+ * Menu, isi, dan hak akses tetap milik aplikasi dasar. Selector diverifikasi pada UI 2.0.7 (DOM hasil render).
+ * Warna utama juga diatur di Settings › Preferences › Theme (customUiThemePreference) agar Ant Design + Untitled UI
+ * (--tw-color-brand-*) menurunkan paletnya dari merah UIx; CSS ini tidak memaksa warna utama komponen pihak ketiga.
  */
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600&display=swap");
+@font-face { font-family: "UIx Poppins"; font-weight: 400; font-style: normal; font-display: swap; src: url("/_leno/fonts/poppins-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "UIx Poppins"; font-weight: 500; font-style: normal; font-display: swap; src: url("/_leno/fonts/poppins-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "UIx Poppins"; font-weight: 600; font-style: normal; font-display: swap; src: url("/_leno/fonts/poppins-latin-600-normal.woff2") format("woff2"); }
 
 :root {
-  --len-navy: #194A80; --len-navy-700: #12375F; --len-navy-50: #EEF3F9;
-  --len-red: #DA0000; --len-red-700: #CF0000; --len-red-hover: #FF2121; --len-red-50: #FFF2F2;
-  --len-blue: #0562C9;
-  --len-ink: #3B3B3B; --len-text: #515151; --len-text-2: #54595F; --len-muted: #838282;
-  --len-line: #C4C4C4; --len-line-soft: #E6E6E6; --len-bg: #FFFFFF; --len-surface: #FFFFFF;
-  --len-font: Montserrat, "Segoe UI", Arial, sans-serif;           /* Len: text + headings */
-  --len-font-menu: "Open Sans", "Segoe UI", Arial, sans-serif;     /* Len: navigation menu */
-  --len-radius: 4px;
-  --len-shadow-header: 0 2px 6px rgba(0, 0, 0, .18);
+  /* UIx semantic tier (nilai terang dari tokens.json) */
+  --uix-primary: #ae2524;        /* aksi utama, tautan, tab aktif */
+  --uix-primary-strong: #8e1e1d; /* hover/pressed */
+  --uix-primary-soft: rgba(174, 37, 36, .10);
+  --uix-on-primary: #ffffff;
+  --uix-text-head: #101828; --uix-text-body: #364153; --uix-text-secondary: #6a7282; --uix-text-muted: #99a1af;
+  --uix-surface-page: #f9fafb; --uix-surface: #ffffff; --uix-surface-subtle: #f9fafb; --uix-surface-muted: #f3f4f6;
+  --uix-border: #e5e7eb; --uix-border-subtle: #f3f4f6; --uix-border-strong: #d1d5dc;
+  --uix-field-border: #99a1af; --uix-input-wash: rgba(0, 0, 0, .04);
+  --uix-success: #008236; --uix-warning-text: #bb4d00; --uix-danger: #e7000b; --uix-info: #155dfc;
+  --uix-focus-border: #6a7282; --uix-focus-ring: rgba(106, 114, 130, .4);
+  --uix-font: "UIx Poppins", "Segoe UI", Arial, sans-serif;
+  --uix-radius-sm: 6px; --uix-radius: 8px; --uix-radius-md: 12px;
+  --uix-shadow-xs: 0 0 0 1px rgba(16, 24, 40, .04), 0 1px 2px rgba(16, 24, 40, .06);
+  --uix-shadow-md: 0 0 0 1px rgba(16, 24, 40, .05), 0 4px 8px -2px rgba(16, 24, 40, .10), 0 12px 24px -4px rgba(16, 24, 40, .08);
+  --uix-control-md: 34px;
+  /* alias lama dipakai leno-menu.js */
+  --len-red: var(--uix-primary); --len-radius: var(--uix-radius);
 }
 
-/* ---- §2 Typography: Montserrat everywhere (the upstream UI sets Inter on many components directly) ---- */
-/* :where() keeps specificity at 0 so the targeted rules below (menu, code) can override it */
+/* ---- Tipografi: satu huruf, Poppins, di semua komponen (UI dasar memakai Inter langsung di banyak komponen) ---- */
+/* :where() menjaga spesifisitas 0 agar aturan khusus di bawah (kode) tetap bisa menimpa */
 html body,
 body :where(*:not(code):not(pre):not(kbd):not(samp):not(svg):not(svg *):not([class*="katex"]):not([class*="katex"] *):not([class*="mono"]):not([class*="Mono"]):not(.CodeMirror *):not(.monaco-editor *)) {
-  font-family: var(--len-font) !important;
+  font-family: var(--uix-font) !important;
 }
-body { color: var(--len-text); background: var(--len-bg) !important; }
+body { color: var(--uix-text-body); background: var(--uix-surface-page) !important; }
 h1, h2, h3, h4, h5, h6, .ant-typography h1, .ant-typography h2, .ant-typography h3, .ant-typography h4 {
-  color: var(--len-ink) !important; font-weight: 700 !important; letter-spacing: -.2px;
-}
-/* menu labels: Open Sans 500 like the Len navigation */
-.left-sidebar-menu, .left-sidebar-menu :where(*:not(svg):not(svg *)),
-.ant-dropdown-menu, .ant-dropdown-menu :where(*:not(svg):not(svg *)) {
-  font-family: var(--len-font-menu) !important;
+  color: var(--uix-text-head) !important; font-weight: 600 !important; letter-spacing: 0;
 }
 
-/* ---- Links & entity titles: Len navy, red on hover (red stays for markers/actions) ---- */
+/* ---- Tautan & judul entitas: merah utama, lebih gelap saat hover ---- */
 .text-link-color, a.text-link-color, [data-testid="entity-link"], [data-testid="entity-link"] *,
 [data-testid="entity-header-display-name"], .summary-item-link, .ant-typography a, a.ant-typography {
-  color: var(--len-navy) !important;
+  color: var(--uix-primary) !important;
 }
 .text-link-color:hover, [data-testid="entity-link"]:hover, [data-testid="entity-link"]:hover *,
-.summary-item-link:hover, .ant-typography a:hover { color: var(--len-red-700) !important; }
+.summary-item-link:hover, .ant-typography a:hover { color: var(--uix-primary-strong) !important; }
 [data-testid="entity-header-display-name"] { font-weight: 600 !important; }
 
-/* ---- Page background white like len.co.id ---- */
+/* ---- Latar halaman abu-abu muda; panel putih ---- */
 .app-container, .app-container .ant-layout, .ant-layout-content,
-.page-layout-v1, .page-layout-v1-center { background: var(--len-bg) !important; }
+.page-layout-v1, .page-layout-v1-center { background: var(--uix-surface-page) !important; }
 
-/* ---- Header bar: flat, upstream default (user preference) — only square inputs ---- */
+/* ---- Header: bawaan UI dasar; hanya kontrol input memakai radius UIx ---- */
 .navbar-container .ant-input-affix-wrapper,
-.navbar-container .ant-select-selector { border-radius: var(--len-radius) !important; }
+.navbar-container .ant-select-selector { border-radius: var(--uix-radius) !important; }
 
-/* ---- Home welcome banner: flat, follows the theme ----
- * Default = theme Primary Color (Settings › Preferences › Appearance), no gradient/texture.
- * A colour chosen in Settings › Persona › Customize UI › Home is set inline by the upstream UI and wins
- * (background-color is deliberately NOT !important here). */
+/* ---- Banner sambutan Home: rata, mengikuti warna utama tema (tanpa gradien/tekstur) ----
+ * Warna yang dipilih di Settings › Persona › Customize UI › Home diset inline oleh UI dasar dan menang
+ * (background-color sengaja TIDAK !important). */
 .customise-landing-page-header {
   background-image: none !important;
-  background-color: var(--ant-primary-color, var(--len-red));
-  border-radius: 0 !important;
+  background-color: var(--ant-primary-color, var(--uix-primary));
+  border-radius: var(--uix-radius-md) !important;
   box-shadow: none !important;
 }
-
-/* ---- Other hard-coded blues on Home → theme ---- */
-.whats-new-alert-left { background: var(--ant-primary-color, var(--len-red)) !important; background-image: none !important; }
+.whats-new-alert-left { background: var(--ant-primary-color, var(--uix-primary)) !important; background-image: none !important; }
 [class*="whats-new-alert"] a, [class*="whats-new-alert"] a *, [class*="whats-new-alert"] .ant-btn-link,
-[class*="whats-new-alert"] .ant-btn-link * { color: var(--len-navy) !important; }
+[class*="whats-new-alert"] .ant-btn-link * { color: var(--uix-primary) !important; }
 [class*="whats-new-alert"] a:hover, [class*="whats-new-alert"] a:hover *,
-[class*="whats-new-alert"] .ant-btn-link:hover * { color: var(--len-red-700) !important; }
+[class*="whats-new-alert"] .ant-btn-link:hover * { color: var(--uix-primary-strong) !important; }
 
-/* ---- §4.2 Sidebar: white, square items, Len red pointer ---- */
+/* ---- Sidebar: putih, baris 6px, hover abu-abu; terpilih = bobot 500 + penanda merah tipis (tanpa latar merah) ---- */
 .left-sidebar-layout, .ant-layout-sider.left-sidebar-layout,
 .left-sidebar-layout .menu-container, .left-sidebar-layout .top-menu, .left-sidebar-layout .bottom-menu,
 .left-sidebar-menu.ant-menu, .ant-layout-sider, .ant-layout-sider-children {
-  background: var(--len-surface) !important;
-  border-right: 1px solid var(--len-line-soft) !important;
+  background: var(--uix-surface) !important;
+  border-right: 1px solid var(--uix-border) !important;
 }
 .left-sidebar-menu.ant-menu .ant-menu-item,
 .left-sidebar-menu.ant-menu .ant-menu-submenu-title {
-  position: relative; border-radius: 0 !important;
-  color: var(--len-text) !important; font-size: 14px !important; font-weight: 500 !important;
+  position: relative; border-radius: var(--uix-radius-sm) !important;
+  color: var(--uix-text-body) !important; font-size: 13px !important; font-weight: 400 !important;
+  margin: 2px 4px !important; width: calc(100% - 8px) !important;
 }
 .left-sidebar-menu.ant-menu .ant-menu-item:hover,
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-active:not(.ant-menu-item-selected),
 .left-sidebar-menu.ant-menu .ant-menu-submenu-title:hover {
-  background: #F5F5F5 !important; color: var(--len-red-700) !important;
+  background: var(--uix-surface-muted) !important; color: var(--uix-text-head) !important;
 }
 .left-sidebar-menu.ant-menu .ant-menu-item:hover .anticon,
-.left-sidebar-menu.ant-menu .ant-menu-item:hover .left-panel-label { color: var(--len-red-700) !important; }
+.left-sidebar-menu.ant-menu .ant-menu-item:hover .left-panel-label { color: var(--uix-text-head) !important; }
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected {
-  background: var(--len-red-50) !important; color: var(--len-red-700) !important;
+  background: var(--uix-surface-muted) !important; color: var(--uix-text-head) !important;
 }
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected a,
-.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected .anticon,
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected .left-panel-label {
-  color: var(--len-red-700) !important; font-weight: 600 !important;
+  color: var(--uix-text-head) !important; font-weight: 500 !important;
 }
+.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected .anticon { color: var(--uix-primary) !important; }
 .left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected::before {
-  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--len-red-700);
+  content: ""; position: absolute; left: -4px; top: 6px; bottom: 6px; width: 3px; border-radius: 2px; background: var(--uix-primary);
 }
-.left-sidebar-menu .ant-menu-submenu.ant-menu-submenu-open { border-color: var(--len-line-soft) !important; border-radius: 0 !important; }
+.left-sidebar-menu .ant-menu-submenu.ant-menu-submenu-open { border-color: var(--uix-border) !important; border-radius: var(--uix-radius-sm) !important; }
 
-/* ---- §4.1 Dropdowns: white, 1px separators, red hover with white text (Len) ---- */
-.ant-dropdown-menu { border-radius: var(--len-radius) !important; padding: 0 !important; box-shadow: var(--len-shadow-header) !important; }
-.ant-dropdown-menu-item { border-radius: 0 !important; padding: 10px 16px !important; }
-.ant-dropdown-menu-item:not(:last-child) { border-bottom: 1px solid var(--len-line-soft); }
-.ant-dropdown-menu-item:hover:not(.ant-dropdown-menu-item-disabled) { background: var(--len-red-hover) !important; color: #fff !important; }
-.ant-dropdown-menu-item:hover:not(.ant-dropdown-menu-item-disabled) * { color: #fff !important; }
+/* ---- Dropdown: panel menjorok 4px, baris 32px, hover abu-abu (bukan merah) ---- */
+.ant-dropdown-menu {
+  border-radius: var(--uix-radius-md) !important; padding: 4px !important;
+  box-shadow: var(--uix-shadow-md) !important; border: 1px solid var(--uix-border);
+}
+.ant-dropdown-menu-item { border-radius: var(--uix-radius-sm) !important; padding: 0 12px !important; min-height: 32px; line-height: 32px; font-size: 13px; }
+.ant-dropdown-menu-item:hover:not(.ant-dropdown-menu-item-disabled) { background: var(--uix-surface-muted) !important; color: var(--uix-text-head) !important; }
+.ant-dropdown-menu-item:hover:not(.ant-dropdown-menu-item-disabled) * { color: var(--uix-text-head) !important; }
 
-/* ---- §3 Corners: square, classic (antd + upstream Tailwind "tw:" utilities), keep circles ---- */
-.ant-card, .ant-btn, .ant-input, .ant-input-affix-wrapper, .ant-select-selector, .ant-picker, .ant-tag,
-.ant-modal-content, .ant-drawer-content, .ant-collapse, .ant-table-wrapper, .ant-popover-inner, .ant-tabs-card .ant-tabs-tab,
-[class*="tw:rounded"]:not([class*="rounded-full"]):not(.ant-avatar),
+/* ---- Sudut menurut peran: kontrol 8px, kartu/modal/panel 12px; lingkaran dipertahankan ---- */
+.ant-btn, .ant-input, .ant-input-affix-wrapper, .ant-select-selector, .ant-picker, .ant-tag,
+[class*="tw:rounded"]:not([class*="rounded-full"]):not(.ant-avatar) {
+  border-radius: var(--uix-radius) !important;
+}
+.ant-tag { border-radius: var(--uix-radius-sm) !important; }
+.ant-card, .ant-modal-content, .ant-drawer-content, .ant-collapse, .ant-table-wrapper, .ant-popover-inner,
 [class*="card"]:not(.ant-avatar):not([class*="rounded-full"]) {
-  border-radius: var(--len-radius) !important;
+  border-radius: var(--uix-radius-md) !important;
 }
-.ant-card, [class*="tw:rounded-xl"], [class*="tw:rounded-2xl"] { box-shadow: none !important; border-color: var(--len-line-soft) !important; }
+.ant-card, [class*="tw:rounded-xl"], [class*="tw:rounded-2xl"] {
+  box-shadow: var(--uix-shadow-xs) !important; border-color: var(--uix-border) !important;
+}
 
-/* ---- Headings in explore/entity pages: Montserrat 600, Len ink ---- */
+/* ---- Tombol: hanya Primary yang solid merah; lainnya abu-abu bergaris ---- */
+.ant-btn-primary { background: var(--uix-primary) !important; border-color: var(--uix-primary) !important; color: var(--uix-on-primary) !important; box-shadow: none !important; }
+.ant-btn-primary:hover, .ant-btn-primary:focus { background: var(--uix-primary-strong) !important; border-color: var(--uix-primary-strong) !important; }
+.ant-btn-default:not(.ant-btn-primary):not(.ant-btn-dangerous) { border-color: var(--uix-border-strong) !important; color: var(--uix-text-body) !important; box-shadow: var(--uix-shadow-xs); }
+.ant-btn-default:not(.ant-btn-primary):not(.ant-btn-dangerous):hover { background: var(--uix-surface-muted) !important; color: var(--uix-text-head) !important; border-color: var(--uix-border-strong) !important; }
+
+/* ---- Kolom input: batas lebih gelap, wash tipis di dalam ---- */
+.ant-input, .ant-input-affix-wrapper, .ant-select:not(.ant-select-customize-input) .ant-select-selector, .ant-picker {
+  border-color: var(--uix-field-border) !important;
+}
+
+/* ---- Judul kartu / entitas ---- */
 .ant-card-head-title, .entity-header-title, [class*="entity-header"] .ant-typography { font-weight: 600 !important; }
 
-/* ---- Tables (Len classic) ---- */
+/* ---- Tabel ---- */
 .ant-table-thead > tr > th {
-  background: #F7F7F7 !important; color: var(--len-text-2) !important;
-  font-weight: 600 !important; font-size: 12px !important; text-transform: uppercase; letter-spacing: .3px;
-  border-radius: 0 !important;
+  background: var(--uix-surface-subtle) !important; color: var(--uix-text-secondary) !important;
+  font-weight: 600 !important; font-size: 12px !important; border-radius: 0 !important;
+  border-bottom: 1px solid var(--uix-border) !important;
+}
+.ant-table-tbody > tr > td { border-bottom: 1px solid var(--uix-border-subtle) !important; font-size: 13px; }
+.ant-table-tbody > tr:hover > td { background: var(--uix-surface-subtle) !important; }
+
+/* ---- Tab aktif: tinta merah ---- */
+.ant-tabs-ink-bar { background: var(--uix-primary) !important; height: 2px !important; }
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn { color: var(--uix-primary) !important; font-weight: 500; }
+
+/* ---- Fokus: satu cincin netral di semua tempat (merah dipakai untuk aksi, bukan fokus) ---- */
+:focus-visible { outline: 3px solid var(--uix-focus-ring); outline-offset: 0; border-color: var(--uix-focus-border); }
+.ant-input:focus, .ant-input-focused, .ant-input-affix-wrapper:focus, .ant-input-affix-wrapper-focused,
+.ant-select-focused:not(.ant-select-disabled) .ant-select-selector {
+  border-color: var(--uix-focus-border) !important; box-shadow: 0 0 0 3px var(--uix-focus-ring) !important;
 }
 
-/* ---- Active tab marker = Len red pointer ---- */
-.ant-tabs-ink-bar { background: var(--len-red-700) !important; height: 3px !important; }
-
-/* ---- Focus ---- */
-:focus-visible { outline: 2px solid var(--len-blue); outline-offset: 2px; }
-
-/* ---- Sign-in page: Len navy panel with the red diagonal accent of the len.co.id banners ---- */
-main[data-testid="signin-page"] > div:first-child {
-  background: linear-gradient(160deg, var(--len-navy) 0%, var(--len-navy-700) 100%) !important;
-  position: relative;
-}
-main[data-testid="signin-page"] > div:first-child::before {
-  content: ""; position: absolute; top: 56px; left: 56px; width: 180px; height: 12px;
-  background: var(--len-red); transform: skewX(-35deg); z-index: 1;
-}
-main[data-testid="signin-page"] > div:first-child::after {
-  content: ""; position: absolute; top: 76px; left: 40px; width: 110px; height: 12px;
-  background: var(--len-red); transform: skewX(-35deg); opacity: .85; z-index: 1;
-}
+/* ---- Halaman masuk: panel gelap rata (tanpa gradien) dan kotak masuk 12px ---- */
+main[data-testid="signin-page"] > div:first-child { background: var(--uix-text-head) !important; }
 [data-testid="login-video"] { display: none !important; }
-main[data-testid="signin-page"] > div:first-child [class*="tw:aspect"] {
-  background: transparent !important; box-shadow: none !important;
-}
+main[data-testid="signin-page"] > div:first-child [class*="tw:aspect"] { background: transparent !important; box-shadow: none !important; }
 .login-box {
-  border-radius: var(--len-radius) !important;
-  border: 1px solid var(--len-line-soft) !important;
-  border-top: 3px solid var(--len-navy) !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, .12) !important;
+  border-radius: var(--uix-radius-md) !important;
+  border: 1px solid var(--uix-border) !important;
+  box-shadow: var(--uix-shadow-md) !important;
 }
 .login-box .ant-input, .login-box .ant-input-affix-wrapper {
-  background: #fff !important; border: 1px solid var(--len-line) !important; box-shadow: none !important;
+  background: var(--uix-input-wash) !important; border: 1px solid var(--uix-field-border) !important; box-shadow: none !important;
 }
-.login-box .ant-input-affix-wrapper .ant-input { border: 0 !important; }
-.login-box .ant-input:focus, .login-box .ant-input-affix-wrapper-focused { border-color: var(--len-navy) !important; }
+.login-box .ant-input-affix-wrapper .ant-input { border: 0 !important; background: transparent !important; }
