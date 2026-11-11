@@ -107,6 +107,7 @@ def main() -> None:
             om.call("PUT", f"/v1/tables/{tb['id']}/tableProfile", {
                 "tableProfile": {"timestamp": int(now.timestamp() * 1000), "rowCount": counts[t], "columnCount": len(cols[t])}})
     layer_governance(om, sch["fullyQualifiedName"], names)
+    admin_dg_rights(om)
     # tabel yang sudah hilang dari Trino → soft delete
     existing = om.get(f"/v1/tables?databaseSchema={q(sch['fullyQualifiedName'])}&limit=1000").get("data", [])
     gone = [x for x in existing if x["name"] not in cols]
@@ -180,6 +181,27 @@ def layer_governance(om, sch_fqn: str, names: list) -> None:
     if not any(x["id"] == pol["id"] for x in org.get("policies", [])):
         om.patch(f"/v1/teams/{org['id']}", [{"op": "add", "path": "/policies/-",
                                               "value": {"id": pol["id"], "type": "policy"}}])
+
+
+def admin_dg_rights(om) -> None:
+    """Peran Admin Data Governance (anggota UV-1): menambah/mengurangi/mengubah Fungsi (tim Data Owner, FN_*) dan
+    mengubah Glosarium (istilah, definisi, tautan istilah ke kolom tabel) langsung di aplikasi."""
+    pol = om.put("/v1/policies", {
+        "name": "AdminDataGovernance", "displayName": "Admin Data Governance",
+        "description": "Kelola Fungsi (tim) dan Glosarium langsung di aplikasi; tautkan istilah glosarium ke kolom tabel.",
+        "rules": [
+            {"name": "KelolaFungsi", "effect": "allow", "resources": ["team"],
+             "operations": ["Create", "Delete", "EditAll", "ViewAll"], "description": "Tambah, ubah, hapus Fungsi dan unit"},
+            {"name": "KelolaGlosarium", "effect": "allow", "resources": ["glossary", "glossaryTerm"],
+             "operations": ["Create", "Delete", "EditAll", "ViewAll"], "description": "Tambah, ubah, hapus Glosarium dan istilah"},
+            {"name": "TautkanGlosariumKeTabel", "effect": "allow", "resources": ["table"],
+             "operations": ["EditGlossaryTerms", "EditTags", "EditDescription", "EditOwners", "ViewAll"],
+             "description": "Tautkan istilah glosarium dan Fungsi pemilik langsung pada tabel dan kolom"}]})
+    role = om.put("/v1/roles", {"name": "AdminDataGovernance", "displayName": "Admin Data Governance",
+                                "description": "Admin Data Governance (UV-1).", "policies": [pol["fullyQualifiedName"]]})
+    team = om.get(f"/v1/teams/name/{STAFF_TEAM}?fields=defaultRoles")
+    if not any(r["id"] == role["id"] for r in team.get("defaultRoles", [])):
+        om.patch(f"/v1/teams/{team['id']}", [{"op": "add", "path": "/defaultRoles/-", "value": {"id": role["id"], "type": "role"}}])
 
 
 def defaultdict_list():
