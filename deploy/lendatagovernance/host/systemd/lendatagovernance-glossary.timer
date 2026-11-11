@@ -1,0 +1,8 @@
+[Unit]
+Description=Len Data Governance: catat Glosarium aplikasi ke Trino tiap 10 menit
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=10min
+Persistent=true
+[Install]
+WantedBy=timers.target

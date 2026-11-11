@@ -182,7 +182,22 @@ def load_workbook(om: Catalog, path: str):
 
     # Glossary terms
     step(f"glossary terms: {len(plan.terms)}")
+    me = om.get("/v1/users/loggedInUser").get("name")   # identitas loader: istilah yang terakhir diubah orang lain (admin DG di aplikasi) tidak ditimpa
+    app_edited: set[str] = set()   # istilah yang dicatat gold_meta_glossary sebagai "Aplikasi" (termasuk edit atas nama pemilik token loader)
+    if not om.dry:
+        try:
+            sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "medallion"))
+            import lakehouse as _L
+            _t = _L.Trino()
+            app_edited = {r[0] for r in _t.q(f"SELECT field_id FROM {_t.fq('gold_meta_glossary')} WHERE sumber_perubahan = 'Aplikasi'")}
+        except Exception as e:  # noqa: BLE001 — tanpa Trino: hanya aturan updatedBy
+            print(f"  ! daftar istilah hasil edit aplikasi tidak terbaca ({str(e)[:80]})")
+    kept = 0
     for t in plan.terms:
+        cur = om.find(f"/v1/glossaryTerms/name/{q(W.GLOSSARY + '.' + t['name'])}")
+        if cur and (t["name"] in app_edited or cur.get("updatedBy") not in (None, me, "governance-bot")):
+            kept += 1
+            continue
         body = {"glossary": W.GLOSSARY, "name": t["name"], "displayName": t["displayName"],
                 "description": t["description"],
                 "reviewers": team_refs([t["reviewer"]] if t["reviewer"] else []),
@@ -195,6 +210,8 @@ def load_workbook(om: Catalog, path: str):
         if ext:
             body["extension"] = ext
         om.put("/v1/glossaryTerms", body)
+    if kept:
+        step(f"glossary terms: {kept} istilah diubah admin di aplikasi → dipertahankan (tidak ditimpa Workbook)")
 
     # ERM tables → their Trino tables in lakekeeper.medallion_repository (metadata only; data comes from the lakehouse)
     step(f"ERM → Trino {W.LAKEHOUSE_SCHEMA_FQN}: {len(plan.tables)} tables")

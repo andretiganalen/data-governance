@@ -10,7 +10,7 @@ PREV=$(ls -t $REP/workbook-defects-*.md 2>/dev/null | grep -v -- '-dry' | head -
 BEFORE=$( [[ -n $PREV ]] && count "$PREV" || echo "-" )
 [[ -n $PREV ]] && cp "$PREV" "$PREV.prev"
 cd "$(dirname "$0")/../loader"
-python3 catalog_loader.py workbook "$WB"
+/home/ubuntu/data-governance/data/medallion/.venv/bin/python catalog_loader.py workbook "$WB"
 NOW=$(ls -t $REP/workbook-defects-*.md | grep -v -- '-dry' | head -1)
 echo; echo "Defects: before=$BEFORE  after=$(count "$NOW")"
 defects() { sed -n '/^## Cacat/,$p' "$1" | grep '^- ' | sort; }

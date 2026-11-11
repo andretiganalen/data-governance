@@ -2382,3 +2382,21 @@ CREATE TABLE gold_meta_data_freshness (
    _loaded_at timestamp(6) with time zone COMMENT 'lineage'
 )
 COMMENT 'Gold: kesegaran setiap tabel Gold — kapan sumber berubah, kapan replika CDC diperbarui, kapan ETL terakhir mengambil data.';
+
+CREATE TABLE gold_meta_glossary (
+   field_id varchar COMMENT 'Kode istilah (FIELD_ID, mis. F009); istilah baru dari aplikasi memakai nama istilahnya',
+   business_term varchar COMMENT 'Nama istilah bisnis',
+   definisi varchar COMMENT 'Definisi istilah (bahasa Indonesia)',
+   glosarium varchar COMMENT 'Glosarium induk di aplikasi',
+   data_owner varchar COMMENT 'Data Owner = Fungsi (CLP-001, tanpa awalan)',
+   data_steward varchar COMMENT 'Unit Data Steward (dipisah ;)',
+   data_user varchar COMMENT 'Unit Data User (dipisah ;)',
+   reviewer varchar COMMENT 'Peninjau istilah',
+   versi double COMMENT 'Nomor versi istilah di aplikasi',
+   diubah_oleh varchar COMMENT 'Pengguna terakhir yang mengubah istilah di aplikasi',
+   diubah_pada timestamp(6) with time zone COMMENT 'Waktu perubahan terakhir di aplikasi',
+   sumber_perubahan varchar COMMENT 'Workbook (isi sama dengan Workbook) | Aplikasi (diubah/ditambah admin Data Governance di aplikasi)',
+   _batch_id varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Gold: Glosarium Len Data Governance, dicatat dari aplikasi (sumber kebenaran setelah diedit admin Data Governance). Dilengkapi sumber_perubahan.';

@@ -945,6 +945,8 @@ def rebuild(tq: Trino, schema: dict, batch_id: str, now: datetime) -> None:
     astacita.build(tq, schema, batch_id, now)
     record_freshness(tq, schema, ["SDM", "CORP", "EGRC", "DG_WORKBOOK", "LENO_ERM", "LENO_SDM", "ASTACITA"], batch_id, now, "rebuild")
     try:
+        import glossary_app
+        glossary_app.build(tq, schema, batch_id)
         import silver_comments
         silver_comments.main()
     except Exception as e:  # noqa: BLE001 — komentar tidak boleh menggagalkan ETL
@@ -1066,6 +1068,7 @@ def main() -> None:
     sub.add_parser("retry", help="lengkapi berkas berstatus PARTIAL dari staging")
     sub.add_parser("rebuild")
     sub.add_parser("status")
+    sub.add_parser("glossary", help="catat Glosarium aplikasi ke gold_meta_glossary (timer tiap 10 menit)")
     sub.add_parser("cdc", help="ambil ulang data LenoDB bila replika CDC berubah (timer tiap 15 menit)")
     a = ap.parse_args()
     tq = Trino()
@@ -1085,6 +1088,9 @@ def main() -> None:
     names: dict[Path, str] = {}
     if a.cmd == "cdc":
         return cdc(tq, schema, batch_id, now)
+    if a.cmd == "glossary":
+        import glossary_app
+        return log(f"gold_meta_glossary: {glossary_app.build(tq, schema, batch_id)} istilah dicatat dari aplikasi")
     inbox = DATA / "medallion" / "inbox"
     if a.cmd == "inbox" and not any(f.is_file() and f.suffix.lower() in (".xlsx", ".xlsm", ".csv") for f in inbox.glob("*")):
         return                                   # timer tiap 10 menit: inbox kosong → Trino tidak disentuh sama sekali
