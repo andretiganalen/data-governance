@@ -263,3 +263,146 @@ body, .ant-typography, .text-sm, .ant-select-selection-item, .ant-input, .ant-bt
 html body .whats-new-alert-version, html body .whats-new-alert-meta, html body .whats-new-alert-meta * { color: var(--uix-text-head) !important; }
 html body .whats-new-alert-version { font-weight: 600 !important; font-size: 24px !important; }
 html body .whats-new-alert-left, html body [class*="whats-new-alert"] [class*="left"] { background: var(--uix-surface-muted) !important; }
+
+/* ================= Putaran 8: skala brand (Untitled UI) turunan merah UIx; tanpa biru sisa ================= */
+:root {
+  --tw-color-brand-25: #fdf7f7; --tw-color-brand-50: #f9eeee; --tw-color-brand-100: #f3dcdc; --tw-color-brand-200: #e7bcbc;
+  --tw-color-brand-300: #d68f8f; --tw-color-brand-400: #c25e5d; --tw-color-brand-500: #b83b3a; --tw-color-brand-600: #ae2524;
+  --tw-color-brand-700: #8e1e1d; --tw-color-brand-800: #721918; --tw-color-brand-900: #5c1514; --tw-color-brand-950: #3a0c0b;
+  /* Info/biru: satu biru UIx (#155dfc) dengan latar sangat muda, hanya untuk status info */
+  --tw-color-blue-25: #f5f8ff; --tw-color-blue-50: #eef3ff; --tw-color-blue-100: #dce7ff; --tw-color-blue-200: #bfd2ff;
+  --tw-color-blue-300: #93b2ff; --tw-color-blue-400: #5f8bff; --tw-color-blue-500: #3a70fd; --tw-color-blue-600: #155dfc;
+  --tw-color-blue-700: #1249c9; --tw-color-blue-800: #123a9c; --tw-color-blue-900: #12307a; --tw-color-blue-950: #0b1d4d;
+}
+/* Chip aksi di panel "Asset Health" (Link pipeline, Add tests, Enable, Create): lunak abu-abu, bukan biru */
+[class*="tw:rounded-md"][class*="tw:whitespace-nowrap"][class*="tw:gap-0.5"] {
+  background: var(--uix-surface-muted) !important; border-color: var(--uix-border) !important; color: var(--uix-primary) !important;
+}
+
+/* ================= Putaran 9: kaitan --color-* (nilai cadangan upstream = biru) diisi skala UIx ================= */
+html:root, html body {
+  --color-brand-25: #fdf7f7; --tw-color-brand-25: #fdf7f7; --color-utility-brand-25: #fdf7f7;
+  --color-brand-50: #f9eeee; --tw-color-brand-50: #f9eeee; --color-utility-brand-50: #f9eeee;
+  --color-brand-100: #f3dcdc; --tw-color-brand-100: #f3dcdc; --color-utility-brand-100: #f3dcdc;
+  --color-brand-200: #e7bcbc; --tw-color-brand-200: #e7bcbc; --color-utility-brand-200: #e7bcbc;
+  --color-brand-300: #d68f8f; --tw-color-brand-300: #d68f8f; --color-utility-brand-300: #d68f8f;
+  --color-brand-400: #c25e5d; --tw-color-brand-400: #c25e5d; --color-utility-brand-400: #c25e5d;
+  --color-brand-500: #b83b3a; --tw-color-brand-500: #b83b3a; --color-utility-brand-500: #b83b3a;
+  --color-brand-600: #ae2524; --tw-color-brand-600: #ae2524; --color-utility-brand-600: #ae2524;
+  --color-brand-700: #8e1e1d; --tw-color-brand-700: #8e1e1d; --color-utility-brand-700: #8e1e1d;
+  --color-brand-800: #721918; --tw-color-brand-800: #721918; --color-utility-brand-800: #721918;
+  --color-brand-900: #5c1514; --tw-color-brand-900: #5c1514; --color-utility-brand-900: #5c1514;
+  --color-brand-950: #3a0c0b; --tw-color-brand-950: #3a0c0b; --color-utility-brand-950: #3a0c0b;
+  --color-blue-25: #f5f8ff; --color-utility-blue-25: #f5f8ff;
+  --color-blue-50: #eef3ff; --color-utility-blue-50: #eef3ff;
+  --color-blue-100: #dce7ff; --color-utility-blue-100: #dce7ff;
+  --color-blue-200: #bfd2ff; --color-utility-blue-200: #bfd2ff;
+  --color-blue-300: #93b2ff; --color-utility-blue-300: #93b2ff;
+  --color-blue-400: #5f8bff; --color-utility-blue-400: #5f8bff;
+  --color-blue-500: #3a70fd; --color-utility-blue-500: #3a70fd;
+  --color-blue-600: #155dfc; --color-utility-blue-600: #155dfc;
+  --color-blue-700: #1249c9; --color-utility-blue-700: #1249c9;
+  --color-blue-800: #123a9c; --color-utility-blue-800: #123a9c;
+  --color-blue-900: #12307a; --color-utility-blue-900: #12307a;
+  --color-blue-950: #0b1d4d; --color-utility-blue-950: #0b1d4d;
+  --color-bg-brand-primary: #f9eeee; --color-bg-brand-secondary: #f3dcdc; --color-bg-brand-section: #8e1e1d; --color-bg-brand-solid: #ae2524;
+  --color-border-brand: #ae2524; --color-fg-brand-primary: #ae2524; --color-fg-brand-secondary: #b83b3a; --color-icon-fg-brand: #ae2524;
+  --color-featured-icon-light-fg-brand: #ae2524; --color-text-brand-primary: #5c1514; --color-text-brand-secondary: #8e1e1d; --color-text-brand-tertiary: #ae2524;
+  --tw-color-bg-brand-primary: #f9eeee; --tw-color-bg-brand-secondary: #f3dcdc; --tw-color-bg-brand-section: #8e1e1d; --tw-color-bg-brand-solid: #ae2524;
+  --tw-color-border-brand: #ae2524; --tw-color-fg-brand-primary: #ae2524; --tw-color-fg-brand-secondary: #b83b3a; --tw-color-icon-fg-brand: #ae2524;
+  --tw-color-featured-icon-light-fg-brand: #ae2524; --tw-color-text-brand-primary: #5c1514; --tw-color-text-brand-secondary: #8e1e1d; --tw-color-text-brand-tertiary: #ae2524;
+}
+
+/* ================= Putaran 10: ikon SVG dengan warna biru tertulis di kode upstream; skala blue-light ================= */
+html:root, html body {
+  --color-blue-light-25: #f5f8ff; --color-utility-blue-light-25: #f5f8ff;
+  --color-blue-light-50: #eef3ff; --color-utility-blue-light-50: #eef3ff;
+  --color-blue-light-100: #dce7ff; --color-utility-blue-light-100: #dce7ff;
+  --color-blue-light-200: #bfd2ff; --color-utility-blue-light-200: #bfd2ff;
+  --color-blue-light-300: #93b2ff; --color-utility-blue-light-300: #93b2ff;
+  --color-blue-light-400: #5f8bff; --color-utility-blue-light-400: #5f8bff;
+  --color-blue-light-500: #3a70fd; --color-utility-blue-light-500: #3a70fd;
+  --color-blue-light-600: #155dfc; --color-utility-blue-light-600: #155dfc;
+  --color-blue-light-700: #1249c9; --color-utility-blue-light-700: #1249c9;
+  --color-blue-light-800: #123a9c; --color-utility-blue-light-800: #123a9c;
+  --color-blue-light-900: #12307a; --color-utility-blue-light-900: #12307a;
+  --color-blue-light-950: #0b1d4d; --color-utility-blue-light-950: #0b1d4d;
+}
+svg [fill="#1570EF" i], svg[fill="#1570EF" i] { fill: var(--uix-primary) !important; }
+svg [stroke="#1570EF" i], svg[stroke="#1570EF" i] { stroke: var(--uix-primary) !important; }
+svg [fill="#0968DA" i], svg[fill="#0968DA" i] { fill: var(--uix-primary) !important; }
+svg [stroke="#0968DA" i], svg[stroke="#0968DA" i] { stroke: var(--uix-primary) !important; }
+svg [fill="#1677FF" i], svg[fill="#1677FF" i] { fill: var(--uix-primary) !important; }
+svg [stroke="#1677FF" i], svg[stroke="#1677FF" i] { stroke: var(--uix-primary) !important; }
+svg [fill="#2E90FA" i], svg[fill="#2E90FA" i] { fill: var(--uix-primary) !important; }
+svg [stroke="#2E90FA" i], svg[stroke="#2E90FA" i] { stroke: var(--uix-primary) !important; }
+svg [fill="#175CD3" i], svg[fill="#175CD3" i] { fill: var(--uix-primary) !important; }
+svg [stroke="#175CD3" i], svg[stroke="#175CD3" i] { stroke: var(--uix-primary) !important; }
+svg [fill="#1890FF" i], svg[fill="#1890FF" i] { fill: var(--uix-primary) !important; }
+svg [stroke="#1890FF" i], svg[stroke="#1890FF" i] { stroke: var(--uix-primary) !important; }
+svg [fill="#0086C9" i], svg[fill="#0086C9" i] { fill: var(--uix-primary) !important; }
+svg [stroke="#0086C9" i], svg[stroke="#0086C9" i] { stroke: var(--uix-primary) !important; }
+svg [fill="#1D4ED8" i], svg[fill="#1D4ED8" i] { fill: var(--uix-primary) !important; }
+svg [stroke="#1D4ED8" i], svg[stroke="#1D4ED8" i] { stroke: var(--uix-primary) !important; }
+svg [stroke="#D1E9FF" i] { stroke: var(--uix-border) !important; }
+svg [fill="#D1E9FF" i] { fill: var(--uix-surface-muted) !important; }
+svg [stroke="#B2DDFF" i] { stroke: var(--uix-border) !important; }
+svg [fill="#B2DDFF" i] { fill: var(--uix-surface-muted) !important; }
+svg [stroke="#84CAFF" i] { stroke: var(--uix-border) !important; }
+svg [fill="#84CAFF" i] { fill: var(--uix-surface-muted) !important; }
+svg [stroke="#EFF8FF" i] { stroke: var(--uix-border) !important; }
+svg [fill="#EFF8FF" i] { fill: var(--uix-surface-muted) !important; }
+
+/* ================= Putaran 11: setiap variabel semantik upstream yang berlatar biru -> padanan UIx (dihasilkan dari CSS upstream) ================= */
+html:root, html body {
+  --color-bg-brand-primary: #f9eeee; --tw-color-bg-brand-primary: #f9eeee;
+  --color-bg-brand-primary_alt: #f9eeee; --tw-color-bg-brand-primary_alt: #f9eeee;
+  --color-bg-brand-secondary: #f3dcdc; --tw-color-bg-brand-secondary: #f3dcdc;
+  --color-bg-brand-section: #721918; --tw-color-bg-brand-section: #721918;
+  --color-bg-brand-section_subtle: #8e1e1d; --tw-color-bg-brand-section_subtle: #8e1e1d;
+  --color-bg-brand-solid: #ae2524; --tw-color-bg-brand-solid: #ae2524;
+  --color-bg-brand-solid_hover: #8e1e1d; --tw-color-bg-brand-solid_hover: #8e1e1d;
+  --color-border-brand: #b83b3a; --tw-color-border-brand: #b83b3a;
+  --color-border-brand_alt: #ae2524; --tw-color-border-brand_alt: #ae2524;
+  --color-button-primary-icon: #e7bcbc; --tw-color-button-primary-icon: #e7bcbc;
+  --color-button-primary-icon_hover: #e7bcbc; --tw-color-button-primary-icon_hover: #e7bcbc;
+  --color-featured-icon-light-fg-brand: #ae2524; --tw-color-featured-icon-light-fg-brand: #ae2524;
+  --color-fg-brand-primary: #ae2524; --tw-color-fg-brand-primary: #ae2524;
+  --color-fg-brand-secondary: #b83b3a; --tw-color-fg-brand-secondary: #b83b3a;
+  --color-fg-brand-secondary_hover: #ae2524; --tw-color-fg-brand-secondary_hover: #ae2524;
+  --color-focus-ring: #99a1af; --tw-color-focus-ring: #99a1af;
+  --color-footer-button-fg: #e7bcbc; --tw-color-footer-button-fg: #e7bcbc;
+  --color-icon-fg-brand: #ae2524; --tw-color-icon-fg-brand: #ae2524;
+  --color-icon-fg-brand_on-brand: #e7bcbc; --tw-color-icon-fg-brand_on-brand: #e7bcbc;
+  --color-slider-handle-border: #ae2524; --tw-color-slider-handle-border: #ae2524;
+  --color-text-brand-primary: #5c1514; --tw-color-text-brand-primary: #5c1514;
+  --color-text-brand-secondary: #8e1e1d; --tw-color-text-brand-secondary: #8e1e1d;
+  --color-text-brand-secondary_hover: #721918; --tw-color-text-brand-secondary_hover: #721918;
+  --color-text-brand-tertiary: #ae2524; --tw-color-text-brand-tertiary: #ae2524;
+  --color-text-brand-tertiary_alt: #ae2524; --tw-color-text-brand-tertiary_alt: #ae2524;
+  --color-text-quaternary_on-brand: #e7bcbc; --tw-color-text-quaternary_on-brand: #e7bcbc;
+  --color-text-secondary_on-brand: #e7bcbc; --tw-color-text-secondary_on-brand: #e7bcbc;
+  --color-text-tertiary_on-brand: #e7bcbc; --tw-color-text-tertiary_on-brand: #e7bcbc;
+  --color-utility-brand-100: #f3dcdc; --tw-color-utility-brand-100: #f3dcdc;
+  --color-utility-brand-100_alt: #f3dcdc; --tw-color-utility-brand-100_alt: #f3dcdc;
+  --color-utility-brand-200: #e7bcbc; --tw-color-utility-brand-200: #e7bcbc;
+  --color-utility-brand-200_alt: #e7bcbc; --tw-color-utility-brand-200_alt: #e7bcbc;
+  --color-utility-brand-300: #e7bcbc; --tw-color-utility-brand-300: #e7bcbc;
+  --color-utility-brand-300_alt: #e7bcbc; --tw-color-utility-brand-300_alt: #e7bcbc;
+  --color-utility-brand-400: #c25e5d; --tw-color-utility-brand-400: #c25e5d;
+  --color-utility-brand-400_alt: #c25e5d; --tw-color-utility-brand-400_alt: #c25e5d;
+  --color-utility-brand-50: #f9eeee; --tw-color-utility-brand-50: #f9eeee;
+  --color-utility-brand-500: #b83b3a; --tw-color-utility-brand-500: #b83b3a;
+  --color-utility-brand-500_alt: #b83b3a; --tw-color-utility-brand-500_alt: #b83b3a;
+  --color-utility-brand-50_alt: #f9eeee; --tw-color-utility-brand-50_alt: #f9eeee;
+  --color-utility-brand-600: #ae2524; --tw-color-utility-brand-600: #ae2524;
+  --color-utility-brand-600_alt: #ae2524; --tw-color-utility-brand-600_alt: #ae2524;
+  --color-utility-brand-700: #8e1e1d; --tw-color-utility-brand-700: #8e1e1d;
+  --color-utility-brand-700_alt: #8e1e1d; --tw-color-utility-brand-700_alt: #8e1e1d;
+  --color-utility-brand-800: #721918; --tw-color-utility-brand-800: #721918;
+  --color-utility-brand-800_alt: #721918; --tw-color-utility-brand-800_alt: #721918;
+  --color-utility-brand-900: #5c1514; --tw-color-utility-brand-900: #5c1514;
+  --color-utility-brand-900_alt: #5c1514; --tw-color-utility-brand-900_alt: #5c1514;
+  --color-button-primary-icon: #f3dcdc; --tw-color-button-primary-icon: #f3dcdc;
+}
+svg [fill="#0950C5" i] { fill: var(--uix-primary-strong) !important; }
