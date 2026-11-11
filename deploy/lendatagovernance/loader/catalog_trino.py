@@ -106,6 +106,7 @@ def main() -> None:
         if counts[t] is not None:
             om.call("PUT", f"/v1/tables/{tb['id']}/tableProfile", {
                 "tableProfile": {"timestamp": int(now.timestamp() * 1000), "rowCount": counts[t], "columnCount": len(cols[t])}})
+    layer_governance(om, sch["fullyQualifiedName"], names)
     # tabel yang sudah hilang dari Trino → soft delete
     existing = om.get(f"/v1/tables?databaseSchema={q(sch['fullyQualifiedName'])}&limit=1000").get("data", [])
     gone = [x for x in existing if x["name"] not in cols]
@@ -141,6 +142,44 @@ def sensitivity_tags(om, tb: dict, tcols: list) -> None:
             {"tagFQN": want[c["name"]], "source": "Classification", "labelType": "Manual", "state": "Confirmed"}]})
     if ops:
         om.patch(f"/v1/tables/{tb['id']}", ops)
+
+
+LAYER_CLASS = "LapisanData"
+LAYER_TAGS = [("Bronze", "Bronze (mentah)", "Salinan mentah berkas sumber. Hanya untuk pipeline dan Staf Data Governance."),
+              ("Silver", "Silver (bersih)", "Data terstandar antar-lapisan. Hanya untuk pipeline dan Staf Data Governance."),
+              ("Gold", "Gold (siap pakai)", "Data siap pakai untuk dashboard dan pengguna.")]
+HIDE_POLICY, HIDE_ROLE = "SembunyikanLapisanMentah", "LapisanMentahTertutup"
+STAFF_TEAM = "UV-1"   # Staf Data Governance — boleh melihat Bronze/Silver (selain admin & loader)
+
+
+def layer_governance(om, sch_fqn: str, names: list) -> None:
+    """Tag LapisanData.<Bronze|Silver|Gold> per tabel + kebijakan tolak-lihat Bronze/Silver bagi semua kecuali Staf DG.
+    Admin melewati kebijakan, jadi loader (token admin) tidak terpengaruh. Kebijakan dipasang di tim Organization."""
+    om.put("/v1/classifications", {"name": LAYER_CLASS, "displayName": "Lapisan Data", "mutuallyExclusive": True,
+                                   "description": "Lapisan medallion tabel: Bronze, Silver, atau Gold."})
+    for n, d, desc in LAYER_TAGS:
+        om.put("/v1/tags", {"classification": LAYER_CLASS, "name": n, "displayName": d, "description": desc})
+    for t in names:
+        want = f"{LAYER_CLASS}.{layer(t).capitalize()}"
+        if layer(t) == "lain":
+            continue
+        cur = om.get(f"/v1/tables/name/{q(sch_fqn + '.' + t)}?fields=tags")
+        if any(g["tagFQN"] == want for g in cur.get("tags", [])):
+            continue
+        keep = [{k: g[k] for k in ("tagFQN", "source", "labelType", "state") if k in g}
+                for g in cur.get("tags", []) if not g["tagFQN"].startswith(LAYER_CLASS + ".")]
+        om.patch(f"/v1/tables/{cur['id']}", [{"op": "add", "path": "/tags", "value": keep + [
+            {"tagFQN": want, "source": "Classification", "labelType": "Manual", "state": "Confirmed"}]}])
+    pol = om.put("/v1/policies", {
+        "name": HIDE_POLICY, "displayName": "Sembunyikan Bronze dan Silver",
+        "description": "Pengguna biasa hanya melihat tabel Gold. Bronze dan Silver terlihat oleh admin dan anggota "
+                       f"{STAFF_TEAM} (Staf Data Governance).",
+        "rules": [{"name": "TolakLihatLapisanMentah", "effect": "deny", "resources": ["table"], "operations": ["All"],
+                   "condition": f"matchAnyTag('{LAYER_CLASS}.Bronze','{LAYER_CLASS}.Silver') && !inAnyTeam('{STAFF_TEAM}')"}]})
+    org = om.get("/v1/teams/name/Organization?fields=policies")
+    if not any(x["id"] == pol["id"] for x in org.get("policies", [])):
+        om.patch(f"/v1/teams/{org['id']}", [{"op": "add", "path": "/policies/-",
+                                              "value": {"id": pol["id"], "type": "policy"}}])
 
 
 def defaultdict_list():

@@ -944,6 +944,11 @@ def rebuild(tq: Trino, schema: dict, batch_id: str, now: datetime) -> None:
     leno_sdm.build(tq, schema, batch_id, now)   # memakai bronze_leno_hr_unitkerja dari leno_erm
     astacita.build(tq, schema, batch_id, now)
     record_freshness(tq, schema, ["SDM", "CORP", "EGRC", "DG_WORKBOOK", "LENO_ERM", "LENO_SDM", "ASTACITA"], batch_id, now, "rebuild")
+    try:
+        import silver_comments
+        silver_comments.main()
+    except Exception as e:  # noqa: BLE001 — komentar tidak boleh menggagalkan ETL
+        log(f"  ! komentar tabel Silver gagal: {str(e)[:100]}")
 
 
 def record_freshness(tq: Trino, schema: dict, systems: list[str], batch_id: str, grab_at: datetime, trigger: str) -> None:

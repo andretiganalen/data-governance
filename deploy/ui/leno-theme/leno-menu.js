@@ -26,7 +26,7 @@
   /* ---------- 3. sesi: teruskan token Len Data Governance ke modul Visualisasi ---------- */
   function setToken(t) {
     if (t && document.cookie.indexOf(COOKIE + "=" + t) === -1)
-      document.cookie = COOKIE + "=" + t + "; path=/visualisasi; SameSite=Strict";
+      document.cookie = COOKIE + "=" + t + "; path=/; SameSite=Strict";
   }
   function clearToken() { document.cookie = COOKIE + "=; path=/visualisasi; Max-Age=0; SameSite=Strict"; }
   function bearer(v) { var m = /^Bearer\s+(\S+)$/i.exec(v || ""); return m && m[1].split(".").length === 3 ? m[1] : null; }
@@ -143,7 +143,25 @@
     li.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); show(TABS[0][0]); }, true);
     return li;
   }
+  function buildRef(menu) {   // menu "Referensi": halaman unduhan berkas referensi berversi
+    var li = build(menu);
+    if (!li) return null;
+    li.id = "len-menu-referensi";
+    li.setAttribute("data-testid", "app-bar-item-referensi");
+    li.setAttribute("title", "Dokumen referensi (CLP-001, CLP-002, ...)");
+    var label = li.querySelector(".ant-menu-title-content");
+    if (label) label.textContent = "Referensi";
+    var ic = li.querySelector(".ant-menu-item-icon");
+    if (ic) ic.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7"/></svg>';
+    var c = li.cloneNode(true);   // lepas handler Visualisasi bawaan build()
+    c.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); window.open("/referensi/", "_blank"); }, true);
+    return c;
+  }
   function ensure() {
+    var m0 = document.querySelector(".left-sidebar-menu.ant-menu, .left-sidebar-layout ul.ant-menu");
+    if (m0 && document.getElementById(ITEM_ID) && !document.getElementById("len-menu-referensi")) {
+      var r = buildRef(m0); if (r) m0.appendChild(r);
+    }
     if (document.getElementById(ITEM_ID)) return;
     var menu = document.querySelector(".left-sidebar-menu.ant-menu, .left-sidebar-layout ul.ant-menu");
     if (!menu) return;

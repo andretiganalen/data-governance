@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Referensi · Len Data Governance</title>
+<style>
+:root{--navy:#194A80;--ink:#3B3B3B;--text:#515151;--muted:#838282;--line:#E6E6E6;--bg:#F5F6F8;--card:#fff;--blue:#0562C9}
+@media (prefers-color-scheme:dark){:root{--ink:#E8EAED;--text:#C9CDD3;--muted:#9AA0A6;--line:#3A3F47;--bg:#16181C;--card:#1E2126;--blue:#6AB0FF}}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 Montserrat,"Segoe UI",Arial,sans-serif}
+header{background:var(--navy);color:#fff;padding:14px 16px}header h1{margin:0;font-size:18px}
+main{max-width:860px;margin:16px auto;padding:0 16px}
+.c{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--navy);border-radius:6px;padding:16px 20px}
+h2{color:var(--ink);font-size:16px;margin:0 0 4px}p{margin:0 0 12px;color:var(--muted);font-size:13px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);font-size:14px}
+th{color:var(--muted);font-weight:600;font-size:12px}a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+.v{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+</style></head><body>
+<header><h1>Len Data Governance · Referensi</h1></header>
+<main><div class="c"><h2>Dokumen referensi</h2>
+<p>Nama berkas: <b>YYMMDD CC Nama</b> (tanggal unggah dan nomor versi). Versi lama tetap tersedia. Dokumen internal Len, tidak terkontrol: versi terbaru ada di aplikasi LenO.</p>
+<table><thead><tr><th>Dokumen</th><th>Versi</th><th>Ukuran</th></tr></thead><tbody id="b"><tr><td colspan="3">Memuat…</td></tr></tbody></table>
+<p style="margin:12px 0 0"><a href="/">← Kembali ke aplikasi</a></p></div></main>
+<script>
+fetch("/referensi/berkas/",{credentials:"same-origin"}).then(function(r){
+  if(!r.ok)throw 0;return r.json()}).then(function(l){
+  var rows=l.filter(function(f){return f.type==="file"}).map(function(f){
+    var m=/^(\d{6}) (\d{2}) (.+)\.([^.]+)$/.exec(f.name);return{f:f,k:m?m[1]+m[2]:"",t:m?m[3]:f.name,v:m?m[1]+" "+m[2]:"-"}});
+  rows.sort(function(a,b){return a.t<b.t?-1:a.t>b.t?1:b.k.localeCompare(a.k)});
+  var b=document.getElementById("b");b.textContent="";
+  rows.forEach(function(r){var tr=b.insertRow(),a=document.createElement("a");
+    a.href="/referensi/berkas/"+encodeURIComponent(r.f.name);a.textContent=r.t;a.download=r.f.name;
+    tr.insertCell().appendChild(a);var c=tr.insertCell();c.className="v";c.textContent=r.v;
+    tr.insertCell().textContent=Math.max(1,Math.round(r.f.size/1024))+" KB"});
+  if(!rows.length)b.innerHTML='<tr><td colspan="3">Belum ada berkas.</td></tr>';
+}).catch(function(){document.getElementById("b").innerHTML='<tr><td colspan="3">Silakan masuk ke aplikasi dulu, lalu buka menu Referensi.</td></tr>'});
+</script></body></html>

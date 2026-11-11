@@ -15,3 +15,6 @@ deploy/tokens/
 
 # live data & secrets (postgres, opensearch, superset, backup, medallion, secrets)
 /data/
+
+# dokumen internal Len (CLP-xxx, "tidak terkontrol") — jangan masuk git publik; salinan berversi ada di data/referensi
+/docs/template/
