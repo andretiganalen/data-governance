@@ -209,6 +209,12 @@ code{font-size:8pt;background:#eef1f4;padding:0 1.2mm}
       Sumber dikenali: <code>DG_WORKBOOK</code> dan <code>EGRC</code>. Berkas lain hanya masuk Bronze (<code>FILE</code>).</p></div>
   </div>
   <h3>Isi lakehouse saat rilis</h3>
+  <div class="box warn"><b>Lapisan data = Certification (satu klasifikasi).</b> Tiap tabel membawa <code>Certification.Bronze|Silver|Gold</code> menurut lapisannya,
+    dipasang otomatis oleh <code>loader/catalog_trino.py</code> dari nama tabel; tabel Trino baru menyesuaikan diri ke Certification, tanpa klasifikasi buatan sendiri.
+    Klasifikasi lama <code>LapisanData</code> sudah dihapus. Masa berlaku global <code>assetCertificationSettings.validityPeriod = P3650D</code> (bawaan P30D akan
+    membuat lapisan kedaluwarsa) dan sinkron menerapkan ulang bila sisanya &lt; 180 hari. Kebijakan <code>SembunyikanLapisanMentah</code> (tim Organization) menolak lihat Bronze/Silver bagi
+    semua kecuali admin dan tim UV-1 dengan <code>matchAnyCertification</code>; pencarian juga berbasis hak akses (<code>enableAccessControl = true</code>), jadi Bronze/Silver tidak muncul di Explore pengguna biasa.
+    Mengubah Certification tabel secara manual akan dikembalikan sinkron berikutnya.</div>
   <table class="t" id="tbl-lapisan"><tr><th style="width:40mm">Lapisan</th><th class="n" style="width:16mm">Objek</th><th>Keterangan</th></tr></table>
   <table class="t" id="tbl-sumber"><tr><th style="width:40mm">Sumber terakhir</th><th>Berkas</th><th style="width:30mm">Dimuat (UTC)</th></tr></table>
   <h3>Aturan Silver (workbook tata kelola)</h3>
@@ -304,7 +310,7 @@ $PY scripts/superset-setup.py [--force]                      <span class="cm"># 
 <span class="cm"># Tempat Sampah: hapus = soft delete; hapus permanen otomatis setelah 20 hari (timer harian 02:30)</span>
 $PY medallion/trash_purge.py --dry                           <span class="cm"># daftar yang akan dihapus permanen</span>
 sudo cp host/systemd/lendatagovernance-trash.{service,timer} /etc/systemd/system/ &amp;&amp; sudo systemctl daemon-reload \
-  &amp;&amp; sudo systemctl enable --now lendatagovernance-trash.timer   <span class="cm"># dipasang sekali</span>
+  &amp;&amp; sudo systemctl enable --now lendatagovernance-trash.timer   <span class="cm"># sudah terpasang (harian 02:30)</span>
 <span class="cm"># Glosarium "Organisasi dan Fungsi" + PDF Glosarium Fungsi Generik (ikut timer glosarium 10 menit)</span>
 $PY medallion/glossary_app.py ; $PY medallion/fungsi_pdf.py [--force]   <span class="cm"># --force = revisi baru walau tanpa perubahan</span>
 <span class="cm"># fase 2: IDS (butuh client IDS + DNS dev-data.len.co.id)</span>
@@ -317,6 +323,7 @@ scripts/enable-ids.sh</pre>
     <tr><td>Lakehouse: galat commit/metadata Lakekeeper</td><td>Sementara: loader mencoba ulang hingga 8 kali. Berkas berstatus PARTIAL dilengkapi dengan <code>lakehouse.py retry</code>. Bandingkan dengan <code>lakehouse.py status</code>.</td></tr>
     <tr><td>Visualisasi meminta login atau kosong</td><td>Sesi aplikasi berakhir atau cookie <code>dg_token</code> belum terpasang: muat ulang aplikasi lalu buka menu Visualisasi lagi. Cek log <code>superset</code>.</td></tr>
     <tr><td>SQL Lab: pernyataan tulis ditolak</td><td>Sesuai aturan: tulis hanya ke <code>workspace.&lt;tabel&gt;</code> dengan nama schema tertulis lengkap.</td></tr>
+    <tr><td>Pengguna biasa tidak melihat tabel Bronze/Silver di Explore</td><td>Sesuai aturan: kebijakan <code>SembunyikanLapisanMentah</code> + pencarian berbasis hak akses. Staf DG (tim UV-1) dan admin melihatnya. Bila seorang staf tidak melihat, periksa keanggotaan tim UV-1.</td></tr>
     <tr><td>Hapus tidak benar-benar menghapus / tidak ada pilihan hapus permanen</td><td>Sesuai aturan: setiap hapus dari klien jaringan menjadi soft delete (Tempat Sampah 20 hari, bisa dipulihkan di menu <i>Tempat Sampah</i>). Gateway mengubah <code>hardDelete=true</code> menjadi <code>false</code> (<code>$ldg_api_uri</code> di <code>nginx.conf</code>); hanya server sendiri yang boleh hapus permanen, lewat <code>trash_purge.py</code>.</td></tr>
     <tr><td>Perubahan <code>nginx.conf</code> tidak berlaku</td><td>Bind-mount berkas menahan inode lama bila berkas diganti (<code>sed -i</code>). Ubah berkas di tempat, atau <code>up -d --force-recreate gateway</code>; periksa dengan <code>exec gateway grep &lt;kata&gt; /etc/nginx/conf.d/default.conf</code>.</td></tr>
     <tr><td>Tema atau nama Len hilang</td><td>Mount <code>./ui/leno-theme</code> atau <code>sub_filter</code> gateway berubah. Cek <code>nginx -t</code>.</td></tr>
