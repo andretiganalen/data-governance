@@ -145,38 +145,33 @@ def sensitivity_tags(om, tb: dict, tcols: list) -> None:
         om.patch(f"/v1/tables/{tb['id']}", ops)
 
 
-LAYER_CLASS = "LapisanData"
-LAYER_TAGS = [("Bronze", "Bronze (mentah)", "Salinan mentah berkas sumber. Hanya untuk pipeline dan Staf Data Governance."),
-              ("Silver", "Silver (bersih)", "Data terstandar antar-lapisan. Hanya untuk pipeline dan Staf Data Governance."),
-              ("Gold", "Gold (siap pakai)", "Data siap pakai untuk dashboard dan pengguna.")]
+LAYER_CLASS = "Certification"   # klasifikasi bawaan aplikasi; lapisan data = Certification.Bronze|Silver|Gold (tanpa klasifikasi sendiri)
 HIDE_POLICY, HIDE_ROLE = "SembunyikanLapisanMentah", "LapisanMentahTertutup"
 STAFF_TEAM = "UV-1"   # Staf Data Governance — boleh melihat Bronze/Silver (selain admin & loader)
+CERT_MIN_DAYS = 180   # sertifikasi yang sisa masa berlakunya lebih pendek dari ini diterapkan ulang (masa berlaku global: P3650D)
 
 
 def layer_governance(om, sch_fqn: str, names: list) -> None:
-    """Tag LapisanData.<Bronze|Silver|Gold> per tabel + kebijakan tolak-lihat Bronze/Silver bagi semua kecuali Staf DG.
+    """Sertifikasi tiap tabel menurut lapisannya (Certification.Bronze|Silver|Gold) + kebijakan tolak-lihat Bronze/Silver bagi
+    semua kecuali Staf DG. Tabel Trino baru menyesuaikan diri ke Certification, bukan sebaliknya.
     Admin melewati kebijakan, jadi loader (token admin) tidak terpengaruh. Kebijakan dipasang di tim Organization."""
-    om.put("/v1/classifications", {"name": LAYER_CLASS, "displayName": "Lapisan Data", "mutuallyExclusive": True,
-                                   "description": "Lapisan medallion tabel: Bronze, Silver, atau Gold."})
-    for n, d, desc in LAYER_TAGS:
-        om.put("/v1/tags", {"classification": LAYER_CLASS, "name": n, "displayName": d, "description": desc})
+    now = int(time.time() * 1000)
     for t in names:
-        want = f"{LAYER_CLASS}.{layer(t).capitalize()}"
         if layer(t) == "lain":
             continue
-        cur = om.get(f"/v1/tables/name/{q(sch_fqn + '.' + t)}?fields=tags")
-        if any(g["tagFQN"] == want for g in cur.get("tags", [])):
+        want = f"{LAYER_CLASS}.{layer(t).capitalize()}"
+        cur = om.get(f"/v1/tables/name/{q(sch_fqn + '.' + t)}?fields=certification")
+        c = cur.get("certification") or {}
+        if (c.get("tagLabel") or {}).get("tagFQN") == want and (c.get("expiryDate") or 0) - now > CERT_MIN_DAYS * 86400000:
             continue
-        keep = [{k: g[k] for k in ("tagFQN", "source", "labelType", "state") if k in g}
-                for g in cur.get("tags", []) if not g["tagFQN"].startswith(LAYER_CLASS + ".")]
-        om.patch(f"/v1/tables/{cur['id']}", [{"op": "add", "path": "/tags", "value": keep + [
-            {"tagFQN": want, "source": "Classification", "labelType": "Manual", "state": "Confirmed"}]}])
+        om.patch(f"/v1/tables/{cur['id']}", [{"op": "add", "path": "/certification", "value": {
+            "tagLabel": {"tagFQN": want, "source": "Classification", "labelType": "Manual", "state": "Confirmed"}}}])
     pol = om.put("/v1/policies", {
         "name": HIDE_POLICY, "displayName": "Sembunyikan Bronze dan Silver",
-        "description": "Pengguna biasa hanya melihat tabel Gold. Bronze dan Silver terlihat oleh admin dan anggota "
+        "description": "Pengguna biasa hanya melihat tabel Gold. Bronze dan Silver (Certification) terlihat oleh admin dan anggota "
                        f"{STAFF_TEAM} (Staf Data Governance).",
         "rules": [{"name": "TolakLihatLapisanMentah", "effect": "deny", "resources": ["table"], "operations": ["All"],
-                   "condition": f"matchAnyTag('{LAYER_CLASS}.Bronze','{LAYER_CLASS}.Silver') && !inAnyTeam('{STAFF_TEAM}')"}]})
+                   "condition": f"matchAnyCertification('{LAYER_CLASS}.Bronze','{LAYER_CLASS}.Silver') && !inAnyTeam('{STAFF_TEAM}')"}]})
     org = om.get("/v1/teams/name/Organization?fields=policies")
     if not any(x["id"] == pol["id"] for x in org.get("policies", [])):
         om.patch(f"/v1/teams/{org['id']}", [{"op": "add", "path": "/policies/-",
