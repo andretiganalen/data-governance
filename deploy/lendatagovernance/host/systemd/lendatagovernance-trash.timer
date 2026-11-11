@@ -1,0 +1,7 @@
+[Unit]
+Description=Len Data Governance: bersihkan Tempat Sampah (> 20 hari) tiap hari 02:30
+[Timer]
+OnCalendar=*-*-* 02:30:00
+Persistent=true
+[Install]
+WantedBy=timers.target
