@@ -132,6 +132,12 @@ def main() -> None:
         L.log(f"glossary_org: {glossary_org.seed(Catalog(dry=False), tq)}; kolom tertaut baru: {glossary_org.tag_columns(Catalog(dry=False))}")
     except (Exception, SystemExit) as e:  # noqa: BLE001
         L.log(f"glossary_org dilewati: {str(e)[:200]}")
+    try:  # PDF Glosarium Fungsi Generik: revisi baru tiap ada perubahan istilah Fungsi (ke data/referensi)
+        import fungsi_pdf
+        from catalog_loader import Catalog
+        L.log(f"fungsi_pdf: {fungsi_pdf.run(Catalog(dry=False)) or 'tidak ada perubahan'}")
+    except (Exception, SystemExit) as e:  # noqa: BLE001
+        L.log(f"fungsi_pdf dilewati: {str(e)[:200]}")
     n = build(tq, L.load_schema(), uuid.uuid4().hex[:12])
     L.log(f"gold_meta_glossary_app: {n} istilah dicatat dari aplikasi")
     L.log(f"gold_meta_fungsi: {build_fungsi(tq, L.load_schema(), 'fungsi')} Fungsi dicatat dari aplikasi")
