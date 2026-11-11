@@ -123,6 +123,10 @@ code{font-size:8pt;background:#eef1f4;padding:0 1.2mm}
 </section>
 
 <section class="pb">
+  <div class="box warn"><b>Rencana tingkat akses (disetujui 2026-11-11, belum diterapkan).</b> Lima tingkat dari tinggi ke rendah:
+    Super Admin (<code>admin</code>, <code>andre.tigana</code>), Admin Data Governance (kelola Fungsi dan Glosarium), Edit (Owner/Steward untuk aset Fungsinya),
+    Unduh (lihat dan ekspor data, dibatasi Tier), dan Lihat saja. Akun dipasangkan dengan unit di Struktur Organisasi dan Fungsi Generiknya.
+    Menunggu pemetaan akun ke unit dan aturan Tier yang boleh diunduh. Sampai saat itu 8 akun masih Admin penuh dan semua anggota Organization berperan DataConsumer.</div>
   <h2><span>§3</span>Tindak lanjut untuk kebutuhan Staf DG</h2>
   <p>Kolom "Belum bisa" di Manual Staf diturunkan dari tabel ini. Saat sebuah butir selesai, ubah juga statusnya di Manual Staf (<code>staf.html</code>), lalu buat rilis baru.</p>
   <table class="t">
@@ -297,6 +301,12 @@ $PY loader/catalog_trino.py                                  <span class="cm"># 
 <span class="cm"># Visualisasi (Superset 6)</span>
 sudo docker compose -p lendatagovernance build superset &amp;&amp; sudo docker compose -p lendatagovernance up -d superset
 $PY scripts/superset-setup.py [--force]                      <span class="cm"># koneksi Trino + dataset + dashboard awal</span>
+<span class="cm"># Tempat Sampah: hapus = soft delete; hapus permanen otomatis setelah 20 hari (timer harian 02:30)</span>
+$PY medallion/trash_purge.py --dry                           <span class="cm"># daftar yang akan dihapus permanen</span>
+sudo cp host/systemd/lendatagovernance-trash.{service,timer} /etc/systemd/system/ &amp;&amp; sudo systemctl daemon-reload \
+  &amp;&amp; sudo systemctl enable --now lendatagovernance-trash.timer   <span class="cm"># dipasang sekali</span>
+<span class="cm"># Glosarium "Organisasi dan Fungsi" + PDF Glosarium Fungsi Generik (ikut timer glosarium 10 menit)</span>
+$PY medallion/glossary_app.py ; $PY medallion/fungsi_pdf.py [--force]   <span class="cm"># --force = revisi baru walau tanpa perubahan</span>
 <span class="cm"># fase 2: IDS (butuh client IDS + DNS dev-data.len.co.id)</span>
 scripts/enable-ids.sh</pre>
   <h3>Gangguan umum</h3>
@@ -307,6 +317,8 @@ scripts/enable-ids.sh</pre>
     <tr><td>Lakehouse: galat commit/metadata Lakekeeper</td><td>Sementara: loader mencoba ulang hingga 8 kali. Berkas berstatus PARTIAL dilengkapi dengan <code>lakehouse.py retry</code>. Bandingkan dengan <code>lakehouse.py status</code>.</td></tr>
     <tr><td>Visualisasi meminta login atau kosong</td><td>Sesi aplikasi berakhir atau cookie <code>dg_token</code> belum terpasang: muat ulang aplikasi lalu buka menu Visualisasi lagi. Cek log <code>superset</code>.</td></tr>
     <tr><td>SQL Lab: pernyataan tulis ditolak</td><td>Sesuai aturan: tulis hanya ke <code>workspace.&lt;tabel&gt;</code> dengan nama schema tertulis lengkap.</td></tr>
+    <tr><td>Hapus tidak benar-benar menghapus / tidak ada pilihan hapus permanen</td><td>Sesuai aturan: setiap hapus dari klien jaringan menjadi soft delete (Tempat Sampah 20 hari, bisa dipulihkan di menu <i>Tempat Sampah</i>). Gateway mengubah <code>hardDelete=true</code> menjadi <code>false</code> (<code>$ldg_api_uri</code> di <code>nginx.conf</code>); hanya server sendiri yang boleh hapus permanen, lewat <code>trash_purge.py</code>.</td></tr>
+    <tr><td>Perubahan <code>nginx.conf</code> tidak berlaku</td><td>Bind-mount berkas menahan inode lama bila berkas diganti (<code>sed -i</code>). Ubah berkas di tempat, atau <code>up -d --force-recreate gateway</code>; periksa dengan <code>exec gateway grep &lt;kata&gt; /etc/nginx/conf.d/default.conf</code>.</td></tr>
     <tr><td>Tema atau nama Len hilang</td><td>Mount <code>./ui/leno-theme</code> atau <code>sub_filter</code> gateway berubah. Cek <code>nginx -t</code>.</td></tr>
   </table>
 </section>

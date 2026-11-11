@@ -5,6 +5,10 @@ Rilis baru: `/home/ubuntu/data-governance/data/medallion/.venv/bin/python docs/m
 
 | Rilis | Dokumen | Ukuran |
 | :-- | :-- | --: |
+| 261111 05 | [Manual Staf Data Governance dan Pimpinan](<261111 05 Manual Staf Data Governance dan Pimpinan.pdf>) | 333 KB |
+| 261111 05 | [Manual Pengguna](<261111 05 Manual Pengguna.pdf>) | 305 KB |
+| 261111 05 | [Manual Pengembang](<261111 05 Manual Pengembang.pdf>) | 521 KB |
+| 261110 04 | [SRS Len Data Governance](<261110 04 SRS Len Data Governance.pdf>) | 1285 KB |
 | 261110 02 | [Manual Staf Data Governance dan Pimpinan](<261110 02 Manual Staf Data Governance dan Pimpinan.pdf>) | 335 KB |
 | 261110 02 | [Manual Pengguna](<261110 02 Manual Pengguna.pdf>) | 318 KB |
 | 261110 02 | [Manual Pengembang](<261110 02 Manual Pengembang.pdf>) | 520 KB |
