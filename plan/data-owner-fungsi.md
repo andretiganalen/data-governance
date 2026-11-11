@@ -1,6 +1,6 @@
 # Data Owner berdasarkan Fungsi (usulan pemetaan)
 
-Status: **usulan, belum diterapkan** di katalog. Sumber: `Master_Organization` (kolom FUNGSI) pada Workbook Governance 261016 Rev.0.1, dibandingkan dengan CLP-001 Nomenklatur Fungsi Generik rev.01 (35 Fungsi).
+Status: **diterapkan 2026-11-11 (Opsi A)** lewat `loader/workbook.py` (`FUNGSI_CLP001`, `FUNGSI_ALIAS`) dan `scripts/reload-workbook.sh`. Hasil: 28 tim Fungsi dari workbook + 8 tim `<Fungsi> (tidak ada)` (Fungsi CLP-001 tanpa unit); `Teknologi Informasi` dibakukan menjadi `Teknologi`; Fungsi lintas Divisi (Litbang) di bawah Organization. Sumber: `Master_Organization` (kolom FUNGSI) pada Workbook Governance 261016 Rev.0.1, dibandingkan dengan CLP-001 Nomenklatur Fungsi Generik rev.01 (35 Fungsi).
 
 ## Aturan
 

@@ -46,6 +46,14 @@ TABLE_MAP = {
 }
 GLOSSARY = "ERM"
 CLASSIFICATION = "Sensitivitas"
+FUNGSI_CLP001 = ["Pemasaran", "Pengembangan Bisnis", "Litbang", "Rekayasa Sistem", "Perencanaan Proyek", "Pengawasan Pra Proyek",
+                 "Manajemen Proyek", "Pengawasan Proyek", "Purna Jual", "Pengadaan", "Pengelola Gudang", "Tata Kelola",
+                 "Manajemen Risiko", "Keuangan", "Akuntansi", "Pengendali Anggaran", "SDM", "Urusan Umum", "Portofolio",
+                 "Teknologi", "Perencanaan Perusahaan", "Sekretaris Perusahaan", "Legal", "Komunikasi Korporasi", "TJSL",
+                 "Audit Internal", "K3L", "Pengamanan", "Penjaminan Mutu", "Manajemen Proses Bisnis",
+                 "Pengelola Sistem Manajemen", "Produksi", "Rekayasa Pra Produksi", "Operasi Produksi", "Rendal Produksi"]   # CLP-001 rev.01
+FUNGSI_ALIAS = {"Teknologi Informasi": "Teknologi"}   # nama workbook → nama baku CLP-001
+NO_UNIT = " (tidak ada)"                              # Fungsi CLP-001 yang belum punya unit di organisasi
 ROOT_TEAM = "Organization"          # the catalog's root team == "Seluruh Unit Kerja"
 ROOT_DISPLAY = "Seluruh Unit Kerja"
 
@@ -197,7 +205,30 @@ def build(wb: dict[str, list[dict[str, str]]]) -> Plan:
                         "teamType": "Group", "parent": v,
                         "description": f"Unit Kerja {o['UNIT_KERJA']} · {o['FUNGSI']} · "
                                        f"Divisi {o['DIVISI']} · Direktorat {o['DIREKTORAT']}."})
+    # --- Data Owner = Fungsi (CLP-001, tanpa awalan "Fungsi"); satu tim Group per Fungsi di bawah Divisinya (Eselon 1).
+    # Fungsi lintas Divisi → di bawah Organization. Fungsi CLP-001 tanpa unit → "<Nama> (tidak ada)" di bawah Organization.
+    fn_units = defaultdict(list)
+    for o in org:
+        fn = o["FUNGSI"].removeprefix("Fungsi ").strip()
+        fn_units[FUNGSI_ALIAS.get(fn, fn)].append(o)
+    unit_fn = {}
+    for fn, us in sorted(fn_units.items()):
+        divs = sorted({u["DIVISI"] for u in us})
+        tname = "FN_" + slug(fn)
+        p.teams.append({"name": tname, "displayName": fn, "teamType": "Group",
+                        "parent": "DIV_" + slug(divs[0]) if len(divs) == 1 else ROOT_TEAM,
+                        "description": f"Data Owner Fungsi {fn}. Eselon 1: " + "; ".join(f"Divisi {d}" for d in divs) +
+                                       ". Eselon 2: " + "; ".join(f"{u['ORG_ID']} {u['UNIT_KERJA']}" for u in us) + "."})
+        for u in us:
+            unit_fn[u["ORG_ID"]] = tname
+    for fn in FUNGSI_CLP001:
+        if fn not in fn_units:
+            p.teams.append({"name": "FN_" + slug(fn) + "_tidak_ada", "displayName": fn + NO_UNIT, "teamType": "Group",
+                            "parent": ROOT_TEAM,
+                            "description": f"Fungsi {fn} ada di CLP-001 tetapi belum punya unit di organisasi saat ini."})
     p.stats["teams"] = len(p.teams)
+    def own(units):
+        return {unit_fn.get(u, u) for u in units}
 
     # --- Indexes
     tables = {t["TABLE_ID"]: t for t in wb["Database_Object"]}
@@ -239,10 +270,11 @@ def build(wb: dict[str, list[dict[str, str]]]) -> Plan:
             continue
         a = assign.get(fid, {})
         stewards = sorted(a.get("Data Steward", ()))
-        owners = sorted(a.get("Data Owner", ()))
+        owners_unit = sorted(a.get("Data Owner", ()))
+        owners = sorted(own(owners_unit))
         # The catalog allows ONE reviewer team per term: prefer the business steward (also Data Owner).
         # All stewards are kept in the custom property "Data Steward".
-        reviewer = next((s for s in stewards if s in owners), stewards[0] if stewards else None)
+        reviewer = next((s for s in stewards if s in owners_unit), stewards[0] if stewards else None)
         p.terms.append({
             "name": fid,
             "displayName": g["BUSINESS_TERM"],
@@ -301,8 +333,9 @@ def build(wb: dict[str, list[dict[str, str]]]) -> Plan:
             a = assign.get(fid, {})
             for role in ("Data Owner", "Data Steward", "Data User"):
                 if a.get(role):
-                    desc.append(f"**{role}:** {', '.join(sorted(a[role]))}")
-            owners |= a.get("Data Owner", set())
+                    shown = own(a[role]) if role == "Data Owner" else a[role]
+                    desc.append(f"**{role}:** {', '.join(sorted(shown))}")
+            owners |= own(a.get("Data Owner", set()))
             cols.append({"name": f["COLUMN_NAME"], "dataType": DATA_TYPE.get(f["DATA_TYPE"], "UNKNOWN"),
                          "dataTypeDisplay": f["DATA_TYPE"], "description": "\n\n".join(desc), "tags": tags,
                          "_field": fid})
