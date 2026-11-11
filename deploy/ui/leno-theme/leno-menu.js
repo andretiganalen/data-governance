@@ -1,6 +1,6 @@
 /* Len Data Governance — aplikasi utama: modul Visualisasi + nama merek di seluruh antarmuka.
  * Disisipkan gateway (nginx sub_filter) bersama leno.css.
- *  1. Menu "Visualisasi" di sidebar kiri (disalin dari item bawaan agar gaya sama).
+ *  1. Menu "Explore" jadi dropdown: Explore + Visualisasi (item bawaan Explore diganti grup; menu Referensi dihapus, dokumennya ada di Context Center > Documents > Reference).
  *  2. Klik → dashboard Gold tampil DI DALAM kerangka Len Data Governance (header & sidebar tetap), dengan tab.
  *     Isi dari Superset 6 di /visualisasi/ (origin sama, tanpa menu Superset — lihat leno-superset.css).
  *  3. Tanpa kredensial baru: token sesi Len Data Governance (Bearer yang dipakai UI) diteruskan lewat cookie
@@ -120,58 +120,81 @@
     if (/^#visualisasi/.test(location.hash)) history.replaceState(history.state, "", location.pathname + location.search);
   }
 
-  /* ---------- 1. item menu di sidebar ---------- */
-  function build(menu) {
-    var tpl = menu.querySelector("li.ant-menu-item");
-    if (!tpl) return null;
-    var li = tpl.cloneNode(true);               // salinan tanpa handler React
-    li.id = ITEM_ID;
-    li.classList.remove("ant-menu-item-selected", "ant-menu-item-active");
-    li.removeAttribute("data-menu-id");
-    li.setAttribute("data-testid", "app-bar-item-visualisasi");
-    li.setAttribute("title", "Visualisasi data Gold (Trino lakehouse)");
-    var icon = li.querySelector(".ant-menu-item-icon, .anticon, svg");
-    if (icon) {
-      var span = document.createElement("span");
-      span.className = "ant-menu-item-icon anticon";
-      span.setAttribute("role", "img");
-      span.innerHTML = ICON;
-      icon.replaceWith(span);
-    }
-    var label = li.querySelector(".ant-menu-title-content");
-    if (label) label.textContent = "Visualisasi";
-    li.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); show(TABS[0][0]); }, true);
+  /* ---------- 1. menu Explore = dropdown (Explore, Visualisasi) ---------- */
+  var GROUP_ID = "len-menu-explore", EXP_ID = "len-menu-explore-link";
+  function exploreLi(menu) { return menu.querySelector('li[data-testid="side-bar-app-bar-item-explore"]'); }
+  function child(icon, text, id) {
+    var li = document.createElement("li");
+    li.className = "ant-menu-item"; li.setAttribute("role", "menuitem"); li.style.paddingLeft = "32px";
+    if (id) li.id = id;
+    li.innerHTML = '<span role="img" class="anticon ant-menu-item-icon"></span><span class="ant-menu-title-content">' +
+      '<span class="left-panel-item left-panel-label no-underline" style="cursor:pointer"></span></span>';
+    li.querySelector(".anticon").innerHTML = icon;
+    li.querySelector(".left-panel-label").textContent = text;
     return li;
   }
-  function buildRef(menu) {   // menu "Referensi": halaman unduhan berkas referensi berversi
-    var li = build(menu);
-    if (!li) return null;
-    li.id = "len-menu-referensi";
-    li.setAttribute("data-testid", "app-bar-item-referensi");
-    li.setAttribute("title", "Dokumen referensi (CLP-001, CLP-002, ...)");
-    var label = li.querySelector(".ant-menu-title-content");
-    if (label) label.textContent = "Referensi";
-    var ic = li.querySelector(".ant-menu-item-icon");
-    if (ic) ic.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7"/></svg>';
-    var c = li.cloneNode(true);   // lepas handler Visualisasi bawaan build()
-    c.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); window.location.assign("/referensi/"); }, true);
-    return c;
+  function build(menu, src) {
+    var srcIcon = src.querySelector(".anticon");
+    var iconHtml = srcIcon ? srcIcon.innerHTML : "";
+    var g = document.createElement("li");
+    g.id = GROUP_ID; g.className = "ant-menu-submenu ant-menu-submenu-inline"; g.setAttribute("role", "none");
+    g.setAttribute("data-testid", "side-bar-explore-group");
+    g.innerHTML = '<div role="menuitem" class="ant-menu-submenu-title" tabindex="-1" aria-expanded="false" aria-haspopup="true" style="padding-left:16px">' +
+      '<span role="img" class="anticon ant-menu-item-icon"></span><span class="ant-menu-title-content">' +
+      '<span class="left-panel-item left-panel-label p-0">Explore</span></span><i class="ant-menu-submenu-arrow"></i></div>' +
+      '<ul class="ant-menu ant-menu-sub ant-menu-inline" role="menu" style="display:none"></ul>';
+    g.querySelector(".anticon").innerHTML = iconHtml;
+    var ul = g.querySelector("ul");
+    var e = child(iconHtml, "Explore", EXP_ID), v = child(ICON, "Visualisasi", ITEM_ID);
+    v.setAttribute("data-testid", "app-bar-item-visualisasi");
+    v.setAttribute("title", "Visualisasi data Gold (Trino lakehouse)");
+    ul.appendChild(e); ul.appendChild(v);
+    g.querySelector(".ant-menu-submenu-title").addEventListener("click", function (ev) { ev.preventDefault(); ev.stopPropagation(); setOpen(g, !g.classList.contains("ant-menu-submenu-open")); });
+    e.addEventListener("click", function (ev) {
+      ev.preventDefault(); ev.stopPropagation();
+      var a = exploreLi(menu); a = a && a.querySelector("a");
+      hide(); if (a) a.click(); else window.location.assign("/explore");
+    });
+    v.addEventListener("click", function (ev) { ev.preventDefault(); ev.stopPropagation(); show(TABS[0][0]); });
+    return g;
+  }
+  function setOpen(g, open) {
+    g.classList.toggle("ant-menu-submenu-open", open);
+    var t = g.querySelector(".ant-menu-submenu-title"); if (t) t.setAttribute("aria-expanded", open ? "true" : "false");
+    var ul = g.querySelector("ul"); if (ul) ul.style.display = open ? "" : "none";
+  }
+  function sync(menu) {   // sorot item aktif; buka grup bila Explore/Visualisasi sedang dipakai
+    var g = document.getElementById(GROUP_ID); if (!g) return;
+    var viz = !!document.getElementById(PANEL_ID) && document.documentElement.classList.contains("dg-vis-open");
+    var exp = !viz && /^\/explore(\/|$)/.test(location.pathname);
+    var e = document.getElementById(EXP_ID), v = document.getElementById(ITEM_ID);
+    if (e) e.classList.toggle("ant-menu-item-selected", exp);
+    if (v) v.classList.toggle("ant-menu-item-selected", viz);
+    g.classList.toggle("ant-menu-submenu-selected", exp || viz);
+    if ((exp || viz) && g.getAttribute("data-auto") !== (viz ? "v" : "e")) { g.setAttribute("data-auto", viz ? "v" : "e"); setOpen(g, true); }
+    if (!exp && !viz) g.removeAttribute("data-auto");
   }
   function ensure() {
-    var m0 = document.querySelector(".left-sidebar-menu.ant-menu, .left-sidebar-layout ul.ant-menu");
-    if (m0 && document.getElementById(ITEM_ID) && !document.getElementById("len-menu-referensi")) {
-      var r = buildRef(m0); if (r) m0.appendChild(r);
-    }
-    if (document.getElementById(ITEM_ID)) return;
     var menu = document.querySelector(".left-sidebar-menu.ant-menu, .left-sidebar-layout ul.ant-menu");
     if (!menu) return;
-    var li = build(menu);
-    if (!li) return;
-    menu.appendChild(li);
-    // menu lain → tutup Visualisasi
-    menu.addEventListener("click", function (e) { if (!e.target.closest("#" + ITEM_ID)) hide(); });
-    var m = /^#visualisasi(?:=([\w-]+))?/.exec(location.hash);
-    if (m) show(m[1] || TABS[0][0]);
+    var src = exploreLi(menu);
+    var g = document.getElementById(GROUP_ID);
+    if (!g) {
+      if (!src) return;
+      g = build(menu, src);
+      src.parentNode.insertBefore(g, src);
+      menu.addEventListener("click", function (e) {   // menu lain → tutup Visualisasi
+        if (!e.target.closest("#" + GROUP_ID)) hide();
+      });
+      var m = /^#visualisasi(?:=([\w-]+))?/.exec(location.hash);
+      if (m) show(m[1] || TABS[0][0]);
+    }
+    if (!document.getElementById(GROUP_ID + "-css")) {   // item Explore bawaan diganti grup (CSS, agar tidak ditimpa render ulang)
+      var st = document.createElement("style"); st.id = GROUP_ID + "-css";
+      st.textContent = 'ul.left-sidebar-menu li.ant-menu-item[data-testid="side-bar-app-bar-item-explore"]{display:none!important}';
+      document.head.appendChild(st);
+    }
+    sync(menu);
   }
   ["pushState", "replaceState"].forEach(function (k) {   // navigasi aplikasi ke halaman lain → tutup panel
     var orig = history[k];

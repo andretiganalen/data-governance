@@ -17,3 +17,10 @@ for arg in sys.argv[1:]:
     dst = OUT / f"{datetime.now():%y%m%d} {cc:02d} {name or src.stem}{src.suffix.lower()}"
     shutil.copyfile(src, dst)
     print(dst.name)
+
+# Otomatis ke Context Center > Documents > folder "Reference" (gagal di sini tidak membatalkan pendaftaran berkas).
+import subprocess
+_r = subprocess.run([sys.executable, str(Path(__file__).with_name("referensi-sinkron.py"))], capture_output=True, text=True)
+print(_r.stdout, end="")
+if _r.returncode:
+    print("PERINGATAN: sinkron ke Documents gagal:", _r.stderr.strip().splitlines()[-1:] , file=sys.stderr)

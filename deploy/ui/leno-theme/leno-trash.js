@@ -1,7 +1,7 @@
 /* Len Data Governance — Tempat Sampah.
  *  1. Dialog hapus berbahasa Indonesia: menjelaskan akibat dan risiko dengan nada tenang. Penghapusan = pindah ke Tempat Sampah
  *     (gateway mengubah hardDelete=true dari klien jaringan menjadi soft delete; pilihan "hapus permanen" disembunyikan).
- *  2. Menu "Tempat Sampah" di sidebar: daftar data yang dihapus, sisa hari (20 hari), tombol Pulihkan.
+ *  2. Kartu "Tempat Sampah" di Settings: daftar data yang dihapus, sisa hari (20 hari), tombol Pulihkan.
  * Token sesi: cookie dg_token (diisi leno-menu.js dari sesi aplikasi). Gaya mengikuti UIx (plan/interface-menu.md). */
 (function () {
   "use strict";
@@ -46,7 +46,8 @@
       "#" + PANEL_ID + " button.lt-btn[disabled]{opacity:.5;cursor:default}" +
       "#" + PANEL_ID + " .lt-empty{padding:40px 16px;text-align:center;color:#6a7282}" +
       "#" + PANEL_ID + " .lt-msg{margin:0 0 12px;padding:10px 14px;border-radius:8px;background:#f3f4f6;color:#101828}" +
-      "html.dg-trash-open #" + ITEM_ID + "{background:#f3f4f6!important}" +
+      "#" + PANEL_ID + " .lt-back{background:none;border:0;padding:0 0 8px;color:#6a7282;font:400 13px 'UIx Poppins',Arial,sans-serif;cursor:pointer}" +
+      "#" + PANEL_ID + " .lt-back:hover{color:#101828}" +
       /* dialog hapus: tenang, bukan alarm (ikon abu-abu, tombol merah UIx biasa, bukan merah menyala) */
       ".ld-dlg [data-featured-icon]{background:#f3f4f6!important;color:#6a7282!important}" +
       ".ld-dlg [data-testid=confirm-button]{background:#ae2524!important;color:#fff!important;white-space:nowrap}" +
@@ -66,7 +67,7 @@
     }
     sec("Yang akan terjadi", [
       "Data tidak lagi tampil di pencarian, daftar, dan dashboard.",
-      "Selama " + DAYS + " hari, Anda atau admin bisa memulihkannya lewat menu Tempat Sampah di sidebar.",
+      "Selama " + DAYS + " hari, Anda atau admin bisa memulihkannya lewat Settings › Tempat Sampah.",
       "Setelah " + DAYS + " hari, data dihapus permanen secara otomatis dan tidak bisa dipulihkan."]);
     sec("Perlu diperhatikan", [
       "Tautan ke data ini (istilah, kolom, pemilik, dashboard) ikut tidak aktif sementara, dan kembali normal saat dipulihkan.",
@@ -169,6 +170,8 @@
     var panel = document.getElementById(PANEL_ID);
     if (!panel) {
       panel = el("div"); panel.id = PANEL_ID;
+      var back = el("button", "lt-back", "← Kembali ke Settings"); back.type = "button";
+      back.addEventListener("click", hidePanel); panel.appendChild(back);
       panel.appendChild(el("h2", null, "Tempat Sampah"));
       panel.appendChild(el("p", "lt-sub", "Data yang dihapus disimpan di sini selama " + DAYS + " hari, lalu dihapus permanen otomatis. Pilih Pulihkan untuk mengembalikannya."));
       panel.appendChild(el("div", "lt-body"));
@@ -183,27 +186,29 @@
     var p = document.getElementById(PANEL_ID); if (p) p.style.display = "none";
     panelOpen = false; document.documentElement.classList.remove("dg-trash-open");
   }
-  function buildItem(menu) {
-    var tpl = menu.querySelector("#len-menu-referensi") || menu.querySelector("li.ant-menu-item");
-    if (!tpl) return null;
-    var li = tpl.cloneNode(true);
-    li.id = ITEM_ID; li.removeAttribute("data-menu-id");
-    li.classList.remove("ant-menu-item-selected", "ant-menu-item-active");
-    li.setAttribute("data-testid", "app-bar-item-tempat-sampah");
-    li.setAttribute("title", "Data yang dihapus, bisa dipulihkan selama " + DAYS + " hari");
-    var label = li.querySelector(".ant-menu-title-content"); if (label) label.textContent = "Tempat Sampah";
-    var ic = li.querySelector(".ant-menu-item-icon");
-    if (ic) ic.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
-    var c = li.cloneNode(true);                                  // lepas handler turunan
-    c.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showPanel(); }, true);
-    return c;
+  var RECYCLE = '<svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M7 19H4.8a1.8 1.8 0 0 1-1.6-2.7L4.5 14M7 19l2-2.5M7 19l2 2.5"/>' +
+    '<path d="M11.3 6.2 12.5 4a1.8 1.8 0 0 1 3.1 0l1.7 3M11.3 6.2 8.6 5.6M11.3 6.2l.7 2.8"/>' +
+    '<path d="m18.6 14 1.3 2.3a1.8 1.8 0 0 1-1.6 2.7H14M18.6 14l.7-2.8M18.6 14l-2.7.6"/></svg>';
+  function ensureCard() {   // kartu "Tempat Sampah" di halaman Settings (di samping Services, Notifications, ...)
+    if (!/^\/settings\/?$/.test(location.pathname) || document.getElementById(ITEM_ID)) return;
+    var box = document.querySelector(".setting-items-container"); if (!box || !box.firstElementChild) return;
+    var col = box.firstElementChild.cloneNode(true);
+    col.id = ITEM_ID;
+    var card = col.querySelector(".ant-card"); if (!card) return;
+    card.setAttribute("data-testid", "tempat-sampah"); card.style.cursor = "pointer";
+    var ic = card.querySelector(".setting-card-icon"); if (ic) {
+      ic.innerHTML = '<span role="img" class="anticon">' + RECYCLE + "</span>";
+      ic.style.cssText = "width:90px;height:90px;display:flex;align-items:center;justify-content:center;background:#f3f4f6;border-radius:12px;color:#ae2524";
+    }
+    var t = card.querySelector(".setting-card-content .font-semibold"); if (t) t.textContent = "Tempat Sampah";
+    var d = card.querySelector(".setting-card-content div"); if (d) { d.textContent = "Data yang dihapus disimpan " + DAYS + " hari dan bisa dipulihkan."; d.removeAttribute("title"); }
+    card.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showPanel(); }, true);
+    box.appendChild(col);
   }
   function ensure() {
-    var menu = document.querySelector(".left-sidebar-menu.ant-menu, .left-sidebar-layout ul.ant-menu");
-    if (!menu || document.getElementById(ITEM_ID) || !document.getElementById("len-menu-referensi")) return;
-    var li = buildItem(menu); if (!li) return;
-    menu.appendChild(li);
-    menu.addEventListener("click", function (e) { if (!e.target.closest("#" + ITEM_ID)) hidePanel(); });
+    ensureCard();
+    if (panelOpen && !/^\/settings\/?$/.test(location.pathname)) hidePanel();
   }
   ["pushState", "replaceState"].forEach(function (k) {
     var orig = history[k];
