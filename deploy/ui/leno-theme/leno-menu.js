@@ -11,14 +11,15 @@
 (function () {
   "use strict";
   var ITEM_ID = "len-menu-visualisasi", PANEL_ID = "len-visualisasi", COOKIE = "dg_token";
+  var T = function (k, v) { return window.LDG_I18N ? window.LDG_I18N.t(k, v) : k; };
   var TABS = [
-    ["risiko", "Risiko ERM", "/visualisasi/superset/dashboard/risiko-erm/?standalone=1"],
-    ["tata-kelola", "Tata Kelola Data", "/visualisasi/superset/dashboard/tata-kelola-data/?standalone=1"],
-    ["sdm", "SDM", "/visualisasi/superset/dashboard/sdm-headcount/?standalone=1"],
-    ["kesegaran", "Kesegaran Data", "/visualisasi/superset/dashboard/kesegaran-data/?standalone=1"],
-    ["dashboard", "Semua dashboard", "/visualisasi/dashboard/list/"],
-    ["grafik", "Grafik", "/visualisasi/chart/list/"],
-    ["sql", "SQL Lab", "/visualisasi/sqllab/"]
+    ["risiko", "tab_risiko", "/visualisasi/superset/dashboard/risiko-erm/?standalone=1"],
+    ["tata-kelola", "tab_tata", "/visualisasi/superset/dashboard/tata-kelola-data/?standalone=1"],
+    ["sdm", "tab_sdm", "/visualisasi/superset/dashboard/sdm-headcount/?standalone=1"],
+    ["kesegaran", "tab_kesegaran", "/visualisasi/superset/dashboard/kesegaran-data/?standalone=1"],
+    ["dashboard", "tab_dashboard", "/visualisasi/dashboard/list/"],
+    ["grafik", "tab_grafik", "/visualisasi/chart/list/"],
+    ["sql", "tab_sql", "/visualisasi/sqllab/"]
   ];
   var ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" ' +
     'aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>';
@@ -87,18 +88,18 @@
     if (!panel) {
       panel = document.createElement("section");
       panel.id = PANEL_ID;
-      panel.setAttribute("aria-label", "Visualisasi");
+      panel.setAttribute("aria-label", T("viz"));
       var bar = document.createElement("div");
       bar.className = "lv-bar";
-      bar.innerHTML = '<h2 class="lv-title">Visualisasi</h2>';
+      bar.innerHTML = '<h2 class="lv-title"></h2>';
       TABS.forEach(function (t) {
         var b = document.createElement("button");
-        b.className = "lv-tab"; b.type = "button"; b.dataset.key = t[0]; b.textContent = t[1];
+        b.className = "lv-tab"; b.type = "button"; b.dataset.key = t[0]; b.setAttribute("data-k", t[1]); b.textContent = T(t[1]);
         b.addEventListener("click", function () { show(t[0]); });
         bar.appendChild(b);
       });
       var frame = document.createElement("iframe");
-      frame.title = "Visualisasi data Gold";
+      frame.title = T("viz_frame");
       panel.appendChild(bar); panel.appendChild(frame);
       document.body.appendChild(panel);
       window.addEventListener("resize", function () { place(panel); });
@@ -141,13 +142,13 @@
     g.setAttribute("data-testid", "side-bar-explore-group");
     g.innerHTML = '<div role="menuitem" class="ant-menu-submenu-title" tabindex="-1" aria-expanded="false" aria-haspopup="true" style="padding-left:16px">' +
       '<span role="img" class="anticon ant-menu-item-icon"></span><span class="ant-menu-title-content">' +
-      '<span class="left-panel-item left-panel-label p-0">Explore</span></span><i class="ant-menu-submenu-arrow"></i></div>' +
+      '<span class="left-panel-item left-panel-label p-0"></span></span><i class="ant-menu-submenu-arrow"></i></div>' +
       '<ul class="ant-menu ant-menu-sub ant-menu-inline" role="menu" style="display:none"></ul>';
     g.querySelector(".anticon").innerHTML = iconHtml;
     var ul = g.querySelector("ul");
-    var e = child(iconHtml, "Explore", EXP_ID), v = child(ICON, "Visualisasi", ITEM_ID);
+    var e = child(iconHtml, T("explore"), EXP_ID), v = child(ICON, T("viz"), ITEM_ID);
     v.setAttribute("data-testid", "app-bar-item-visualisasi");
-    v.setAttribute("title", "Visualisasi data Gold (Trino lakehouse)");
+    v.setAttribute("title", T("viz_hint"));
     ul.appendChild(e); ul.appendChild(v);
     g.querySelector(".ant-menu-submenu-title").addEventListener("click", function (ev) { ev.preventDefault(); ev.stopPropagation(); setOpen(g, !g.classList.contains("ant-menu-submenu-open")); });
     e.addEventListener("click", function (ev) {
@@ -163,8 +164,22 @@
     var t = g.querySelector(".ant-menu-submenu-title"); if (t) t.setAttribute("aria-expanded", open ? "true" : "false");
     var ul = g.querySelector("ul"); if (ul) ul.style.display = open ? "" : "none";
   }
+  function setTxt(n, s) { if (n && n.textContent !== s) n.textContent = s; }
+  function labels(g) {   // teks mengikuti bahasa aplikasi (EN / ID)
+    setTxt(g.querySelector(".ant-menu-submenu-title .left-panel-label"), T("explore"));
+    setTxt(g.querySelector("#" + EXP_ID + " .left-panel-label"), T("explore"));
+    setTxt(g.querySelector("#" + ITEM_ID + " .left-panel-label"), T("viz"));
+    var v = g.querySelector("#" + ITEM_ID); if (v) v.setAttribute("title", T("viz_hint"));
+    var p = document.getElementById(PANEL_ID);
+    if (p) {
+      setTxt(p.querySelector(".lv-title"), T("viz")); p.setAttribute("aria-label", T("viz"));
+      p.querySelectorAll(".lv-tab").forEach(function (b) { setTxt(b, T(b.getAttribute("data-k"))); });
+      var f = p.querySelector("iframe"); if (f) f.title = T("viz_frame");
+    }
+  }
   function sync(menu) {   // sorot item aktif; buka grup bila Explore/Visualisasi sedang dipakai
     var g = document.getElementById(GROUP_ID); if (!g) return;
+    labels(g);
     var viz = !!document.getElementById(PANEL_ID) && document.documentElement.classList.contains("dg-vis-open");
     var exp = !viz && /^\/explore(\/|$)/.test(location.pathname);
     var e = document.getElementById(EXP_ID), v = document.getElementById(ITEM_ID);

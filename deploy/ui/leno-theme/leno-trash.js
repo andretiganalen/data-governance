@@ -5,10 +5,10 @@
  * Token sesi: cookie dg_token (diisi leno-menu.js dari sesi aplikasi). Gaya mengikuti UIx (plan/interface-menu.md). */
 (function () {
   "use strict";
+  var T = function (k, v) { return window.LDG_I18N ? window.LDG_I18N.t(k, v) : k; };
   var DAYS = 20, ITEM_ID = "len-menu-trash", PANEL_ID = "len-trash";
-  var TYPES = [["glossaryTerms", "Istilah Glosarium"], ["glossaries", "Glosarium"], ["tables", "Tabel"],
-    ["databaseSchemas", "Skema"], ["databases", "Database"], ["dashboards", "Dashboard"], ["charts", "Grafik"],
-    ["dataProducts", "Data Product"], ["domains", "Domain"], ["tags", "Tag"], ["classifications", "Klasifikasi"], ["teams", "Tim / Fungsi"]];
+  var TYPES = [["glossaryTerms"], ["glossaries"], ["tables"], ["databaseSchemas"], ["databases"], ["dashboards"], ["charts"],
+    ["dataProducts"], ["domains"], ["tags"], ["classifications"], ["teams"]];
 
   function token() { var m = /(?:^|;\s*)dg_token=([^;]+)/.exec(document.cookie); return m ? m[1] : ""; }
   function api(method, path, body) {
@@ -59,20 +59,15 @@
   var INFO_CLASS = "ld-info";
   function infoBlock(name) {
     var d = el("div", INFO_CLASS);
-    var lead = el("p", "ld-lead"); lead.textContent = "“" + name + "” akan disimpan di Tempat Sampah, bukan langsung dihapus.";
+    var lead = el("p", "ld-lead"); lead.textContent = T("dlg_lead", { n: name });
     d.appendChild(lead);
     function sec(title, items) {
       d.appendChild(el("p", "ld-h", title));
       var ul = el("ul"); items.forEach(function (t) { ul.appendChild(el("li", null, t)); }); d.appendChild(ul);
     }
-    sec("Yang akan terjadi", [
-      "Data tidak lagi tampil di pencarian, daftar, dan dashboard.",
-      "Selama " + DAYS + " hari, Anda atau admin bisa memulihkannya lewat Settings › Tempat Sampah.",
-      "Setelah " + DAYS + " hari, data dihapus permanen secara otomatis dan tidak bisa dipulihkan."]);
-    sec("Perlu diperhatikan", [
-      "Tautan ke data ini (istilah, kolom, pemilik, dashboard) ikut tidak aktif sementara, dan kembali normal saat dipulihkan.",
-      "Yang dipindahkan hanya catatan di Len Data Governance; data sumber di Trino tidak berubah."]);
-    d.appendChild(el("p", "ld-foot", "Ragu? Pilih Batal, tidak ada yang berubah."));
+    sec(T("dlg_h1"), [T("dlg_1a"), T("dlg_1b", { d: DAYS }), T("dlg_1c", { d: DAYS })]);
+    sec(T("dlg_h2"), [T("dlg_2a"), T("dlg_2b")]);
+    d.appendChild(el("p", "ld-foot", T("dlg_foot")));
     return d;
   }
   function setText(node, text) { if (node && node.textContent !== text) node.textContent = text; }
@@ -83,14 +78,14 @@
     var hs = head.querySelector("span, .prose span") || head;
     if (!d.dataset.lenName) {
       var t = (hs.textContent || "").trim();
-      if (!/^Delete\b/i.test(t)) return;                        // bukan dialog hapus
+      if (!/^(Delete|Hapus)\b/i.test(t)) return;                        // bukan dialog hapus
       var q = /"([^"]+)"/.exec(t);
-      d.dataset.lenName = q ? q[1] : t.replace(/^Delete\s+/i, "");
+      d.dataset.lenName = q ? q[1] : t.replace(/^(Delete|Hapus)\s+/i, "");
     }
     var name = d.dataset.lenName;
     css(); d.classList.add("ld-dlg");
     [hs, hs.parentElement].forEach(function (x) { if (x) { x.style.whiteSpace = "normal"; x.style.overflow = "visible"; x.style.textOverflow = "clip"; } });
-    setText(hs, "Pindahkan “" + name + "” ke Tempat Sampah?");
+    setText(hs, T("dlg_title", { n: name }));
     var group = d.querySelector('[role="radiogroup"]');         // jenis A: pilihan lunak/permanen
     if (group) {
       group.style.display = "none";
@@ -103,8 +98,8 @@
       host.insertBefore(infoBlock(name), group ? group : head.nextSibling);
     }
     var cancel = d.querySelector('[data-testid="cancel-button"], [data-testid="discard-button"]');
-    setText(cancel && (cancel.querySelector("[data-text]") || cancel), "Batal");
-    setText(confirm.querySelector("[data-text]") || confirm, "Ya, pindahkan");
+    setText(cancel && (cancel.querySelector("[data-text]") || cancel), T("cancel"));
+    setText(confirm.querySelector("[data-text]") || confirm, T("confirm"));
   }
   function scanDialogs() { document.querySelectorAll('[role="dialog"]').forEach(fixDialog); }
 
@@ -121,7 +116,7 @@
   function fmt(ts) { try { return new Date(ts).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }); } catch (e) { return new Date(ts).toISOString(); } }
 
   function load(panel) {
-    var body = panel.querySelector(".lt-body"); body.textContent = "Memuat…";
+    var body = panel.querySelector(".lt-body"); body.textContent = T("loading");
     var jobs = TYPES.map(function (t) {
       return api("GET", "/" + t[0] + "?include=deleted&limit=200&fields=deleted").then(function (r) { return r.ok ? r.json() : { data: [] }; })
         .then(function (j) { return (j.data || []).filter(function (e) { return e.deleted; }).map(function (e) { return { t: t, e: e }; }); })
@@ -130,9 +125,9 @@
     Promise.all(jobs).then(function (parts) {
       var rows = [].concat.apply([], parts).sort(function (a, b) { return (b.e.updatedAt || 0) - (a.e.updatedAt || 0); });
       body.textContent = "";
-      if (!rows.length) { body.appendChild(el("div", "lt-empty", "Tempat Sampah kosong. Tidak ada data yang menunggu dihapus.")); return; }
+      if (!rows.length) { body.appendChild(el("div", "lt-empty", T("empty"))); return; }
       var card = el("div", "lt-card"), tb = el("table"), th = el("thead"), hr = el("tr");
-      ["Nama", "Jenis", "Dihapus oleh", "Dihapus pada", "Sisa waktu", ""].forEach(function (h) { hr.appendChild(el("th", null, h)); });
+      [T("h_name"), T("h_type"), T("h_by"), T("h_at"), T("h_left"), ""].forEach(function (h) { hr.appendChild(el("th", null, h)); });
       th.appendChild(hr); tb.appendChild(th);
       var tbody = el("tbody");
       rows.forEach(function (x) {
@@ -140,12 +135,12 @@
         var nc = el("td"); nc.appendChild(el("div", "lt-name", x.e.displayName || x.e.name));
         if (x.e.fullyQualifiedName && x.e.fullyQualifiedName !== (x.e.displayName || x.e.name)) nc.appendChild(el("div", "lt-fqn", x.e.fullyQualifiedName));
         tr.appendChild(nc);
-        var c1 = el("td"); c1.appendChild(el("span", "lt-chip", x.t[1])); tr.appendChild(c1);
+        var c1 = el("td"); c1.appendChild(el("span", "lt-chip", T("t_" + x.t[0]))); tr.appendChild(c1);
         tr.appendChild(el("td", null, x.e.updatedBy || "-"));
         tr.appendChild(el("td", null, x.e.updatedAt ? fmt(x.e.updatedAt) : "-"));
         var left = x.e.updatedAt ? daysLeft(x.e.updatedAt) : 0;
-        tr.appendChild(el("td", "lt-left", left > 0 ? left + " hari lagi bisa dipulihkan" : "Segera dihapus permanen"));
-        var act = el("td"), b = el("button", "lt-btn", "Pulihkan"); b.type = "button";
+        tr.appendChild(el("td", "lt-left", left > 0 ? T("left", { n: left }) : T("soon")));
+        var act = el("td"), b = el("button", "lt-btn", T("restore")); b.type = "button";
         b.addEventListener("click", function () { restore(panel, x, tr, b, n); });
         act.appendChild(b); tr.appendChild(act); tbody.appendChild(tr);
       });
@@ -158,22 +153,22 @@
     setTimeout(function () { if (m.parentNode) m.remove(); }, 8000);
   }
   function restore(panel, x, tr, btn, name) {
-    btn.disabled = true; btn.textContent = "Memulihkan…";
+    btn.disabled = true; btn.textContent = T("restoring");
     api("PUT", "/" + x.t[0] + "/restore", { id: x.e.id }).then(function (r) {
       if (r.ok) { tr.remove(); msg(panel, "“" + name + "” sudah dipulihkan dan tampil kembali."); return; }
-      btn.disabled = false; btn.textContent = "Pulihkan";
-      msg(panel, "Belum bisa memulihkan “" + name + "”. Kemungkinan nama yang sama sudah dipakai atau Anda belum punya hak memulihkannya. Hubungi admin Data Governance bila perlu.");
-    }).catch(function () { btn.disabled = false; btn.textContent = "Pulihkan"; msg(panel, "Koneksi terputus. Coba lagi sebentar lagi."); });
+      btn.disabled = false; btn.textContent = T("restore");
+      msg(panel, T("restore_fail", { n: name }));
+    }).catch(function () { btn.disabled = false; btn.textContent = T("restore"); msg(panel, T("offline")); });
   }
   function showPanel() {
     css();
     var panel = document.getElementById(PANEL_ID);
     if (!panel) {
       panel = el("div"); panel.id = PANEL_ID;
-      var back = el("button", "lt-back", "← Kembali ke Settings"); back.type = "button";
+      var back = el("button", "lt-back", T("back_settings")); back.type = "button";
       back.addEventListener("click", hidePanel); panel.appendChild(back);
-      panel.appendChild(el("h2", null, "Tempat Sampah"));
-      panel.appendChild(el("p", "lt-sub", "Data yang dihapus disimpan di sini selama " + DAYS + " hari, lalu dihapus permanen otomatis. Pilih Pulihkan untuk mengembalikannya."));
+      panel.appendChild(el("h2", null, T("trash")));
+      panel.appendChild(el("p", "lt-sub", T("trash_sub", { d: DAYS })));
       panel.appendChild(el("div", "lt-body"));
       document.body.appendChild(panel);
       window.addEventListener("resize", function () { place(panel); });
@@ -219,12 +214,19 @@
     var card = col.querySelector(".ant-card"); if (!card) return;
     card.setAttribute("data-testid", "tempat-sampah"); card.style.cursor = "pointer";
     var ic = card.querySelector(".setting-card-icon"); if (ic) tile(ic, TRASH, "#f3f4f6");
-    var t = card.querySelector(".setting-card-content .font-semibold"); if (t) t.textContent = "Tempat Sampah";
-    var d = card.querySelector(".setting-card-content div"); if (d) { d.textContent = "Data yang dihapus disimpan " + DAYS + " hari dan bisa dipulihkan."; d.removeAttribute("title"); }
+    var t = card.querySelector(".setting-card-content .font-semibold"); if (t) t.textContent = T("trash");
+    var d = card.querySelector(".setting-card-content div"); if (d) { d.textContent = T("trash_card", { d: DAYS }); d.removeAttribute("title"); }
     card.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showPanel(); }, true);
     box.appendChild(col);
   }
+  var lastLang = "";
   function ensure() {
+    var lg = window.LDG_I18N ? window.LDG_I18N.lang() : "";
+    if (lg !== lastLang) {   // bahasa berganti → bangun ulang teks panel & kartu
+      lastLang = lg;
+      ["len-trash", ITEM_ID].forEach(function (id) { var n = document.getElementById(id); if (n) n.remove(); });
+      panelOpen = false; document.documentElement.classList.remove("dg-trash-open");
+    }
     ensureCard();
     if (panelOpen && !/^\/settings\/?$/.test(location.pathname)) hidePanel();
   }

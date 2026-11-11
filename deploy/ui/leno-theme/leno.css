@@ -406,3 +406,6 @@ html:root, html body {
   --color-button-primary-icon: #f3dcdc; --tw-color-button-primary-icon: #f3dcdc;
 }
 svg [fill="#0950C5" i] { fill: var(--uix-primary-strong) !important; }
+
+/* Halaman login: logo Len tampil penuh (komponen bawaan membatasi monogram 50px) */
+.login-box img[src*="len-monogram"] { content: url(/_leno/brand/len-logo.png); width: 190px !important; height: auto !important; max-width: 70%; margin: 4px auto 0; }
