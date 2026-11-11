@@ -186,21 +186,39 @@
     var p = document.getElementById(PANEL_ID); if (p) p.style.display = "none";
     panelOpen = false; document.documentElement.classList.remove("dg-trash-open");
   }
-  var RECYCLE = '<svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-    '<path d="M7 19H4.8a1.8 1.8 0 0 1-1.6-2.7L4.5 14M7 19l2-2.5M7 19l2 2.5"/>' +
-    '<path d="M11.3 6.2 12.5 4a1.8 1.8 0 0 1 3.1 0l1.7 3M11.3 6.2 8.6 5.6M11.3 6.2l.7 2.8"/>' +
-    '<path d="m18.6 14 1.3 2.3a1.8 1.8 0 0 1-1.6 2.7H14M18.6 14l.7-2.8M18.6 14l-2.7.6"/></svg>';
-  function ensureCard() {   // kartu "Tempat Sampah" di halaman Settings (di samping Services, Notifications, ...)
+  /* Ikon kartu Settings (hardcoded, satu keluarga dengan ikon kartu bawaan: kotak 90px, garis/outline). */
+  var TRASH = '<svg viewBox="0 0 48 48" width="52" height="52" fill="none" stroke="#4a5565" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M6 12h36M18 12V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4M10 12l2.4 28a3 3 0 0 0 3 2.8h16.4a3 3 0 0 0 3-2.8L37 12"/>' +
+    '<g stroke-width="1.9"><path d="M21.2 24.6 24 20l2.2 3.4M25.6 30.2h-3.5a1.6 1.6 0 0 1-1.4-2.4l.5-.8M29.2 26.4l1.4 2.4a1.6 1.6 0 0 1-1.4 2.4M22.6 33l-2-2.8 2.8-.6M27 33.2l3-1.6-2.6-1.4M29.2 26.4 26.6 25l.7 2.6"/></g></svg>';
+  var THEME = '<svg viewBox="0 0 48 48" width="52" height="52" fill="none" stroke="#ae2524" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M24 5C13.5 5 5 13 5 23.5S13.2 42 21 42c3 0 4-1.8 4-3.6 0-3.4 2-4.4 4.6-4.4H36c4 0 7-2.8 7-7C43 14 34.5 5 24 5z"/>' +
+    '<circle cx="15" cy="23" r="2.4"/><circle cx="20" cy="14.5" r="2.4"/><circle cx="30" cy="14.5" r="2.4"/><circle cx="35" cy="23" r="2.4"/></svg>';
+  var TILE = "width:90px;height:90px;display:flex;align-items:center;justify-content:center;border-radius:12px;";
+  function tile(ic, svg, bg) {
+    ic.innerHTML = '<span role="img" class="anticon">' + svg + "</span>";
+    ic.style.cssText = TILE + "background:" + bg;
+    ic.setAttribute("data-ldg-icon", "1");
+  }
+  function decorateCards() {   // kartu "Preferences" → ikon tema (outline merah UIx)
+    document.querySelectorAll(".setting-card-item").forEach(function (card) {
+      var t = card.querySelector(".setting-card-content .font-semibold");
+      var ic = card.querySelector(".setting-card-icon");
+      if (!t || !ic || ic.getAttribute("data-ldg-icon")) return;
+      if (/^(preferences|preferensi|appearance|tampilan)$/i.test(t.textContent.trim())) tile(ic, THEME, "#fdf2f2");
+    });
+  }
+  function ensureCard() {
+    if (/^\/settings(\/|$)/.test(location.pathname)) decorateCards();
+    ensureTrashCard();
+  }
+  function ensureTrashCard() {   // kartu "Tempat Sampah" di halaman Settings (di samping Services, Notifications, ...)
     if (!/^\/settings\/?$/.test(location.pathname) || document.getElementById(ITEM_ID)) return;
     var box = document.querySelector(".setting-items-container"); if (!box || !box.firstElementChild) return;
     var col = box.firstElementChild.cloneNode(true);
     col.id = ITEM_ID;
     var card = col.querySelector(".ant-card"); if (!card) return;
     card.setAttribute("data-testid", "tempat-sampah"); card.style.cursor = "pointer";
-    var ic = card.querySelector(".setting-card-icon"); if (ic) {
-      ic.innerHTML = '<span role="img" class="anticon">' + RECYCLE + "</span>";
-      ic.style.cssText = "width:90px;height:90px;display:flex;align-items:center;justify-content:center;background:#f3f4f6;border-radius:12px;color:#ae2524";
-    }
+    var ic = card.querySelector(".setting-card-icon"); if (ic) tile(ic, TRASH, "#f3f4f6");
     var t = card.querySelector(".setting-card-content .font-semibold"); if (t) t.textContent = "Tempat Sampah";
     var d = card.querySelector(".setting-card-content div"); if (d) { d.textContent = "Data yang dihapus disimpan " + DAYS + " hari dan bisa dipulihkan."; d.removeAttribute("title"); }
     card.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showPanel(); }, true);
