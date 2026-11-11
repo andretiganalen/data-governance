@@ -947,6 +947,7 @@ def rebuild(tq: Trino, schema: dict, batch_id: str, now: datetime) -> None:
     try:
         import glossary_app
         glossary_app.build(tq, schema, batch_id)
+        glossary_app.build_fungsi(tq, schema, batch_id)
         import silver_comments
         silver_comments.main()
     except Exception as e:  # noqa: BLE001 — komentar tidak boleh menggagalkan ETL
@@ -1090,7 +1091,8 @@ def main() -> None:
         return cdc(tq, schema, batch_id, now)
     if a.cmd == "glossary":
         import glossary_app
-        return log(f"gold_meta_glossary_app: {glossary_app.build(tq, schema, batch_id)} istilah dicatat dari aplikasi")
+        log(f"gold_meta_glossary_app: {glossary_app.build(tq, schema, batch_id)} istilah dicatat dari aplikasi")
+        return log(f"gold_meta_fungsi: {glossary_app.build_fungsi(tq, schema, batch_id)} Fungsi dicatat dari aplikasi")
     inbox = DATA / "medallion" / "inbox"
     if a.cmd == "inbox" and not any(f.is_file() and f.suffix.lower() in (".xlsx", ".xlsm", ".csv") for f in inbox.glob("*")):
         return                                   # timer tiap 10 menit: inbox kosong → Trino tidak disentuh sama sekali

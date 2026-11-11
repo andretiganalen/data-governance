@@ -2400,3 +2400,20 @@ CREATE TABLE gold_meta_glossary_app (
    _loaded_at timestamp(6) with time zone COMMENT 'lineage'
 )
 COMMENT 'Gold: Glosarium Len Data Governance, dicatat dari aplikasi (sumber kebenaran setelah diedit admin Data Governance). Dilengkapi sumber_perubahan.';
+
+CREATE TABLE gold_meta_fungsi (
+   team_name varchar COMMENT 'Kode tim di aplikasi (FN_<Fungsi>)',
+   fungsi varchar COMMENT 'Nama Fungsi = Data Owner (CLP-001, tanpa awalan "Fungsi"; "(tidak ada)" bila belum punya unit)',
+   eselon1 varchar COMMENT 'Induk langsung di aplikasi: Divisi (Eselon 1) atau Seluruh Unit Kerja bila lintas Divisi',
+   deskripsi varchar COMMENT 'Deskripsi: Eselon 1 dan Eselon 2 anggota Fungsi',
+   jumlah_tabel_dimiliki bigint COMMENT 'Jumlah tabel yang dimiliki Fungsi ini di aplikasi',
+   jumlah_istilah_dimiliki bigint COMMENT 'Jumlah istilah glosarium yang dimiliki Fungsi ini',
+   versi double COMMENT 'Nomor versi tim di aplikasi',
+   diubah_oleh varchar COMMENT 'Pengguna terakhir yang mengubah tim di aplikasi',
+   diubah_pada timestamp(6) with time zone COMMENT 'Waktu perubahan terakhir di aplikasi',
+   sumber_perubahan varchar COMMENT 'Workbook (sama dengan Workbook) | Aplikasi (ditambah/diubah admin Data Governance)',
+   _batch_id varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Gold: daftar Fungsi (Data Owner) di aplikasi beserta Eselon 1/2 dan jumlah aset dimiliki. Dicatat dari aplikasi tiap 10 menit; harus sama dengan daftar tim FN_* di aplikasi.';
+

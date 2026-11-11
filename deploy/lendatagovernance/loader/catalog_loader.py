@@ -158,6 +158,10 @@ def load_workbook(om: Catalog, path: str):
     om.patch(f"/v1/teams/{teams[W.ROOT_TEAM]['id']}",
              [{"op": "add", "path": "/displayName", "value": W.ROOT_DISPLAY}])
     for t in plan.teams:
+        cur = om.find(f"/v1/teams/name/{q(t['name'])}") if t["name"].startswith("FN_") else None
+        if cur and cur.get("displayName") != t["displayName"]:   # Fungsi diganti namanya oleh admin DG di aplikasi → dipertahankan
+            teams[t["name"]] = cur
+            continue
         teams[t["name"]] = om.put("/v1/teams", {
             "name": t["name"], "displayName": t["displayName"], "teamType": t["teamType"],
             "description": t["description"], "parents": [teams[t["parent"]]["id"]], "isJoinable": False})
