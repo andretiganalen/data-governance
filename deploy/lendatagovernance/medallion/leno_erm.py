@@ -25,8 +25,8 @@ TABLES = ["erm_analisaswot", "erm_assessmentefektivitas", "erm_assessmentkecukup
           "erm_penyebabrisiko", "erm_perencanaan", "erm_realisasimitigasi", "erm_rencanamitigasi", "erm_riskevaluation",
           "erm_riskinherent", "erm_riskregister", "erm_riskresidual", "erm_sasaran", "hr_unitkerja"]
 COMPANY = ("COMP-LEN-001", "LEN")
-LEVEL = {"Low": (1, "#1E7B34"), "Low to Moderate": (2, "#8BC34A"), "Moderate": (3, "#F2C200"),
-         "Moderate to High": (4, "#F28C00"), "High": (5, "#DA0000")}
+LEVEL = {"Low": (1, "#008236"), "Low to Moderate": (2, "#1baf7a"), "Moderate": (3, "#eda100"),
+         "Moderate to High": (4, "#bb4d00"), "High": (5, "#e7000b")}
 WHERE_SRC = f"_source_system = '{SRC}'"
 
 

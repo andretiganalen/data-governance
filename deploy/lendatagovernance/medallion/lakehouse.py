@@ -52,8 +52,8 @@ CONTRACT_VERSION = "v1.0"
 HOLDING = "DEFEND ID"
 BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
 LEVEL_ORDER = {"Low": 1, "Low to Moderate": 2, "Moderate": 3, "Moderate to High": 4, "High": 5}
-LEVEL_COLOR = {"Low": "#1E7B34", "Low to Moderate": "#8BC34A", "Moderate": "#F2C200",
-               "Moderate to High": "#F28C00", "High": "#DA0000"}
+LEVEL_COLOR = {"Low": "#008236", "Low to Moderate": "#1baf7a", "Moderate": "#eda100",
+               "Moderate to High": "#bb4d00", "High": "#e7000b"}
 JT = 1_000_000  # nilai E-GRC dalam juta rupiah (asumsi GRC, lihat temuan mutu) → IDR
 
 

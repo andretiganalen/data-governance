@@ -328,7 +328,7 @@ module.exports.UC = [
     utama: ["Admin menjalankan scripts/secrets-init.sh (tidak menimpa berkas yang ada).", "Rahasia tersimpan di /home/ubuntu/data-governance/data/secrets (chmod 600), tidak pernah di repo publik."],
     alt: [], pasca: "Rahasia tersedia dan terlindungi.", fr: ["FR-54"] },
   { id: "UC-59", grup: "E", nama: "Menyesuaikan tema dan merek LenO", aktor: [A.AD], prioritas: "Rendah", status: "Tersedia",
-    tujuan: "Menjaga tampilan Len classic dan nama Len Data Governance di seluruh antarmuka.",
+    tujuan: "Menjaga tampilan UIx dan nama Len Data Governance di seluruh antarmuka.",
     pra: [], pemicu: "Perubahan standar UI (plan/interface-menu.md).",
     utama: ["Admin mengubah leno.css/leno-superset.css/leno-menu.js.", "Gateway menyajikan berkas lewat /_leno/ dan menyisipkannya ke halaman.", "leno-menu.js mengganti nama produk upstream pada teks UI menjadi Len Data Governance."],
     alt: [], pasca: "Tampilan seragam.", fr: ["FR-55"] },

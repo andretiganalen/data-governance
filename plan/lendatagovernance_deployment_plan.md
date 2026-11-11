@@ -59,7 +59,7 @@ artefak: deploy/
 | Layar LenO | Aset Dashboard di service "LenO ERM"; lineage kolom → layar. |
 | Aturan kualitas | Definisi test case saja (tidak dijalankan). |
 | Bahasa konten | Bahasa Indonesia sesuai Workbook. |
-| Tampilan | **LenO Interface: warna + gaya header/sidebar** ([[leno_interface_theme.md]]). Disisipkan lewat CSS (`ui/leno-theme/leno.css`) oleh nginx `gateway`, ditambah pengaturan tema bawaan (warna, logo). Menu tetap milik aplikasi dasar. Susunan menu LPMS dan pola menu terkunci **tidak** dipakai. |
+| Tampilan | **UIx: warna, huruf, gaya header/sidebar** ([[interface-menu.md]]). Disisipkan lewat CSS (`ui/leno-theme/leno.css`) oleh nginx `gateway`, ditambah pengaturan tema bawaan (warna, logo). Menu tetap milik aplikasi dasar. Susunan menu LPMS dan pola menu terkunci **tidak** dipakai. |
 | Backup | `pg_dump` harian lokal, retensi 14 hari. |
 
 ---

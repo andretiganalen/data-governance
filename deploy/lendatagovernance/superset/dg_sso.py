@@ -41,10 +41,10 @@ TRINO_CATALOG = os.environ.get("DG_TRINO_CATALOG", "lakekeeper")
 
 NOT_SIGNED_IN = """<!doctype html><html lang="id"><head><meta charset="utf-8"><title>Visualisasi</title></head>
 <body style="font-family:'UIx Poppins',Arial,sans-serif;color:#364153;background:#f9fafb;padding:40px">
-<div style="max-width:520px;margin:auto;background:#fff;border:1px solid #E6E6E6;border-radius:4px;padding:28px">
+<div style="max-width:520px;margin:auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:28px">
 <h3 style="color:#101828;margin-top:0">Sesi Len Data Governance tidak ditemukan</h3>
 <p>Visualisasi memakai login Len Data Governance. Masuk terlebih dahulu, lalu buka menu <b>Visualisasi</b>.</p>
-<p><a href="/" target="_top" style="color:#0562C9">Buka Len Data Governance</a></p></div></body></html>"""
+<p><a href="/" target="_top" style="color:#ae2524">Buka Len Data Governance</a></p></div></body></html>"""
 
 
 def _sha(token: str) -> str:

@@ -80,23 +80,23 @@ const ver = { Lakehouse: "lakehouse.py status vs DBeaver", "Aturan data": "Uji S
 const logo = "img/len-logo.png";
 const html = `<!doctype html><html lang="id"><head><meta charset="utf-8"><title>SRS Len Data Governance ${REL}</title>
 <link rel="stylesheet" href="base.css"><style>
-.cover{background:#fff}.cover .band{position:absolute;inset:0 0 auto 0;height:118mm;background:var(--navy)}
+.cover{background:#fff}.cover .band{position:absolute;inset:0 0 auto 0;height:118mm;background:var(--head)}
 .cover img{position:absolute;left:20mm;top:18mm;height:15mm;background:#fff;padding:2mm 3mm}
-.cover .t{position:absolute;left:20mm;right:20mm;top:56mm;color:#fff}.cover .t .k{font:600 11pt 'Open Sans';letter-spacing:.5px;opacity:.85}
+.cover .t{position:absolute;left:20mm;right:20mm;top:56mm;color:#fff}.cover .t .k{font:600 11pt 'UIx Poppins';letter-spacing:.5px;opacity:.85}
 .cover .t h1{color:#fff;font-size:32pt;margin:4mm 0 3mm;letter-spacing:-.6px}.cover .t p{font-size:12.5pt;margin:0;max-width:160mm;opacity:.95}
 .cover .qs{position:absolute;left:20mm;right:20mm;top:132mm;display:grid;grid-template-columns:1fr 1fr;gap:5mm 8mm}
-.cover .qs div{border-left:3px solid var(--red);padding:1mm 0 1mm 4mm;font-size:10.5pt;color:var(--ink)}.cover .qs b{display:block;font-size:20pt;color:var(--navy)}
+.cover .qs div{border-left:3px solid var(--red);padding:1mm 0 1mm 4mm;font-size:10.5pt;color:var(--ink)}.cover .qs b{display:block;font-size:20pt;color:var(--head)}
 .cover .meta{position:absolute;left:20mm;right:20mm;bottom:18mm;font-size:9pt;color:var(--muted)}
-h1{font-size:18pt;color:var(--navy);border-bottom:2px solid var(--red);padding-bottom:2mm;margin:0 0 4mm}
-h2{font-size:12.5pt;color:var(--navy);margin:6mm 0 2mm}h3{font-size:10.5pt;margin:4mm 0 2mm}
+h1{font-size:18pt;color:var(--head);border-bottom:2px solid var(--red);padding-bottom:2mm;margin:0 0 4mm}
+h2{font-size:12.5pt;color:var(--head);margin:6mm 0 2mm}h3{font-size:10.5pt;margin:4mm 0 2mm}
 table{font-size:8.6pt;margin:2mm 0 4mm}th,td{border:1px solid var(--soft);padding:1.4mm 2mm;vertical-align:top;text-align:left}
-thead th{background:var(--navy);color:#fff;font-weight:600}td:first-child{white-space:nowrap}.uc table.kv td:first-child{white-space:normal}tbody tr:nth-child(even) td{background:#f7f9fc}
+thead th{background:var(--head);color:#fff;font-weight:600}td:first-child{white-space:nowrap}.uc table.kv td:first-child{white-space:normal}tbody tr:nth-child(even) td{background:#f7f9fc}
 td ul,td ol{margin:0;padding-left:4.5mm}td li{margin:0 0 .6mm}
-.uc{border:1px solid var(--line);border-top:3px solid var(--navy);margin:0 0 5mm}.uc .uh{background:var(--navy50);padding:2mm 3mm;font-weight:600;color:var(--ink);font-size:10pt}
+.uc{border:1px solid var(--line);border-top:3px solid var(--head);margin:0 0 5mm}.uc .uh{background:var(--wash);padding:2mm 3mm;font-weight:600;color:var(--ink);font-size:10pt}
 .uc .uh b{color:var(--red);margin-right:1.5mm}.uc .uh .chip{margin-left:1mm;font-size:7pt}
 .uc table.kv{margin:0}.uc table.kv th{width:36mm;background:#fafbfd;color:var(--ink);font-weight:600}.uc table.kv td,.uc table.kv th{border:0;border-top:1px solid var(--soft)}
 .toc{columns:2;column-gap:10mm;font-size:9.5pt}.toc div{break-inside:avoid;margin:0 0 1.2mm}.toc a{color:var(--ink);text-decoration:none}.toc .s{padding-left:5mm;color:var(--text2)}
-.note{background:var(--navy50);border-left:3px solid var(--navy);padding:2.5mm 4mm;margin:3mm 0;font-size:9.3pt}
+.note{background:var(--wash);border-left:3px solid var(--head);padding:2.5mm 4mm;margin:3mm 0;font-size:9.3pt}
 .lv{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin:3mm 0}.lv div{border:1px solid var(--line);padding:3mm 4mm}.lv h3{margin-top:0}
 </style></head><body>
 <section class="cover"><div class="band"></div><img src="${logo}" alt="Len">
@@ -136,7 +136,7 @@ ${["1|Pendahuluan", "2|Deskripsi umum", "3|Kebutuhan fungsional", "4|Kebutuhan n
 <h2>1.4 Referensi</h2><ul><li>plan/lendatagovernance_deployment_plan.md — rencana deployment dan fase.</li>
 <li>docs/adr/pm-0001-application-stack.md, docs/adr/dg-0002-medallion-penamaan-field-id.md.</li>
 <li>deploy/lendatagovernance/medallion/schema/medallion_repository.sql — definisi tabel lakehouse.</li>
-<li>plan/interface-menu.md, plan/leno_interface_theme.md — standar antarmuka Len classic.</li>
+<li>plan/interface-menu.md — standar antarmuka UIx.</li>
 <li>Manual Pengembang, Manual Staf Data Governance dan Pimpinan, Manual Pengguna (docs/manuals).</li></ul>
 
 <h1 id="s2" class="pb">2. Deskripsi umum</h1>

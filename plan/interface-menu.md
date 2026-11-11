@@ -5,16 +5,15 @@ dibuat: 2026-11-04
 diperbarui: 2026-11-11
 status: Default v2.0 (UIx) — wajib untuk aplikasi web baru dan yang sudah ada
 sumber: Artifak design system "UIx" (claude.ai/artifact/FqPxtXaKBbuxoBowzYE9vn) — tokens.json + README
-menggantikan: "Len classic v1.1 (navy #194A80, Montserrat/Open Sans, sudut 4/6px), sumber len.co.id"
 ---
 
 # Interface & Menu — Standar Tema (UIx)
 
 > [!important] Keputusan 2026-11-11 (Andre Tigana)
-> Tampilan semua aplikasi web Len mengikuti **UIx**, bukan lagi Len classic dan bukan tampilan bawaan katalog upstream.
+> Tampilan semua aplikasi web Len mengikuti **UIx** saja. Tidak ada tema lain dan tidak ada jalan kembali.
 > UIx = library komponen aplikasi internal Len (Audit, KPI, SKI): padat, tenang; abu-abu bekerja, merah korporat
 > hanya untuk hal yang ditindaklanjuti pembaca; warna status hanya bicara soal status.
-> Posisi (header atas, sidebar kiri, kartu) tetap di `leno_interface_theme.md`. Isi, susunan menu, dan hak akses milik aplikasi.
+> Posisi: header atas, sidebar kiri, kartu (bagian 4). Isi, susunan menu, dan hak akses milik aplikasi.
 > Sumber nilai: `project/tokens.json` artifak UIx (nilai oklch dikonversi ke hex, tema terang saja).
 
 ## 1. Warna (CSS variables `--uix-*`, `:root` di `deploy/ui/leno-theme/leno.css`)
@@ -72,6 +71,6 @@ menggantikan: "Len classic v1.1 (navy #194A80, Montserrat/Open Sans, sudut 4/6px
 | `deploy/ui/leno-theme/leno-superset.css` | Tema Superset 6 |
 | `deploy/ui/leno-theme/referensi.html` | Halaman `/referensi/` |
 | `deploy/ui/leno-theme/fonts/` | Poppins 400/500/600 (woff2, dari artifak UIx) |
-| Settings › Preferences › Theme | `primaryColor #ae2524`, `selectedColor #8e1e1d` (sebelumnya `#e60000` / `#c51107`; cadangan ada di sesi 2026-11-11) |
+| Settings › Preferences › Theme | `primaryColor #ae2524`, `selectedColor #8e1e1d` |
 
 Catatan: UI katalog hanya punya tema terang; token tema gelap UIx belum dipakai.

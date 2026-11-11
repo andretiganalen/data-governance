@@ -83,19 +83,19 @@ SUPERSET_WEBSERVER_TIMEOUT = 300
 CACHE_CONFIG = {"CACHE_TYPE": "FileSystemCache", "CACHE_DIR": "/app/superset_home/cache", "CACHE_DEFAULT_TIMEOUT": 300}
 DATA_CACHE_CONFIG = {**CACHE_CONFIG, "CACHE_DEFAULT_TIMEOUT": 600}
 
-# Palet standar Len — skema warna bawaan untuk grafik baru.
+# Palet UIx (uix-chart-1…6 lalu abu-abu/merah) — skema warna bawaan untuk grafik baru.
 EXTRA_CATEGORICAL_COLOR_SCHEMES = [{
     "id": "lenDataGovernance",
     "description": "Len Data Governance",
     "label": "Len Data Governance",
     "isDefault": True,
-    "colors": ["#194A80", "#DA0000", "#0562C9", "#1E7B34", "#F28C00", "#12375F", "#8BC34A", "#F2C200",
-               "#838282", "#54595F", "#FF2121", "#EEF3F9"],
+    "colors": ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#ae2524",
+               "#6a7282", "#101828", "#99a1af", "#8e1e1d", "#d1d5dc"],
 }]
 EXTRA_SEQUENTIAL_COLOR_SCHEMES = [{
     "id": "lenRiskLevel",
     "description": "Level risiko: Low → High",
     "label": "Len Level Risiko",
     "isDiverging": False,
-    "colors": ["#1E7B34", "#8BC34A", "#F2C200", "#F28C00", "#DA0000"],
+    "colors": ["#008236", "#1baf7a", "#eda100", "#bb4d00", "#e7000b"],
 }]

@@ -1,28 +1,25 @@
+@font-face{font-family:'UIx Poppins';font-weight:400;src:url(fonts/poppins-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'UIx Poppins';font-weight:500;src:url(fonts/poppins-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'UIx Poppins';font-weight:600;src:url(fonts/poppins-latin-600-normal.woff2) format('woff2')}
 /* Dasar bersama tiga manual: font lokal, ukuran A4, warna Len (plan/interface-menu.md). Gaya tiap manual ada di file HTML-nya. */
-@font-face{font-family:Montserrat;font-weight:400;src:url(fonts/montserrat-400.woff2) format('woff2')}
-@font-face{font-family:Montserrat;font-weight:500;src:url(fonts/montserrat-500.woff2) format('woff2')}
-@font-face{font-family:Montserrat;font-weight:600;src:url(fonts/montserrat-600.woff2) format('woff2')}
-@font-face{font-family:Montserrat;font-weight:700;src:url(fonts/montserrat-700.woff2) format('woff2')}
-@font-face{font-family:'Open Sans';font-weight:400;src:url(fonts/opensans-400.woff2) format('woff2')}
-@font-face{font-family:'Open Sans';font-weight:600;src:url(fonts/opensans-600.woff2) format('woff2')}
-:root{--navy:#194A80;--navy7:#12375F;--navy50:#EEF3F9;--red:#DA0000;--blue:#0562C9;--ink:#3B3B3B;--text:#515151;
---text2:#54595F;--muted:#838282;--line:#C4C4C4;--soft:#E6E6E6;--bg:#F5F6F8;--ok:#1E7B34;--warn:#B26A00}
+:root{--head:#101828;--head2:#364153;--wash:#f3f4f6;--red:#ae2524;--blue:#ae2524;--ink:#101828;--text:#364153;
+--text2:#6a7282;--muted:#6a7282;--line:#d1d5dc;--soft:#e5e7eb;--bg:#f9fafb;--ok:#008236;--warn:#bb4d00}
 @page{size:A4;margin:16mm 16mm 18mm}
 @page :first{margin:0}
 *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-html{font:400 10pt/1.55 Montserrat,Arial,sans-serif;color:var(--text)}
+html{font:400 10pt/1.55 'UIx Poppins',Arial,sans-serif;color:var(--text)}
 body{margin:0}
-h1,h2,h3,h4{color:var(--ink);font-family:Montserrat,Arial,sans-serif;line-height:1.25;break-after:avoid}
+h1,h2,h3,h4{color:var(--ink);font-family:'UIx Poppins',Arial,sans-serif;line-height:1.25;break-after:avoid}
 p,li{orphans:3;widows:3}
 table{border-collapse:collapse;width:100%;break-inside:auto}
 tr,figure,.keep{break-inside:avoid}
 code,kbd,pre,.mono{font-family:'DejaVu Sans Mono',Consolas,ui-monospace,monospace}
-.ui{font-family:'Open Sans',Arial,sans-serif;font-weight:600;color:var(--navy);background:var(--navy50);
+.ui{font-family:'UIx Poppins',Arial,sans-serif;font-weight:600;color:var(--head);background:var(--wash);
   border:1px solid #cfdcec;padding:0 4px;border-radius:2px;white-space:nowrap}
 .cover{page:cover;height:297mm;width:210mm;position:relative;overflow:hidden;break-after:page}
 .pb{break-before:page}
-.chip{display:inline-block;font:600 8pt 'Open Sans',Arial;padding:1px 8px;border-radius:10px;white-space:nowrap;
+.chip{display:inline-block;font:600 8pt 'UIx Poppins',Arial;padding:1px 8px;border-radius:10px;white-space:nowrap;
   border:1px solid currentColor;line-height:1.5}
 .chip.ok{color:var(--ok);background:#e9f4ec}.chip.no{color:var(--warn);background:#fbf1e3}
 .chip.na{color:#7a7a7a;background:#f1f1f1}.chip.bad{color:var(--red);background:#fdecec}
-.chip.info{color:var(--navy);background:var(--navy50)}
+.chip.info{color:var(--head);background:var(--wash)}

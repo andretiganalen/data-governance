@@ -35,7 +35,7 @@ const send = (method, params = {}) => new Promise((res, rej) => { const i = ++id
 const once = method => new Promise(res => waiters.push({ method, res }));
 
 await send('Page.enable');
-const foot = title => `<div style="width:100%;font:7.5px Montserrat,Arial,sans-serif;color:#838282;padding:0 18mm;display:flex;justify-content:space-between">
+const foot = title => `<div style="width:100%;font:7.5px 'UIx Poppins',Arial,sans-serif;color:#6a7282;padding:0 18mm;display:flex;justify-content:space-between">
   <span>Len Data Governance · ${title}</span><span>Halaman <span class="pageNumber"></span> / <span class="totalPages"></span></span></div>`;
 
 for (const { src, out: file, title } of jobs) {

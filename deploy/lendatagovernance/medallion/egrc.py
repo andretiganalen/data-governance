@@ -807,11 +807,11 @@ def write_xlsx(path: Path, G: dict, release: str, source: str, reg: dict) -> Non
     wb = Workbook()
     ws = wb.active
     ws.title = "Info"
-    head, fill = Font(bold=True, color="FFFFFF"), PatternFill("solid", fgColor="194A80")
+    head, fill = Font(bold=True, color="FFFFFF"), PatternFill("solid", fgColor="101828")
     ws.append(["Len Data Governance — Data Siap Pakai E-GRC (Gold)"])
-    ws["A1"].font = Font(bold=True, size=14, color="194A80")
+    ws["A1"].font = Font(bold=True, size=14, color="101828")
     ws.append([f"Rilis {release}", f"Sumber: {source}", "Klasifikasi: CONFIDENTIAL — hanya untuk unit yang berhak"])
-    ws["C2"].font = Font(bold=True, color="DA0000")
+    ws["C2"].font = Font(bold=True, color="AE2524")
     ws.append(["Nilai uang dalam juta rupiah (_jt_idr). Rasio dalam pecahan desimal (0,25 = 25%). Arti setiap kolom: sheet kamus_data."])
     ws.append([])
     ws.append(["Sheet", "Baris"])
