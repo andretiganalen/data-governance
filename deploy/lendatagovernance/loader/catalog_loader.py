@@ -12,9 +12,9 @@ glossary terms, owners, DQ tests, lineage to LenO screens) is applied to the mat
 len_lakehouse_trino.lakekeeper.medallion_repository (workbook.TABLE_MAP). The old LenO_ERM database service is removed.
 
 Auth: LDG_TOKEN = Personal Access Token of a Len Data Governance *admin* (Profile › Access Token),
-read from /srv/lendatagovernance/secrets/loader.env or the environment. Admin is required because the
+read from /home/ubuntu/data-governance/data/secrets/loader.env or the environment. Admin is required because the
 workbook load creates teams, roles, policies and custom properties.
-Defect report → /srv/lendatagovernance/reports/ (outside git: the repo is public).
+Defect report → /home/ubuntu/data-governance/data/reports/ (outside git: the repo is public).
 """
 from __future__ import annotations
 
@@ -30,8 +30,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import workbook as W  # noqa: E402
 
 API_URL = os.environ.get("LDG_API_URL", "http://127.0.0.1:8585/api")
-SECRETS = os.environ.get("LDG_LOADER_ENV", "/srv/lendatagovernance/secrets/loader.env")
-REPORT_DIR = os.environ.get("LDG_REPORT_DIR", "/srv/lendatagovernance/reports")
+SECRETS = os.environ.get("LDG_LOADER_ENV", "/home/ubuntu/data-governance/data/secrets/loader.env")
+REPORT_DIR = os.environ.get("LDG_REPORT_DIR", "/home/ubuntu/data-governance/data/reports")
 
 SENSITIVITY = {
     "name": W.CLASSIFICATION, "displayName": W.CLASSIFICATION, "mutuallyExclusive": True,

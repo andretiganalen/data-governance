@@ -1,7 +1,7 @@
 # Manual Len Data Governance — daftar rilis
 
 Nama berkas: `YYMMDD CC [Nama Dokumen].pdf` — CC naik satu setiap rilis baru; rilis lama tidak ditimpa.
-Rilis baru: `/srv/lendatagovernance/medallion/.venv/bin/python docs/manuals/src/rilis.py` (lihat `src/README.md`).
+Rilis baru: `/home/ubuntu/data-governance/data/medallion/.venv/bin/python docs/manuals/src/rilis.py` (lihat `src/README.md`).
 
 | Rilis | Dokumen | Ukuran |
 | :-- | :-- | --: |

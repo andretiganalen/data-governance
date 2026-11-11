@@ -1,6 +1,6 @@
 # Len Data Governance — dev-data.len.co.id (server jitsi 192.168.125.14)
 # Plan: plan/lendatagovernance_deployment_plan.md
-# Data & secrets live OUTSIDE git in ${LDG_DATA_DIR:-/srv/lendatagovernance}.
+# Data & secrets live OUTSIDE git in ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}.
 # Business data lives only in the Trino lakehouse (lakekeeper @ datahub.len.co.id). Postgres and OpenSearch here hold
 # only the platform's own internal state (catalog metadata, Superset metadata, search index).
 # Upstream names that cannot change: the catalog server image (docker.getcollate.io/openmetadata/server:2.0.7), its
@@ -10,18 +10,18 @@ name: lendatagovernance
 x-ldg-env: &ldg-env
   env_file:
     - ./lendatagovernance.base.env                       # non-secret settings (in git)
-    - ${LDG_DATA_DIR:-/srv/lendatagovernance}/secrets/lendatagovernance.env  # secrets + IDS (not in git)
+    - ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/secrets/lendatagovernance.env  # secrets + IDS (not in git)
   volumes:
-    - ${LDG_DATA_DIR:-/srv/lendatagovernance}/secrets/jwt:/opt/openmetadata/conf/jwt:ro   # path inside the upstream image
+    - ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/secrets/jwt:/opt/openmetadata/conf/jwt:ro   # path inside the upstream image
 
 services:
   postgresql:
     image: postgres:15-bookworm
     restart: unless-stopped
     command: ["postgres", "-c", "work_mem=10MB", "-c", "max_connections=200"]
-    env_file: [ "${LDG_DATA_DIR:-/srv/lendatagovernance}/secrets/postgres.env" ]
+    env_file: [ "${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/secrets/postgres.env" ]
     volumes:
-      - ${LDG_DATA_DIR:-/srv/lendatagovernance}/postgres:/var/lib/postgresql/data
+      - ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/postgres:/var/lib/postgresql/data
       - ./postgres/init:/docker-entrypoint-initdb.d:ro
     networks: [ldg-internal]
     mem_limit: 1g
@@ -43,7 +43,7 @@ services:
     ulimits:
       nofile: { soft: 65536, hard: 65536 }
     volumes:
-      - ${LDG_DATA_DIR:-/srv/lendatagovernance}/opensearch:/usr/share/opensearch/data
+      - ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/opensearch:/usr/share/opensearch/data
     networks: [ldg-internal]
     mem_limit: 2g
     healthcheck:
@@ -88,7 +88,7 @@ services:
     volumes:
       - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./gateway/html:/usr/share/nginx/html:ro
-      - ./ui/leno-theme:/usr/share/nginx/leno:ro
+      - ../ui/leno-theme:/usr/share/nginx/leno:ro
     networks: [ldg-egress]
     mem_limit: 128m
 
@@ -96,9 +96,9 @@ services:
     build: ./superset
     image: lendatagovernance/superset:6.0.0-dg2
     restart: unless-stopped
-    env_file: [ "${LDG_DATA_DIR:-/srv/lendatagovernance}/secrets/superset.env" ]   # kunci & sandi DB (tidak di git)
+    env_file: [ "${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/secrets/superset.env" ]   # kunci & sandi DB (tidak di git)
     volumes:
-      - ${LDG_DATA_DIR:-/srv/lendatagovernance}/superset:/app/superset_home        # cache (uid 1000)
+      - ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/superset:/app/superset_home        # cache (uid 1000)
     depends_on:
       postgresql: { condition: service_healthy }
     networks: [ldg-internal, ldg-egress]   # egress: Trino datahub.len.co.id:443 · UI hanya via gateway :8585/visualisasi/

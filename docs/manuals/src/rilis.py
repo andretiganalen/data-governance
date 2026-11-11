@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Satu perintah rilis: 3 manual PDF dengan nomor versi "YYMMDD CC", angka diambil langsung dari sumbernya.
 
-  /srv/lendatagovernance/medallion/.venv/bin/python docs/manuals/src/rilis.py [--dry-run | --preview <dir>]
+  /home/ubuntu/data-governance/data/medallion/.venv/bin/python docs/manuals/src/rilis.py [--dry-run | --preview <dir>]
 
 - CC = nomor iterasi global (01, 02, …): nilai CC tertinggi dari PDF di docs/manuals/, + 1. Rilis lama tidak ditimpa.
 - Data Gold/dataset dibaca dari Trino lakehouse lakekeeper.medallion_repository (hanya SELECT/SHOW, tidak menulis);
@@ -24,8 +24,8 @@ SRC = Path(__file__).resolve().parent
 OUT = SRC.parent                                   # docs/manuals
 REPO = SRC.parents[2]
 DEPLOY = REPO / "deploy/lendatagovernance"
-LIVE = Path("/opt/lendatagovernance/deploy")
-DATA = Path("/srv/lendatagovernance")
+LIVE = Path("/home/ubuntu/data-governance/deploy/lendatagovernance")
+DATA = Path("/home/ubuntu/data-governance/data")
 PROJECT = "lendatagovernance"                      # nama project compose
 DB = "lendatagovernance_db"                        # basis data katalog di Postgres
 DOCS = [  # (source html, nama dokumen)
@@ -274,7 +274,7 @@ def write_index(release: str) -> None:
     (OUT / "README.md").write_text(
         "# Manual Len Data Governance — daftar rilis\n\n"
         "Nama berkas: `YYMMDD CC [Nama Dokumen].pdf` — CC naik satu setiap rilis baru; rilis lama tidak ditimpa.\n"
-        "Rilis baru: `/srv/lendatagovernance/medallion/.venv/bin/python docs/manuals/src/rilis.py` (lihat `src/README.md`).\n\n"
+        "Rilis baru: `/home/ubuntu/data-governance/data/medallion/.venv/bin/python docs/manuals/src/rilis.py` (lihat `src/README.md`).\n\n"
         "| Rilis | Dokumen | Ukuran |\n| :-- | :-- | --: |\n" + "\n".join(rows) + "\n")
     print(f"Indeks: {OUT / 'README.md'}")
 

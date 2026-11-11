@@ -45,7 +45,7 @@ import build_medallion as bm  # noqa: E402  silver(), gold() untuk workbook tata
 import egrc  # noqa: E402               Silver/Gold E-GRC (ditulis ke CSV sementara, lalu dipetakan)
 import workbook as wbmod  # noqa: E402
 
-DATA = Path(os.environ.get("LDG_DATA_DIR", "/srv/lendatagovernance"))
+DATA = Path(os.environ.get("LDG_DATA_DIR", "/home/ubuntu/data-governance/data"))
 SCHEMA_FILE = HERE / "schema" / "medallion_repository.sql"
 REF = HERE / "reference"
 CONTRACT_VERSION = "v1.0"

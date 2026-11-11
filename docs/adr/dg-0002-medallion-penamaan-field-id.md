@@ -26,7 +26,7 @@ Workbook ERM memakai `F001…F105` per workbook. Pola itu hanya muat 999 elemen 
 ## 1. Lapisan
 | Lapisan | Isi | Lokasi | Akses |
 | :-- | :-- | :-- | :-- |
-| Bronze | Berkas sumber apa adanya + CSV per sheet (nomor baris asli) + SHA-256 | `/srv/lendatagovernance/medallion/work/<rid>/bronze/<sistem>/` | server saja |
+| Bronze | Berkas sumber apa adanya + CSV per sheet (nomor baris asli) + SHA-256 | `/home/ubuntu/data-governance/data/medallion/work/<rid>/bronze/<sistem>/` | server saja |
 | Silver | Data bersih: dim, fact, bridge. Satu fakta satu tempat. Nilai sumber tidak diubah diam-diam. | `…/work/<rid>/silver/<sistem>/` | server saja |
 | Gold | Tabel datar siap dashboard + kamus data + temuan mutu | `…/panel/rilis/<rid>/[<domain>/]` (dihentikan 2026-11-10) | panel `/unduh/` (ditutup 2026-11-10) |
 

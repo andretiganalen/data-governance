@@ -167,7 +167,7 @@ ${["1|Pendahuluan", "2|Deskripsi umum", "3|Kebutuhan fungsional", "4|Kebutuhan n
 ].map((r) => r.map(e)))}
 <h2>2.4 Batasan</h2><ul><li>Data bisnis wajib di Trino lakehouse; berkas CSV/XLSX hanya masukan Bronze.</li>
 <li>Tidak ada port atau kredensial terpisah untuk Visualisasi; semua lewat :8585.</li>
-<li>Repo GitHub publik: rahasia hanya di /srv/lendatagovernance/secrets.</li>
+<li>Repo GitHub publik: rahasia hanya di /home/ubuntu/data-governance/data/secrets.</li>
 <li>Server katalog memakai image upstream; nama image, path di dalam image, kunci env, dan path URL tidak dapat diganti.</li>
 <li>Satu server dev (jitsi), Docker Compose, jaringan ldg-internal (tanpa rute keluar) dan ldg-egress.</li></ul>
 <h2>2.5 Asumsi dan ketergantungan</h2><ul><li>Trino dan penyimpanan Lakekeeper/S3 tersedia; galat sementara ditangani dengan coba ulang.</li>
@@ -210,7 +210,7 @@ ${tbl(["Lapisan", "Tabel", "Isi", "Cara isi"], [
 ].map((r) => r.map(e)))}
 <h2>5.2 Retensi dan kualitas</h2><ul><li>Backup basis data internal 14 hari; snapshot Gold harian dipertahankan.</li>
 <li>ETL tidak mengubah isi bisnis diam-diam: nilai sumber disimpan, koreksi dicatat (silver_fact_meta_baseline_correction, gold_meta_dq_finding_snapshot).</li>
-<li>Cacat workbook dilaporkan ke /srv/lendatagovernance/reports (di luar repo).</li></ul>
+<li>Cacat workbook dilaporkan ke /home/ubuntu/data-governance/data/reports (di luar repo).</li></ul>
 
 <h1 id="s6" class="pb">6. Use case — ringkasan</h1>
 <div class="lv"><div><h3>${chip("Dasar")} 25 use case</h3><p>Pemakaian harian lewat antarmuka: masuk, mencari dan memahami data, glosarium, kepemilikan, klasifikasi, lineage, mutu, dashboard, grafik, SQL Lab, tabel kerja.</p></div>

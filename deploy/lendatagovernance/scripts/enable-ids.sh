@@ -4,7 +4,7 @@
 # Prereq: IDS team registered redirect URI http://dev-data.len.co.id/callback
 set -euo pipefail
 [[ $# -eq 2 ]] || { echo "usage: $0 <client_id> <client_secret>"; exit 1; }
-SEC=${LDG_DATA_DIR:-/srv/lendatagovernance}/secrets/lendatagovernance.env
+SEC=${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/secrets/lendatagovernance.env
 URL=http://dev-data.len.co.id
 IDS=https://ids.len.co.id
 

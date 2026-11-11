@@ -9,3 +9,9 @@ coverage/
 
 # Internal governance workbooks — repo is public; never commit
 *.xlsx
+
+# token/credential files must never be committed
+deploy/tokens/
+
+# live data & secrets (postgres, opensearch, superset, backup, medallion, secrets)
+/data/

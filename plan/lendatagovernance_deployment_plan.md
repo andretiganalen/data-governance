@@ -140,8 +140,8 @@ scp -r C:\Projects\data-management-apps\deploy ubuntu@192.168.125.14:/home/ubunt
 ```bash
 bind 'set enable-bracketed-paste off'
 sudo mkdir -p /opt/lendatagovernance
-sudo mv /home/ubuntu/ldg-deploy /opt/lendatagovernance/deploy
-cd /opt/lendatagovernance/deploy
+sudo mv /home/ubuntu/ldg-deploy /home/ubuntu/data-governance/deploy/lendatagovernance
+cd /home/ubuntu/data-governance/deploy/lendatagovernance
 sudo find . -type f -exec sed -i 's/\r$//' {} +
 sudo chmod +x host/*.sh scripts/*.sh
 sudo cp .env.example .env
@@ -158,7 +158,7 @@ sudo ./host/prepare.sh
 ```bash
 sudo ./scripts/secrets-init.sh
 ```
-Simpan salinan `/srv/lendatagovernance/secrets` di tempat aman di luar server (brankas/password manager tim).
+Simpan salinan `/home/ubuntu/data-governance/data/secrets` di tempat aman di luar server (brankas/password manager tim).
 
 **5. Kunci image & deploy**
 ```bash
@@ -196,9 +196,9 @@ sudo ./scripts/verify.sh
 
 **Rollback** (tanpa menyentuh aplikasi lain):
 ```bash
-cd /opt/lendatagovernance/deploy && sudo docker compose down
+cd /home/ubuntu/data-governance/deploy/lendatagovernance && sudo docker compose down
 ```
-Data tetap di `/srv/lendatagovernance`.
+Data tetap di `/home/ubuntu/data-governance/data`.
 
 ---
 
@@ -207,7 +207,7 @@ Data tetap di `/srv/lendatagovernance`.
 **Restore** dari dump:
 1. `sudo docker compose stop ldg-server`
 2. ```bash
-   sudo docker compose exec -T postgresql pg_restore -U postgres -d lendatagovernance_db --clean --if-exists < /srv/lendatagovernance/backup/lendatagovernance_db-<waktu>.dump
+   sudo docker compose exec -T postgresql pg_restore -U postgres -d lendatagovernance_db --clean --if-exists < /home/ubuntu/data-governance/data/backup/lendatagovernance_db-<waktu>.dump
    ```
 3. `sudo docker compose up -d`
 4. Bangun ulang indeks pencarian dari UI: **Settings › Applications › Search Indexing › Run**.

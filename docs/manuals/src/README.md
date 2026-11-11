@@ -3,7 +3,7 @@
 Satu perintah membuat satu rilis: tiga manual PDF bernomor `YYMMDD CC`, dengan angka diambil langsung dari sumbernya.
 
 ```bash
-PY=/srv/lendatagovernance/medallion/.venv/bin/python   # venv medallion: trino + openpyxl
+PY=/home/ubuntu/data-governance/data/medallion/.venv/bin/python   # venv medallion: trino + openpyxl
 $PY docs/manuals/src/rilis.py --dry-run          # nomor rilis berikutnya
 $PY docs/manuals/src/rilis.py                    # rilis baru (tidak menimpa rilis lama)
 $PY docs/manuals/src/rilis.py --preview <dir>    # cetak ulang PDF dari build/data.js terakhir, untuk memeriksa tata letak
@@ -23,7 +23,7 @@ Angka diisi otomatis dari `build/data.js` (dibuat saat rilis):
 - `R.dataset` — ringkasan per dataset bisnis (dari `silver_dim_meta_dataset`, `gold_meta_data_dictionary`, `gold_meta_lineage`).
 - `R.live` — status langsung katalog (project compose `lendatagovernance`, basis data `lendatagovernance_db`).
 
-Butuh: venv di atas + `/srv/lendatagovernance/secrets/trino.env`, node 22, google-chrome, dan `sudo docker` untuk membaca status katalog.
+Butuh: venv di atas + `/home/ubuntu/data-governance/data/secrets/trino.env`, node 22, google-chrome, dan `sudo docker` untuk membaca status katalog.
 
 ## SRS (Software Requirements Specification)
 Versi resmi: PDF, 50 use case (25 Dasar + 25 Lanjutan). Tanpa dependensi npm; memakai `build-pdf.mjs` + Chrome:

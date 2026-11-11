@@ -1,6 +1,6 @@
 # Len Data Governance — dev-data.len.co.id
 
-Compose project `lendatagovernance` (live: `/opt/lendatagovernance/deploy`, data: `/srv/lendatagovernance`). Deploys Len Data Governance on server jitsi (192.168.125.14). Follows `plan/lendatagovernance_deployment_plan.md`.
+Compose project `lendatagovernance` (live: `/home/ubuntu/data-governance/deploy/lendatagovernance`, data: `/home/ubuntu/data-governance/data`). Deploys Len Data Governance on server jitsi (192.168.125.14). Follows `plan/lendatagovernance_deployment_plan.md`.
 
 **Data rule:** every dataset the app uses lives only in the Trino lakehouse `lakekeeper.medallion_repository`.
 Raw CSV/XLSX files are Bronze input (inbox) before ETL, never a store users read from. Postgres/OpenSearch below hold
@@ -18,9 +18,9 @@ upstream — everything else carries the Len Data Governance name.
 | Path | Content |
 |---|---|
 | `compose.yaml` | postgresql 15 (`lendatagovernance_db`, `superset`), opensearch 3.4.0, ldg-migrate, ldg-server, superset 6.0.0 (internal), gateway (nginx :80, :8585) |
-| `lendatagovernance.base.env` | Non-secret settings (git); secrets in `/srv/lendatagovernance/secrets/lendatagovernance.env` |
-| `/srv/lendatagovernance/secrets/` | DB passwords, Fernet key, JWT keys, IDS client (NOT in git — back up to vault) |
-| `/srv/lendatagovernance/{postgres,opensearch,backup}` | Data |
+| `lendatagovernance.base.env` | Non-secret settings (git); secrets in `/home/ubuntu/data-governance/data/secrets/lendatagovernance.env` |
+| `/home/ubuntu/data-governance/data/secrets/` | DB passwords, Fernet key, JWT keys, IDS client (NOT in git — back up to vault) |
+| `/home/ubuntu/data-governance/data/{postgres,opensearch,backup}` | Data |
 
 ## Operate
 ```bash
@@ -47,12 +47,12 @@ Until then, on each Windows PC add to `C:\Windows\System32\drivers\etc\hosts`:
 Needs an **admin** Personal Access Token (creates teams, roles, policies, custom properties):
 Len Data Governance → profile (top right) › **Access Token** › Generate. Then on the server:
 ```bash
-echo 'LDG_TOKEN=<paste token>' > /srv/lendatagovernance/secrets/loader.env && chmod 600 /srv/lendatagovernance/secrets/loader.env
+echo 'LDG_TOKEN=<paste token>' > /home/ubuntu/data-governance/data/secrets/loader.env && chmod 600 /home/ubuntu/data-governance/data/secrets/loader.env
 ```
 ```bash
-cd /opt/lendatagovernance/deploy/loader
+cd /home/ubuntu/data-governance/deploy/lendatagovernance/loader
 WB="/home/ubuntu/data-governance/templates/261016 Rev.0.1_Data Governance_ERM.xlsx"
-PY=/srv/lendatagovernance/medallion/.venv/bin/python
+PY=/home/ubuntu/data-governance/data/medallion/.venv/bin/python
 $PY catalog_loader.py workbook "$WB" --dry-run   # preview, no writes
 $PY catalog_loader.py workbook "$WB"             # load everything (idempotent, safe to re-run)
 $PY catalog_trino.py                            # sync catalog ↔ Trino (also runs after every lakehouse load)
@@ -65,13 +65,13 @@ term), 19 LenO screens (dashboard service *LenO ERM*: dashboard + data model, pr
 lineage Trino table → screen, DQ test-case definitions (not executed), DG-* → policy/role for the team.
 `catalog_trino.py` keeps this workbook metadata when it re-syncs tables from Trino. The former separate
 CustomDatabase service *LenO ERM* is removed by the loader.
-Defect report → `/srv/lendatagovernance/reports/workbook-defects-<date>.md` (outside git — repo is public).
+Defect report → `/home/ubuntu/data-governance/data/reports/workbook-defects-<date>.md` (outside git — repo is public).
 
 After UG-1/UV-1 fix the workbook: `scripts/reload-workbook.sh [file.xlsx]` reloads and lists closed/new defects.
 
 ## Lakehouse Trino — Bronze → Silver → Gold (`medallion/lakehouse.py`)
 Aturan proyek: semua data aplikasi tinggal di Trino lakehouse `lakekeeper.medallion_repository`
-(`jdbc:trino://datahub.len.co.id:443`). Kredensial hanya di `/srv/lendatagovernance/secrets/trino.env`:
+(`jdbc:trino://datahub.len.co.id:443`). Kredensial hanya di `/home/ubuntu/data-governance/data/secrets/trino.env`:
 `TRINO_HOST, TRINO_PORT, TRINO_USER, TRINO_PASSWORD, TRINO_CATALOG=lakekeeper, TRINO_SCHEMA=medallion_repository`.
 
 | Lapisan | Tabel | Cara isi |
@@ -84,14 +84,14 @@ Skema = `medallion/schema/medallion_repository.sql` (sumber kebenaran; kerangka 
 Sumber dikenali otomatis: workbook tata kelola (`DG_WORKBOOK`) dan Sumber Data E-GRC (`EGRC`); berkas lain → Bronze saja (`FILE`).
 
 ```bash
-python3 -m venv /srv/lendatagovernance/medallion/.venv && /srv/lendatagovernance/medallion/.venv/bin/pip install trino openpyxl  # sekali
-PY=/srv/lendatagovernance/medallion/.venv/bin/python; LH=/opt/lendatagovernance/deploy/medallion/lakehouse.py
+python3 -m venv /home/ubuntu/data-governance/data/medallion/.venv && /home/ubuntu/data-governance/data/medallion/.venv/bin/pip install trino openpyxl  # sekali
+PY=/home/ubuntu/data-governance/data/medallion/.venv/bin/python; LH=/home/ubuntu/data-governance/deploy/lendatagovernance/medallion/lakehouse.py
 $PY $LH ingest "<berkas.xlsx>"     # unggah → Bronze → Silver → Gold
 $PY $LH retry                      # lengkapi Bronze berstatus PARTIAL (tabel mentah yang tertunda)
 $PY $LH rebuild                    # bangun ulang Silver/Gold dari berkas terbaru
 $PY $LH status                     # jumlah baris + snapshot terakhir tiap tabel (pembanding DBeaver)
 ```
-Inbox otomatis: letakkan berkas di `/srv/lendatagovernance/medallion/inbox/`; timer
+Inbox otomatis: letakkan berkas di `/home/ubuntu/data-governance/data/medallion/inbox/`; timer
 `host/systemd/lendatagovernance-lakehouse-inbox.timer` (tiap 10 menit) memuatnya lalu memindahkan ke `inbox/selesai/`.
 Pasang: `sudo cp host/systemd/lendatagovernance-lakehouse-inbox.* /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable --now lendatagovernance-lakehouse-inbox.timer`.
 Penyuntingan langsung di tabel `silver_*`/`gold_*` akan tertimpa pada pemuatan berikutnya — perbaiki di sumber lalu unggah ulang.
@@ -131,7 +131,7 @@ Panel unduhan berkas `/unduh/` (rilis CSV/XLSX) ditutup 2026-11-10: data Gold di
 `lakehouse.py cdc`: watermark `lenodb.silver._cdc_watermarks` dibandingkan dengan grab terakhir (`silver_fact_meta_etl_run`);
 bila replika berubah → ERM + SDM LenO diambil ulang (Bronze → Silver → Gold), grab dicatat, kesegaran dihitung, katalog disinkron.
 Pasang: `sudo cp host/systemd/lendatagovernance-lakehouse-cdc.* /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable --now lendatagovernance-lakehouse-cdc.timer`.
-Log: `/srv/lendatagovernance/medallion/logs/cdc.log`.
+Log: `/home/ubuntu/data-governance/data/medallion/logs/cdc.log`.
 
 **Kesegaran data** — `gold_meta_data_freshness` (`medallion/freshness.py`): per tabel Gold (dan per sumber) perubahan sumber terakhir,
 replika CDC terakhir, **grab ETL terakhir**, umur (jam), status `Segar | Menunggu ETL | Sumber CDC tidak diperbarui (> 48 jam) | Berkas statis`.
@@ -159,6 +159,6 @@ Pengguna hanya melihat Len Data Governance (:8585). Menu **Visualisasi** di side
   (`SUPERSET_SECRET_KEY`, `SUPERSET_DB_PASSWORD`).
 ```bash
 docker compose build superset && docker compose up -d superset && docker compose up -d --force-recreate gateway   # nginx.conf = bind-mount berkas
-/srv/lendatagovernance/medallion/.venv/bin/python scripts/superset-setup.py           # koneksi + dataset + 2 dashboard (login SSO via LDG_TOKEN)
-/srv/lendatagovernance/medallion/.venv/bin/python scripts/superset-setup.py --force   # buat ulang dashboard awal
+/home/ubuntu/data-governance/data/medallion/.venv/bin/python scripts/superset-setup.py           # koneksi + dataset + 2 dashboard (login SSO via LDG_TOKEN)
+/home/ubuntu/data-governance/data/medallion/.venv/bin/python scripts/superset-setup.py --force   # buat ulang dashboard awal
 ```

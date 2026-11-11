@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Generate per-server secrets ONCE. Never overwrites existing files.
 set -euo pipefail
-DATA=${LDG_DATA_DIR:-/srv/lendatagovernance}
+DATA=${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}
 SEC=$DATA/secrets
 mkdir -p "$SEC/jwt"; chmod 700 "$SEC"
 rnd() { openssl rand -base64 36 | tr -dc 'A-Za-z0-9' | head -c "${1:-32}"; }

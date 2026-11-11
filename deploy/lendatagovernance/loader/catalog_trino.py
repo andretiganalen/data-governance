@@ -9,8 +9,8 @@ catalog_loader.py (blok deskripsi "Workbook ERM", tag Sensitivitas/glosarium, pe
 
 Tujuan: admin bisa mencocokkan :8585 dengan DBeaver — daftar tabel, kolom, dan jumlah baris harus sama.
 Dipanggil otomatis di akhir lakehouse.py (bila token ada); bisa juga manual:
-  /srv/lendatagovernance/medallion/.venv/bin/python loader/catalog_trino.py
-Butuh: LDG_TOKEN admin di /srv/lendatagovernance/secrets/loader.env, kredensial Trino di secrets/trino.env.
+  /home/ubuntu/data-governance/data/medallion/.venv/bin/python loader/catalog_trino.py
+Butuh: LDG_TOKEN admin di /home/ubuntu/data-governance/data/secrets/loader.env, kredensial Trino di secrets/trino.env.
 """
 from __future__ import annotations
 

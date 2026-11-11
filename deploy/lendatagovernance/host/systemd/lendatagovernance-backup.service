@@ -4,4 +4,4 @@ After=docker.service
 [Service]
 Type=oneshot
 User=ubuntu
-ExecStart=/opt/lendatagovernance/deploy/scripts/backup.sh
+ExecStart=/home/ubuntu/data-governance/deploy/lendatagovernance/scripts/backup.sh

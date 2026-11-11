@@ -46,7 +46,7 @@ module.exports.FR = [
   ["FR-51", "Operasi", "Status layanan harus dapat diperiksa dengan satu perintah."],
   ["FR-52", "Operasi", "Upgrade komponen dan pembangunan ulang indeks pencarian harus terdokumentasi dan dapat diulang."],
   ["FR-53", "Dokumentasi", "Manual pengguna, staf, dan pengembang harus dapat diterbitkan ulang dari data terkini."],
-  ["FR-54", "Keamanan", "Rahasia harus disimpan hanya di /srv/lendatagovernance/secrets, tidak di repo."],
+  ["FR-54", "Keamanan", "Rahasia harus disimpan hanya di /home/ubuntu/data-governance/data/secrets, tidak di repo."],
   ["FR-55", "Antarmuka", "Seluruh antarmuka memakai tema Len classic dan nama Len Data Governance."],
 ];
 
@@ -64,7 +64,7 @@ module.exports.NFR = [
   ["NFR-11", "Kepatuhan data", "Semua data bisnis aplikasi tinggal di Trino lakehouse; pengecualian hanya penyimpanan internal platform (Postgres, OpenSearch)."],
   ["NFR-12", "Penamaan", "Tabel lakehouse mengikuti kerangka Inggris bronze_/silver_dim_/silver_fact_/gold_; kolom membawa kode F0xx/X0xx di komentar (ADR DG-0002)."],
   ["NFR-13", "Penamaan", "Tidak ada nama produk upstream pada komponen milik proyek; hanya nama yang ditetapkan upstream (image, path di dalam image, kunci env, path URL)."],
-  ["NFR-14", "Pemeliharaan", "Semua konfigurasi di repo deploy/lendatagovernance; salinan live /opt/lendatagovernance/deploy; data /srv/lendatagovernance."],
+  ["NFR-14", "Pemeliharaan", "Semua konfigurasi di repo deploy/lendatagovernance; salinan live /home/ubuntu/data-governance/deploy/lendatagovernance; data /home/ubuntu/data-governance/data."],
   ["NFR-15", "Kegunaan", "Antarmuka berbahasa Indonesia dengan tema LenO (Montserrat/Open Sans, navy #194A80, merah #CF0000)."],
   ["NFR-16", "Lisensi", "Komponen open-source berlisensi permisif (Apache-2.0, PostgreSQL); tanpa Elasticsearch ELv2/AGPL atau MySQL GPL."],
   ["NFR-17", "Kompatibilitas", "OpenSearch harus ≥ 3.4.0 untuk server katalog 2.0.x (bug Lucene 10 script_score pada 3.2–3.3)."],

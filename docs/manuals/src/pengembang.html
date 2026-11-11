@@ -198,9 +198,9 @@ code{font-size:8pt;background:#eef1f4;padding:0 1.2mm}
     <div class="card"><h4>Loader</h4>
       <p><code>deploy/lendatagovernance/medallion/lakehouse.py</code>: <code>ingest</code>, <code>inbox</code>, <code>retry</code>, <code>rebuild</code>, <code>status</code>.
       Skema tabel: <code>medallion/schema/medallion_repository.sql</code> (sumber kebenaran). <code>build_medallion.py</code> kini hanya menyediakan
-      fungsi <code>silver()</code>/<code>gold()</code> untuk workbook dan tidak menulis berkas. Kredensial hanya di <code>/srv/lendatagovernance/secrets/trino.env</code>.</p></div>
+      fungsi <code>silver()</code>/<code>gold()</code> untuk workbook dan tidak menulis berkas. Kredensial hanya di <code>/home/ubuntu/data-governance/data/secrets/trino.env</code>.</p></div>
     <div class="card"><h4>Inbox (masukan Bronze)</h4>
-      <p>Letakkan berkas di <code>/srv/lendatagovernance/medallion/inbox/</code>. Timer systemd <code>lendatagovernance-lakehouse-inbox.timer</code>
+      <p>Letakkan berkas di <code>/home/ubuntu/data-governance/data/medallion/inbox/</code>. Timer systemd <code>lendatagovernance-lakehouse-inbox.timer</code>
       (tiap 10 menit) memuatnya ke Bronze, membangun ulang Silver/Gold, menyinkronkan katalog, lalu memindahkan berkas ke <code>inbox/selesai/</code>.
       Sumber dikenali: <code>DG_WORKBOOK</code> dan <code>EGRC</code>. Berkas lain hanya masuk Bronze (<code>FILE</code>).</p></div>
   </div>
@@ -246,7 +246,7 @@ code{font-size:8pt;background:#eef1f4;padding:0 1.2mm}
   dari PDF di <code>docs/manuals/</code>, ditambah 1. Rilis lama tidak pernah ditimpa. Rilis tidak membangun data: angka Gold dibaca dari Trino
   (hanya SELECT) setelah loader <code>lakehouse.py</code> memuatnya.</p>
 <pre class="c"><span class="cm"># lihat nomor rilis berikutnya</span>
-PY=/srv/lendatagovernance/medallion/.venv/bin/python      <span class="cm"># venv berisi trino + openpyxl</span>
+PY=/home/ubuntu/data-governance/data/medallion/.venv/bin/python      <span class="cm"># venv berisi trino + openpyxl</span>
 $PY docs/manuals/src/rilis.py --dry-run
 <span class="cm"># rilis: status Gold dari Trino + status katalog langsung → 3 PDF "YYMMDD CC [Nama Dokumen].pdf" + indeks docs/manuals/README.md</span>
 $PY docs/manuals/src/rilis.py
@@ -265,10 +265,10 @@ $PY docs/manuals/src/rilis.py --preview &lt;dir&gt;</pre>
 
 <section class="pb">
   <h2><span>§8</span>Runbook operasi</h2>
-  <p>Semua perintah dijalankan dari salinan live <code>/opt/lendatagovernance/deploy</code> (project compose <code>lendatagovernance</code>,
+  <p>Semua perintah dijalankan dari salinan live <code>/home/ubuntu/data-governance/deploy/lendatagovernance</code> (project compose <code>lendatagovernance</code>,
   layanan <code>ldg-server</code>, <code>ldg-migrate</code>, <code>postgresql</code>, <code>opensearch</code>, <code>superset</code>, <code>gateway</code>;
   jaringan <code>ldg-internal</code>/<code>ldg-egress</code>). Ubah di repo, lalu salin ke salinan live. Rencana: <code>plan/lendatagovernance_deployment_plan.md</code>.
-  Setelan non-rahasia: <code>lendatagovernance.base.env</code>; rahasia: <code>/srv/lendatagovernance/secrets/lendatagovernance.env</code>
+  Setelan non-rahasia: <code>lendatagovernance.base.env</code>; rahasia: <code>/home/ubuntu/data-governance/data/secrets/lendatagovernance.env</code>
   (direktori data dapat diganti dengan <code>LDG_DATA_DIR</code>). Basis data katalog: <code>lendatagovernance_db</code>, role <code>lendatagovernance_user</code>
   (dibuat oleh <code>postgres/init/10-lendatagovernance.sh</code>).</p>
   <p style="font-size:8pt;color:var(--muted)">Catatan: server katalog memakai image open-source upstream <code>docker.getcollate.io/openmetadata/server:2.0.7</code>;
@@ -281,17 +281,17 @@ sudo docker compose -p lendatagovernance up -d ; sudo docker compose -p lendatag
 sudo docker compose -p lendatagovernance logs -f --tail=200 ldg-server
 <span class="cm"># terapkan perubahan gateway (nginx.conf = bind-mount berkas, jadi wajib recreate)</span>
 sudo docker compose -p lendatagovernance up -d --force-recreate gateway ; sudo docker compose -p lendatagovernance exec gateway nginx -t
-<span class="cm"># backup (timer harian 01:30 → /srv/lendatagovernance/backup, simpan 14 hari) dan pemulihan</span>
+<span class="cm"># backup (timer harian 01:30 → /home/ubuntu/data-governance/data/backup, simpan 14 hari) dan pemulihan</span>
 sudo scripts/backup.sh
 sudo docker compose -p lendatagovernance stop ldg-server
 sudo docker compose -p lendatagovernance exec -T postgresql pg_restore -U postgres -d lendatagovernance_db --clean --if-exists \
-  &lt; /srv/lendatagovernance/backup/lendatagovernance_db-&lt;YYYYMMDD-HHMM&gt;.dump   <span class="cm"># butuh lendatagovernance.env + jwt/ yang sama</span>
+  &lt; /home/ubuntu/data-governance/data/backup/lendatagovernance_db-&lt;YYYYMMDD-HHMM&gt;.dump   <span class="cm"># butuh lendatagovernance.env + jwt/ yang sama</span>
 sudo docker compose -p lendatagovernance start ldg-server   <span class="cm"># lalu Settings › Applications › Search Indexing › Run</span>
 <span class="cm"># token loader: profil admin › Access Token (60–90 hari) → LDG_TOKEN di secrets/loader.env</span>
 scripts/reload-workbook.sh "templates/&lt;workbook&gt;.xlsx"       <span class="cm"># muat ulang katalog (catalog_loader.py) + selisih cacat</span>
 <span class="cm"># lakehouse Trino (Bronze → Silver → Gold)</span>
-PY=/srv/lendatagovernance/medallion/.venv/bin/python; LH=medallion/lakehouse.py
-cp "&lt;berkas.xlsx&gt;" /srv/lendatagovernance/medallion/inbox/  <span class="cm"># dimuat timer dalam 10 menit</span>
+PY=/home/ubuntu/data-governance/data/medallion/.venv/bin/python; LH=medallion/lakehouse.py
+cp "&lt;berkas.xlsx&gt;" /home/ubuntu/data-governance/data/medallion/inbox/  <span class="cm"># dimuat timer dalam 10 menit</span>
 $PY $LH ingest "&lt;berkas.xlsx&gt;" ; $PY $LH retry ; $PY $LH rebuild ; $PY $LH status
 $PY loader/catalog_trino.py                                  <span class="cm"># sinkron katalog ↔ Trino (juga otomatis setelah pemuatan)</span>
 <span class="cm"># Visualisasi (Superset 6)</span>

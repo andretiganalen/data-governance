@@ -4,7 +4,7 @@ After=network-online.target
 [Service]
 Type=oneshot
 User=ubuntu
-Environment=LDG_DATA_DIR=/srv/lendatagovernance
-ExecStart=/srv/lendatagovernance/medallion/.venv/bin/python -u /opt/lendatagovernance/deploy/medallion/lakehouse.py cdc
-StandardOutput=append:/srv/lendatagovernance/medallion/logs/cdc.log
-StandardError=append:/srv/lendatagovernance/medallion/logs/cdc.log
+Environment=LDG_DATA_DIR=/home/ubuntu/data-governance/data
+ExecStart=/home/ubuntu/data-governance/data/medallion/.venv/bin/python -u /home/ubuntu/data-governance/deploy/lendatagovernance/medallion/lakehouse.py cdc
+StandardOutput=append:/home/ubuntu/data-governance/data/medallion/logs/cdc.log
+StandardError=append:/home/ubuntu/data-governance/data/medallion/logs/cdc.log

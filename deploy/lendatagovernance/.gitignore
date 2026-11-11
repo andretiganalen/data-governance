@@ -1,4 +1,4 @@
-# secrets & data live in /srv/lendatagovernance — never in git
+# secrets & data live in /home/ubuntu/data-governance/data — never in git
 *.env
 !lendatagovernance.base.env
 __pycache__/

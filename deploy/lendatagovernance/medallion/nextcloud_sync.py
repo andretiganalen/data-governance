@@ -24,7 +24,7 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-DATA = Path(os.environ.get("LDG_DATA_DIR", "/srv/lendatagovernance"))
+DATA = Path(os.environ.get("LDG_DATA_DIR", "/home/ubuntu/data-governance/data"))
 INBOX = DATA / "medallion" / "inbox"
 STATE = DATA / "medallion" / "nextcloud-state.json"
 EXT = (".xlsx", ".xlsm", ".csv")

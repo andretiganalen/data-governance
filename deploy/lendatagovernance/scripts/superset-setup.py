@@ -9,7 +9,7 @@
 Aman diulang: koneksi diperbarui, dataset yang sudah ada dilewati, dashboard hanya dibuat bila belum ada
 (pakai --force untuk membuat ulang dashboard awal; dashboard buatan admin lain tidak disentuh).
 
-Pemakaian (di server):  /srv/lendatagovernance/medallion/.venv/bin/python scripts/superset-setup.py [--force]
+Pemakaian (di server):  /home/ubuntu/data-governance/data/medallion/.venv/bin/python scripts/superset-setup.py [--force]
   Login: SSO dengan token admin Len Data Governance (LDG_TOKEN di secrets/loader.env) — tanpa kata sandi Superset.
 Kredensial: $DATA/secrets/loader.env (token admin) dan $DATA/secrets/trino.env (tidak pernah di git).
 """
@@ -25,7 +25,7 @@ from urllib.parse import quote
 
 import requests
 
-DATA = Path(os.environ.get("LDG_DATA_DIR", "/srv/lendatagovernance"))
+DATA = Path(os.environ.get("LDG_DATA_DIR", "/home/ubuntu/data-governance/data"))
 BASE = os.environ.get("SUPERSET_URL", "http://127.0.0.1:8585/visualisasi")
 DB_NAME = "Len Lakehouse (Trino)"
 SCHEMA = "medallion_repository"
