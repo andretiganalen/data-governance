@@ -98,7 +98,9 @@ def seed(om, tq: L.Trino) -> dict:
 
     def ensure(name: str, body: dict) -> None:
         nonlocal made
-        if om.find(f"/v1/glossaryTerms/name/{quote(GLOSSARY + '.' + name, safe='')}") is None:
+        # FQN istilah turunan memuat induknya: Glosarium.Induk.Nama (tanpa ini istilah selalu dianggap belum ada dan ditimpa)
+        fqn = (body["parent"] + "." if body.get("parent") else GLOSSARY + ".") + name
+        if om.find(f"/v1/glossaryTerms/name/{quote(fqn, safe='')}") is None:
             om.put("/v1/glossaryTerms", {"glossary": GLOSSARY, "name": name, **body})
             made += 1
 
