@@ -173,3 +173,88 @@ main[data-testid="signin-page"] > div:first-child [class*="tw:aspect"] { backgro
   background: var(--uix-input-wash) !important; border: 1px solid var(--uix-field-border) !important; box-shadow: none !important;
 }
 .login-box .ant-input-affix-wrapper .ant-input { border: 0 !important; background: transparent !important; }
+
+/* ================= Putaran 2: kerapatan sidebar, avatar, pencarian, spinner ================= */
+/* Baris sidebar 32px seragam (item, submenu, dan item Visualisasi/Referensi); teks 13px */
+.left-sidebar-menu.ant-menu .ant-menu-item,
+.left-sidebar-menu.ant-menu .ant-menu-submenu-title {
+  height: 36px !important; line-height: 36px !important; padding-top: 0 !important; padding-bottom: 0 !important;
+  display: flex !important; align-items: center !important; gap: 10px;
+}
+.left-sidebar-menu.ant-menu .ant-menu-submenu { margin: 0 !important; padding: 0 !important; height: auto !important; }
+.left-sidebar-menu.ant-menu span:not(.anticon) { font-size: 13px !important; line-height: 1.4 !important; }
+.left-sidebar-menu.ant-menu .ant-menu-item-selected span:not(.anticon) { font-weight: 500 !important; }
+.left-sidebar-menu.ant-menu .ant-menu-item:not(.ant-menu-item-selected) span:not(.anticon) { font-weight: 400 !important; }
+.left-sidebar-menu.ant-menu .anticon, .left-sidebar-menu.ant-menu .ant-menu-item-icon { font-size: 16px !important; color: var(--uix-text-secondary) !important; }
+.left-sidebar-menu.ant-menu .ant-menu-item svg, .left-sidebar-menu.ant-menu .ant-menu-submenu-title svg { width: 16px; height: 16px; }
+
+/* Avatar: netral (abu-abu muda + teks gelap), bukan biru bawaan */
+.ant-avatar, .ant-avatar-icon { background-color: var(--uix-surface-muted) !important; color: var(--uix-text-head) !important; border: 1px solid var(--uix-border); }
+
+/* Kolom pencarian atas: 8px, bukan pil */
+.navbar-container .ant-input-affix-wrapper, .navbar-container [class*="search"], .navbar-container [class*="Search"] { border-radius: var(--uix-radius) !important; }
+
+/* Spinner & penanda pemuatan: merah utama */
+.ant-spin-dot-item { background-color: var(--uix-primary) !important; }
+.ant-spin { color: var(--uix-primary) !important; }
+.ant-spin-blur { opacity: .6; }
+[class*="loader"], [class*="Loader"], [class*="spinner"] { border-top-color: var(--uix-primary) !important; }
+
+/* ================= Putaran 3: skala huruf UIx, badge lunak, latar tunggal ================= */
+/* Isi 13px (UIx text-base); judul kartu 16px (text-md); 12px untuk meta */
+.left-sidebar-menu a.left-panel-label, .left-sidebar-menu .left-panel-label, .bottom-menu .left-panel-label { font-size: 13px !important; }
+.left-sidebar-menu.ant-menu .ant-menu-submenu-title span:not(.anticon),
+.left-sidebar-menu.ant-menu .ant-menu-submenu-title a { font-weight: 400 !important; }
+.left-sidebar-menu.ant-menu .ant-menu-item.ant-menu-item-selected a.left-panel-label { font-weight: 500 !important; }
+body, .ant-typography, .text-sm, .ant-select-selection-item, .ant-input, .ant-btn, .ant-table, .ant-tabs, .ant-dropdown, .ant-menu,
+.ant-breadcrumb, .ant-tag, .ant-form-item-label > label, .ant-radio-wrapper, .ant-checkbox-wrapper { font-size: 13px; }
+.text-lg { font-size: 16px !important; line-height: 24px !important; }
+.text-xl { font-size: 18px !important; }
+.text-md { font-size: 14px !important; }
+.text-xs { font-size: 12px !important; }
+.ant-typography.text-link-color, .text-link-color.text-lg { font-weight: 500 !important; }
+.font-semibold, .tw\:font-semibold { font-weight: 600 !important; }
+
+/* Latar halaman satu warna #f9fafb (UI dasar memberi .ant-layout biru-keabuan) */
+.ant-layout, .ant-layout-content, .ant-layout-has-sider, [class*="page-layout"], [class*="layout-content"] { background: var(--uix-surface-page) !important; }
+
+/* Badge hitungan (angka di tab/judul): kapsul lunak merah, bukan merah solid; hanya Primary yang solid */
+.bg-primary.text-white.rounded-4, .rounded-4.bg-primary, .ant-badge-count, .ant-tabs-tab .ant-badge-count {
+  background: var(--uix-primary-soft) !important; color: var(--uix-primary) !important; box-shadow: none !important;
+  border-radius: var(--uix-radius-sm) !important; font-weight: 500 !important;
+}
+
+/* ================= Putaran 4: tanpa blok/baris merah; judul halaman netral ================= */
+/* Grup sidebar yang berisi halaman aktif: abu-abu, bukan blok merah tua */
+.left-sidebar-menu.ant-menu .ant-menu-submenu-selected > .ant-menu-submenu-title,
+.left-sidebar-menu.ant-menu .ant-menu-submenu-open > .ant-menu-submenu-title:hover {
+  background: var(--uix-surface-muted) !important; color: var(--uix-text-head) !important;
+}
+.left-sidebar-menu.ant-menu .ant-menu-submenu-selected > .ant-menu-submenu-title *,
+.left-sidebar-menu.ant-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .anticon { color: var(--uix-text-head) !important; }
+.left-sidebar-menu.ant-menu .ant-menu-sub, .left-sidebar-menu.ant-menu .ant-menu-inline { background: transparent !important; }
+/* Baris terpilih di pohon/daftar: wash abu-abu, bukan latar merah muda (UIx: baris terpilih tidak diwarnai merah) */
+.ant-tree-treenode-selected, .ant-tree .ant-tree-node-selected, .ant-tree-node-content-wrapper.ant-tree-node-selected,
+[class*="glossary"] [class*="selected"], [class*="tree"] [class*="selected"], .ant-menu-item-selected:not(.left-sidebar-menu .ant-menu-item) {
+  background: var(--uix-surface-muted) !important; color: var(--uix-text-head) !important;
+}
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) { background: var(--uix-surface-muted) !important; font-weight: 500 !important; }
+/* Banner versi baru: panel abu-abu, bukan blok merah solid */
+.whats-new-alert-left { background: var(--uix-surface-muted) !important; color: var(--uix-text-head) !important; }
+.whats-new-alert-left * { color: var(--uix-text-head) !important; }
+/* Judul halaman/entitas = teks kepala; merah hanya untuk tautan */
+[data-testid="entity-header-display-name"], .entity-header-title, h1, h2 { color: var(--uix-text-head) !important; }
+.ant-tag.bg-primary, .ant-tag.rounded-4.bg-primary { background: var(--uix-primary-soft) !important; color: var(--uix-primary) !important; border-color: transparent !important; font-weight: 500 !important; }
+
+/* ================= Putaran 5: bobot maks 600 (UIx tidak punya 700), sambutan Home, badge tab ================= */
+[class*="font-bold"], [class*="font-extrabold"], [class*="font-black"], [class*="tw\:font-bold"], b, strong { font-weight: 600 !important; }
+.whats-new-alert-version { color: var(--uix-text-head) !important; font-weight: 600 !important; font-size: 24px !important; }
+.welcome-screen-header-first-line { font-size: 24px !important; font-weight: 400 !important; color: var(--uix-text-secondary) !important; }
+.welcome-screen-header-second-line { font-size: 32px !important; font-weight: 600 !important; color: var(--uix-text-head) !important; letter-spacing: 0 !important; }
+.ant-tabs-tab .ant-tag, .ant-tag.global-border.rounded-4.text-center, .ant-tabs-tab-active .ant-tag {
+  background: var(--uix-primary-soft) !important; color: var(--uix-primary) !important; border-color: transparent !important; font-weight: 500 !important;
+}
+/* Scrollbar tipis netral */
+* { scrollbar-width: thin; scrollbar-color: var(--uix-border-strong) transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; } *::-webkit-scrollbar-thumb { background: var(--uix-border-strong); border-radius: 8px; }
+*::-webkit-scrollbar-track, .left-sidebar-layout::-webkit-scrollbar-track { background: transparent; }

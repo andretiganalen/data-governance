@@ -5,50 +5,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="data-ids-status" content="off">
 <title>Data Governance · Len</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23194A80'/><text x='16' y='22' text-anchor='middle' font-family='Arial' font-weight='700' font-size='16' fill='white'>D</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23ae2524'/><text x='16' y='22' text-anchor='middle' font-family='Arial' font-weight='700' font-size='16' fill='white'>D</text></svg>">
 <style>
-  /* UIx tokens — plan/interface-menu.md */@font-face{font-family:"UIx Poppins";font-weight:400;font-display:swap;src:url(/_leno/fonts/poppins-latin-400-normal.woff2) format("woff2")}@font-face{font-family:"UIx Poppins";font-weight:500;font-display:swap;src:url(/_leno/fonts/poppins-latin-500-normal.woff2) format("woff2")}@font-face{font-family:"UIx Poppins";font-weight:600;font-display:swap;src:url(/_leno/fonts/poppins-latin-600-normal.woff2) format("woff2")}
+  /* UIx — plan/interface-menu.md */
+  @font-face{font-family:"UIx Poppins";font-weight:400;font-display:swap;src:url(/_leno/fonts/poppins-latin-400-normal.woff2) format("woff2")}
+  @font-face{font-family:"UIx Poppins";font-weight:500;font-display:swap;src:url(/_leno/fonts/poppins-latin-500-normal.woff2) format("woff2")}
+  @font-face{font-family:"UIx Poppins";font-weight:600;font-display:swap;src:url(/_leno/fonts/poppins-latin-600-normal.woff2) format("woff2")}
   :root{
-    --uix-primary:#ae2524; --uix-primary-strong:#8e1e1d; --uix-surface-muted:#f3f4f6;
-    --uix-primary:#ae2524; --uix-primary:#ae2524; --uix-blue:#ae2524;
-    --uix-ink:#101828; --uix-text:#364153; --uix-muted:#6a7282;
-    --uix-line:#d1d5dc; --uix-line-soft:#e5e7eb; --uix-bg:#f9fafb; --uix-surface:#FFFFFF; --uix-footer:#000000;
-    --uix-warning:#bb4d00;
-    --uix-font-head:"UIx Poppins","Segoe UI",Arial,sans-serif; --uix-font-body:"UIx Poppins","Segoe UI",Arial,sans-serif; --uix-font-menu:"UIx Poppins","Segoe UI",Arial,sans-serif;
+    --uix-primary:#ae2524; --uix-primary-strong:#8e1e1d; --uix-on-primary:#ffffff;
+    --uix-head:#101828; --uix-body:#364153; --uix-secondary:#6a7282;
+    --uix-page:#f9fafb; --uix-surface:#ffffff; --uix-muted:#f3f4f6;
+    --uix-border:#e5e7eb; --uix-border-strong:#d1d5dc;
+    --uix-focus-ring:rgba(106,114,130,.4); --uix-focus-border:#6a7282;
+    --uix-shadow-xs:0 0 0 1px rgba(16,24,40,.04),0 1px 2px rgba(16,24,40,.06);
+    --uix-font:"UIx Poppins","Segoe UI",Arial,sans-serif;
   }
   *{box-sizing:border-box}
-  body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var(--uix-bg);color:var(--uix-text);
-       font:15px/1.6 var(--uix-font-body)}
-  /* §4.1 header: white + Len shadow */
-  header{height:64px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;
-         background:var(--uix-surface);border-bottom:1px solid var(--uix-line-soft);box-shadow:0 2px 6px rgba(0,0,0,.18);position:relative;z-index:1}
+  body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var(--uix-page);color:var(--uix-body);font:13px/1.6 var(--uix-font)}
+  header{height:56px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+         background:var(--uix-surface);border-bottom:1px solid var(--uix-border);position:relative;z-index:1}
   .brand{display:flex;align-items:center;gap:12px;min-width:0}
-  .mark{width:34px;height:34px;border-radius:4px;background:var(--uix-primary);color:#fff;display:grid;place-items:center;
-        font:600 16px var(--uix-font-head)}
-  header h1{margin:0;font:600 17px var(--uix-font-head);color:var(--uix-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  header a{position:relative;color:var(--uix-text);text-decoration:none;font:500 15px var(--uix-font-menu);padding:20px 15px;white-space:nowrap}
-  header a::after{content:"";position:absolute;left:15px;right:15px;bottom:0;height:3px;background:transparent}
-  header a:hover{color:var(--uix-primary)} header a:hover::after{background:var(--uix-primary)}
+  .mark{width:32px;height:32px;border-radius:8px;background:var(--uix-primary);color:var(--uix-on-primary);display:grid;place-items:center;font:600 15px var(--uix-font)}
+  header h1{margin:0;font:600 16px var(--uix-font);color:var(--uix-head);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  header a{color:var(--uix-body);text-decoration:none;font:400 13px var(--uix-font);padding:0 12px;height:32px;line-height:32px;border-radius:6px;white-space:nowrap}
+  header a:hover{background:var(--uix-muted);color:var(--uix-head)}
   main{flex:1;display:grid;place-items:center;padding:48px 16px}
-  /* §5 card: thin border, 6px radius, 12px radius */
-  .card{width:100%;max-width:460px;background:var(--uix-surface);border:1px solid var(--uix-line-soft);border-top:3px solid var(--uix-primary);
-        border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.06);padding:32px 30px}
-  .chip{display:inline-block;font:600 12px var(--uix-font-body);color:var(--uix-primary);background:var(--uix-surface-muted);padding:3px 10px;border-radius:4px;letter-spacing:.2px}
-  .card h2{font:600 22px/1.3 var(--uix-font-head);letter-spacing:-.3px;color:var(--uix-ink);margin:14px 0 8px}
-  .card p{margin:0;color:var(--uix-text)}
-  .btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:26px;padding:11px 18px;border-radius:4px;
-       background:var(--uix-primary);color:#fff;text-decoration:none;font:600 15px var(--uix-font-head);border:1px solid var(--uix-primary)}
+  .card{width:100%;max-width:460px;background:var(--uix-surface);border:1px solid var(--uix-border);border-radius:12px;box-shadow:var(--uix-shadow-xs);padding:32px 30px}
+  .chip{display:inline-block;font:500 12px var(--uix-font);color:var(--uix-body);background:var(--uix-muted);padding:3px 10px;border-radius:6px}
+  .card h2{font:600 20px/1.3 var(--uix-font);color:var(--uix-head);margin:14px 0 8px}
+  .card p{margin:0;color:var(--uix-body)}
+  .btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:26px;height:38px;padding:0 18px;border-radius:8px;
+       background:var(--uix-primary);color:var(--uix-on-primary);text-decoration:none;font:600 13px var(--uix-font);border:1px solid var(--uix-primary)}
   .btn:hover{background:var(--uix-primary-strong);border-color:var(--uix-primary-strong)}
-  .btn:focus-visible{outline:2px solid var(--uix-blue);outline-offset:2px}
-  .note{margin-top:14px;font-size:13px;padding:10px 12px;border-radius:4px;background:#FFF8EC;border-left:3px solid var(--uix-warning);color:var(--uix-ink)}
+  .btn:focus-visible{outline:3px solid var(--uix-focus-ring);outline-offset:0}
+  .note{margin-top:14px;font-size:12px;padding:10px 12px;border-radius:8px;background:var(--uix-muted);color:var(--uix-body)}
   .note[hidden]{display:none}
-  ul{margin:22px 0 0;padding:16px 0 0;list-style:none;display:grid;gap:8px;font-size:14px;color:var(--uix-text);border-top:1px solid var(--uix-line-soft)}
+  ul{margin:22px 0 0;padding:16px 0 0;list-style:none;display:grid;gap:8px;font-size:13px;color:var(--uix-body);border-top:1px solid var(--uix-border)}
   li{display:flex;gap:10px;align-items:baseline}
-  li::before{content:"";flex:none;width:6px;height:6px;background:var(--uix-primary);transform:translateY(-2px)}
-  /* §5 footer: Len black */
-  footer{padding:16px 24px;text-align:center;font-size:12px;color:rgba(255,255,255,.8);background:var(--uix-footer)}
-  @media (max-width:480px){header{padding:0 16px}header a{padding:20px 8px}header a::after{left:8px;right:8px}.card{padding:26px 20px}}
+  li::before{content:"";flex:none;width:6px;height:6px;border-radius:50%;background:var(--uix-secondary);transform:translateY(-1px)}
+  footer{padding:16px 24px;text-align:center;font-size:12px;color:var(--uix-secondary);background:var(--uix-surface);border-top:1px solid var(--uix-border)}
+  @media (max-width:480px){header{padding:0 16px}.card{padding:26px 20px}}
 </style>
 </head>
 <body>

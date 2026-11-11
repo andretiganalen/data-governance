@@ -173,18 +173,18 @@ Start pertama memakan waktu beberapa menit. Tekan Ctrl+C setelah log server menu
 1. Masuk dengan admin bawaan. Pada konfigurasi basic auth standar, akunnya `admin@<AUTHORIZER_PRINCIPAL_DOMAIN>` dengan password `admin` (verifikasi V-2).
 2. **Segera ganti password admin.**
 3. Buat akun basic auth untuk admin UV-3 dan beri peran Admin. Akun sementara ini dinonaktifkan di fase 2.
-4. Terapkan tema LenO di pengaturan tema/tampilan Len Data Governance (verifikasi V-6), dengan nilai dari [[leno_interface_theme.md]]:
+4. Terapkan tema UIx di pengaturan tema/tampilan Len Data Governance (verifikasi V-6), dengan nilai dari [[interface-menu.md]]:
 
    | Pengaturan | Nilai |
    | :-- | :-- |
-   | Warna utama (primary) | `#a51c20` |
-   | Info | `#1f6feb` |
-   | Success | `#16a34a` |
-   | Warning | `#f59e0b` |
-   | Error | `#dc2626` |
-   | Logo / monogram / favicon | URL aset logo LenO resmi (mintakan URL tetap ke pengelola aset LenO; sementara boleh `https://dev-lpms.len.co.id/images/leno-logo.png`) |
+   | Warna utama (primary) | `#ae2524` |
+   | Info | `#155dfc` |
+   | Success | `#008236` |
+   | Warning | `#bb4d00` |
+   | Error | `#e7000b` |
+   | Logo / monogram / favicon | URL aset logo Len resmi |
 
-   Pengaturan tema bawaan ini mewarnai komponen UI. Header merah, sidebar bergaya LPMS, dan font Poppins berasal dari `leno.css` yang disisipkan `gateway`.
+   Pengaturan tema bawaan ini mewarnai komponen UI. Sidebar, tabel, tab, dan font Poppins gaya UIx berasal dari `leno.css` yang disisipkan `gateway`.
 5. Buka beberapa halaman (beranda, Explore, Glossary, Settings) dan periksa header & sidebar. Bila ada yang tidak berubah, sesuaikan selector di `leno.css` (V-8), lalu `sudo docker compose restart gateway`.
 
 **7. Backup & verifikasi**
