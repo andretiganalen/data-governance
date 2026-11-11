@@ -154,7 +154,7 @@
     var ic = li.querySelector(".ant-menu-item-icon");
     if (ic) ic.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7"/></svg>';
     var c = li.cloneNode(true);   // lepas handler Visualisasi bawaan build()
-    c.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); window.open("/referensi/", "_blank"); }, true);
+    c.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); window.location.assign("/referensi/"); }, true);
     return c;
   }
   function ensure() {

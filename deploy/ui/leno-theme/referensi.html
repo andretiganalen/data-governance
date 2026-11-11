@@ -8,7 +8,9 @@
 :root{--navy:#ae2524;--ink:#101828;--text:#364153;--muted:#6a7282;--line:#e5e7eb;--bg:#f9fafb;--card:#fff;--blue:#ae2524}
 @media (prefers-color-scheme:dark){:root{--ink:#E8EAED;--text:#C9CDD3;--muted:#9AA0A6;--line:#3A3F47;--bg:#16181C;--card:#1E2126;--blue:#f87171}}
 body{margin:0;background:var(--bg);color:var(--text);font:13px/1.6 "UIx Poppins","Segoe UI",Arial,sans-serif}
-header{background:var(--card);color:var(--ink);border-bottom:1px solid var(--line);padding:14px 16px}header h1{margin:0;font-size:18px;font-weight:600}
+header{background:var(--card);color:var(--ink);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:14px}header h1{margin:0;font-size:18px;font-weight:600}
+.back{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border:1px solid #d1d5dc;border-radius:8px;background:var(--card);color:var(--text);font:500 13px "UIx Poppins","Segoe UI",Arial,sans-serif;cursor:pointer;box-shadow:0 0 0 1px rgba(16,24,40,.04),0 1px 2px rgba(16,24,40,.06)}
+.back:hover{background:var(--bg);color:var(--ink)}.back:focus-visible{outline:3px solid rgba(106,114,130,.4)}
 main{max-width:860px;margin:16px auto;padding:0 16px}
 .c{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 0 0 1px rgba(16,24,40,.04),0 1px 2px rgba(16,24,40,.06);padding:16px 20px}
 h2{color:var(--ink);font-weight:600;font-size:16px;margin:0 0 4px}p{margin:0 0 12px;color:var(--muted);font-size:13px}
@@ -16,22 +18,25 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px 6px;
 b{font-weight:600}th{color:var(--muted);font-weight:600;font-size:12px}a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
 .v{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
 </style></head><body>
-<header><h1>Len Data Governance · Referensi</h1></header>
+<header><button class="back" id="back" type="button" aria-label="Kembali ke halaman sebelumnya">← Kembali</button><h1>Len Data Governance · Referensi</h1></header>
 <main><div class="c"><h2>Dokumen referensi</h2>
-<p>Nama berkas: <b>YYMMDD CC Nama</b> (tanggal unggah dan nomor versi). Versi lama tetap tersedia. Dokumen internal Len, tidak terkontrol: versi terbaru ada di aplikasi LenO.</p>
-<table><thead><tr><th>Dokumen</th><th>Versi</th><th>Ukuran</th></tr></thead><tbody id="b"><tr><td colspan="3">Memuat…</td></tr></tbody></table>
-<p style="margin:12px 0 0"><a href="/">← Kembali ke aplikasi</a></p></div></main>
+<p>Urutan: terbaru di atas. Nama berkas apa adanya: <b>YYMMDD CC Nama File.ext</b> (tanggal unggah, nomor unggah, nama). Versi lama tetap tersedia. Dokumen internal Len, tidak terkontrol: versi terbaru ada di aplikasi LenO.</p>
+<table><thead><tr><th>Nama berkas</th><th>Ukuran</th></tr></thead><tbody id="b"><tr><td colspan="2">Memuat…</td></tr></tbody></table></div></main>
 <script>
+document.getElementById("back").addEventListener("click",function(){
+  var same=false;try{same=document.referrer&&new URL(document.referrer).origin===location.origin}catch(e){}
+  if(same&&history.length>1)history.back();else location.href="/";
+});
 fetch("/referensi/berkas/",{credentials:"same-origin"}).then(function(r){
   if(!r.ok)throw 0;return r.json()}).then(function(l){
   var rows=l.filter(function(f){return f.type==="file"}).map(function(f){
-    var m=/^(\d{6}) (\d{2}) (.+)\.([^.]+)$/.exec(f.name);return{f:f,k:m?m[1]+m[2]:"",t:m?m[3]:f.name,v:m?m[1]+" "+m[2]:"-"}});
-  rows.sort(function(a,b){return a.t<b.t?-1:a.t>b.t?1:b.k.localeCompare(a.k)});
+    var m=/^(\d{6}) (\d{2}) /.exec(f.name);return{f:f,k:m?m[1]+m[2]:""}});
+  rows.sort(function(a,b){return a.k===b.k?(a.f.name<b.f.name?1:-1):(a.k<b.k?1:-1)});   // terbaru (YYMMDD CC) di atas
   var b=document.getElementById("b");b.textContent="";
   rows.forEach(function(r){var tr=b.insertRow(),a=document.createElement("a");
-    a.href="/referensi/berkas/"+encodeURIComponent(r.f.name);a.textContent=r.t;a.download=r.f.name;
-    tr.insertCell().appendChild(a);var c=tr.insertCell();c.className="v";c.textContent=r.v;
-    tr.insertCell().textContent=Math.max(1,Math.round(r.f.size/1024))+" KB"});
-  if(!rows.length)b.innerHTML='<tr><td colspan="3">Belum ada berkas.</td></tr>';
-}).catch(function(){document.getElementById("b").innerHTML='<tr><td colspan="3">Silakan masuk ke aplikasi dulu, lalu buka menu Referensi.</td></tr>'});
+    a.href="/referensi/berkas/"+encodeURIComponent(r.f.name);a.textContent=r.f.name;a.download=r.f.name;
+    tr.insertCell().appendChild(a);
+    var c=tr.insertCell();c.className="v";c.textContent=Math.max(1,Math.round(r.f.size/1024))+" KB"});
+  if(!rows.length)b.innerHTML='<tr><td colspan="2">Belum ada berkas.</td></tr>';
+}).catch(function(){document.getElementById("b").innerHTML='<tr><td colspan="2">Silakan masuk ke aplikasi dulu, lalu buka menu Referensi.</td></tr>'});
 </script></body></html>
