@@ -27,6 +27,9 @@ THEME_DEFAULT = {
     "algorithm": "default",
     "token": {
         "colorPrimary": "#ae2524",
+        "colorPrimaryBg": "#f3f4f6",
+        "colorPrimaryBgHover": "#e5e7eb",
+        "colorInfo": "#155dfc",
         "colorLink": "#ae2524",
         "colorError": "#e7000b",
         "colorSuccess": "#008236",

@@ -258,3 +258,8 @@ body, .ant-typography, .text-sm, .ant-select-selection-item, .ant-input, .ant-bt
 * { scrollbar-width: thin; scrollbar-color: var(--uix-border-strong) transparent; }
 *::-webkit-scrollbar { width: 8px; height: 8px; } *::-webkit-scrollbar-thumb { background: var(--uix-border-strong); border-radius: 8px; }
 *::-webkit-scrollbar-track, .left-sidebar-layout::-webkit-scrollbar-track { background: transparent; }
+
+/* Spesifisitas tinggi: CSS upstream dimuat belakangan dan menang pada spesifisitas sama */
+html body .whats-new-alert-version, html body .whats-new-alert-meta, html body .whats-new-alert-meta * { color: var(--uix-text-head) !important; }
+html body .whats-new-alert-version { font-weight: 600 !important; font-size: 24px !important; }
+html body .whats-new-alert-left, html body [class*="whats-new-alert"] [class*="left"] { background: var(--uix-surface-muted) !important; }
