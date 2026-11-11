@@ -17,7 +17,7 @@ def fetch_terms() -> list[dict]:
     om = Catalog(dry=False)
     out, after = [], ""
     while True:
-        r = om.get("/v1/glossaryTerms?limit=500&fields=owners,reviewers,extension,glossary" + after)
+        r = om.get("/v1/glossaryTerms?limit=500&fields=owners,reviewers,extension,glossary,parent,usageCount" + after)
         out += r.get("data", [])
         if not r.get("paging", {}).get("after"):
             return out
@@ -87,12 +87,55 @@ def build_fungsi(tq: L.Trino, schema: dict, batch_id: str) -> int:
     return len(rows)
 
 
+def build_status(tq: L.Trino, schema: dict, batch_id: str) -> int:
+    """Kelengkapan tiap istilah + ringkasan per glosarium (gold_meta_glossary_status / _ringkasan)."""
+    from glossary_org import PLACEHOLDER
+    now = datetime.now(timezone.utc)
+    rows = []
+    for t in fetch_terms():
+        desc = (t.get("description") or "").strip()
+        manual = PLACEHOLDER.lower() in desc.lower()
+        ada_def, ada_own, ada_rev = bool(desc) and not manual, bool(t.get("owners")), bool(t.get("reviewers"))
+        tertaut = int(t.get("usageCount") or 0)
+        gap = [k for k, ok in (("definisi", ada_def), ("Data Owner", ada_own), ("peninjau", ada_rev), ("tautan kolom", tertaut > 0)) if not ok]
+        if manual and "definisi" not in gap:
+            gap.append("definisi")
+        yn = lambda b: "Ya" if b else "Tidak"  # noqa: E731
+        rows.append({"field_id": t["name"], "business_term": t.get("displayName") or t["name"],
+                     "glosarium": (t.get("glossary") or {}).get("displayName") or (t.get("glossary") or {}).get("name"),
+                     "induk": (t.get("parent") or {}).get("displayName") or (t.get("parent") or {}).get("name"),
+                     "ada_definisi": yn(ada_def), "ada_owner": yn(ada_own), "ada_reviewer": yn(ada_rev), "kolom_tertaut": tertaut,
+                     "butuh_input_manual": yn(manual), "kekurangan": "; ".join(gap) or None,
+                     "status": "Lengkap" if not gap else "Belum tuntas", "_batch_id": batch_id, "_loaded_at": now})
+    summ = []
+    for g in sorted({r["glosarium"] for r in rows}) + ["SEMUA"]:
+        rs = [r for r in rows if g == "SEMUA" or r["glosarium"] == g]
+        n, ok = len(rs), sum(r["status"] == "Lengkap" for r in rs)
+        summ.append({"glosarium": g, "jumlah_istilah": n, "lengkap": ok, "belum_tuntas": n - ok,
+                     "persen_lengkap": round(100.0 * ok / n, 1) if n else None,
+                     "butuh_input_manual": sum(r["butuh_input_manual"] == "Ya" for r in rs),
+                     "tanpa_owner": sum(r["ada_owner"] == "Tidak" for r in rs),
+                     "tanpa_reviewer": sum(r["ada_reviewer"] == "Tidak" for r in rs),
+                     "tanpa_tautan_kolom": sum(r["kolom_tertaut"] == 0 for r in rs), "_batch_id": batch_id, "_loaded_at": now})
+    for name, data in (("gold_meta_glossary_status", rows), ("gold_meta_glossary_ringkasan", summ)):
+        L.ensure_table(tq, name, schema[name], set(tq.tables()), managed=True)
+        L.replace_rows(tq, name, schema[name], data)
+    return len(rows)
+
+
 def main() -> None:
     import uuid
     tq = L.Trino()
+    try:  # istilah Organisasi dan Fungsi (dibuat bila belum ada); gagal tidak menghentikan pencatatan
+        import glossary_org
+        from catalog_loader import Catalog
+        L.log(f"glossary_org: {glossary_org.seed(Catalog(dry=False), tq)}; kolom tertaut baru: {glossary_org.tag_columns(Catalog(dry=False))}")
+    except (Exception, SystemExit) as e:  # noqa: BLE001
+        L.log(f"glossary_org dilewati: {str(e)[:200]}")
     n = build(tq, L.load_schema(), uuid.uuid4().hex[:12])
     L.log(f"gold_meta_glossary_app: {n} istilah dicatat dari aplikasi")
     L.log(f"gold_meta_fungsi: {build_fungsi(tq, L.load_schema(), 'fungsi')} Fungsi dicatat dari aplikasi")
+    L.log(f"gold_meta_glossary_status: {build_status(tq, L.load_schema(), 'status')} istilah dinilai kelengkapannya")
 
 
 if __name__ == "__main__":

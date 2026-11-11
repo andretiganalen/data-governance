@@ -2417,3 +2417,35 @@ CREATE TABLE gold_meta_fungsi (
 )
 COMMENT 'Gold: daftar Fungsi (Data Owner) di aplikasi beserta Eselon 1/2 dan jumlah aset dimiliki. Dicatat dari aplikasi tiap 10 menit; harus sama dengan daftar tim FN_* di aplikasi.';
 
+CREATE TABLE gold_meta_glossary_status (
+   field_id varchar COMMENT 'Kode/nama istilah di aplikasi',
+   business_term varchar COMMENT 'Nama istilah bisnis',
+   glosarium varchar COMMENT 'Glosarium induk',
+   induk varchar COMMENT 'Istilah induk (bila istilah turunan), mis. Fungsi Generik',
+   ada_definisi varchar COMMENT 'Ya bila definisi terisi dan bukan "Perlu input manual dari Data Governance"',
+   ada_owner varchar COMMENT 'Ya bila istilah punya Data Owner (Fungsi)',
+   ada_reviewer varchar COMMENT 'Ya bila istilah punya peninjau',
+   kolom_tertaut bigint COMMENT 'Jumlah aset (kolom tabel) yang ditautkan ke istilah',
+   butuh_input_manual varchar COMMENT 'Ya bila teks "Perlu input manual dari Data Governance" masih ada di definisi',
+   kekurangan varchar COMMENT 'Daftar hal yang belum terisi (dipisah ;); kosong bila lengkap',
+   status varchar COMMENT 'Lengkap | Belum tuntas',
+   _batch_id varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Gold: kelengkapan tiap istilah Glosarium (definisi, Data Owner, peninjau, tautan kolom). Masukan bagi admin Data Governance sampai semua istilah terisi penuh. Dicatat dari aplikasi tiap 10 menit.';
+
+CREATE TABLE gold_meta_glossary_ringkasan (
+   glosarium varchar COMMENT 'Glosarium (SEMUA = seluruh glosarium)',
+   jumlah_istilah bigint COMMENT 'Jumlah istilah',
+   lengkap bigint COMMENT 'Istilah berstatus Lengkap',
+   belum_tuntas bigint COMMENT 'Istilah berstatus Belum tuntas',
+   persen_lengkap double COMMENT 'lengkap / jumlah_istilah x 100',
+   butuh_input_manual bigint COMMENT 'Istilah yang definisinya masih "Perlu input manual dari Data Governance"',
+   tanpa_owner bigint COMMENT 'Istilah tanpa Data Owner',
+   tanpa_reviewer bigint COMMENT 'Istilah tanpa peninjau',
+   tanpa_tautan_kolom bigint COMMENT 'Istilah yang belum ditautkan ke kolom tabel mana pun',
+   _batch_id varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Gold: statistik kelengkapan Glosarium per glosarium. Admin Data Governance memakainya untuk menuntaskan Glosarium sampai seluruh informasi terdefinisi.';
+
