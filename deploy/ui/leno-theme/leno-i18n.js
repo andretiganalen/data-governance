@@ -5,6 +5,18 @@
   "use strict";
   var D = {
     id: {
+      land_viz: "Visualisasi", land_chip: "Katalog Metadata ERM", land_title: "Tata kelola data dalam satu tempat",
+      land_desc: "Temukan aset data, glosarium bisnis, klasifikasi sensitivitas, dan pemilik data.",
+      land_login_ids: "Masuk dengan IDS", land_login: "Masuk",
+      land_pending: "Login IDS sedang diaktivasi. Untuk sementara, gunakan akun lokal dari admin UV-3.",
+      land_b1: "Single sign-on dengan akun IDS (email kantor)", land_b2: "Akses sesuai peran: Pemilik Data, Steward Data, Pengguna Data",
+      land_b3: "Hanya dapat diakses dari jaringan internal",
+      land_footer: "dev-data.len.co.id · lingkungan pengembangan · Len Industri Persero © 2026",
+      st_title: "Len Data Governance sedang dimulai…", st_text: "Halaman ini dimuat ulang otomatis setiap 15 detik.", st_back: "Kembali ke beranda",
+      ref_back: "← Kembali", ref_back_aria: "Kembali ke halaman sebelumnya", ref_head: "Len Data Governance · Referensi", ref_h2: "Dokumen referensi",
+      ref_note: "Urutan: terbaru di atas. Nama berkas apa adanya: <b>YYMMDD CC Nama File.ext</b> (tanggal unggah, nomor unggah, nama). Versi lama tetap tersedia. Dokumen internal Len, tidak terkontrol: versi terbaru ada di aplikasi LenO.",
+      ref_name: "Nama berkas", ref_size: "Ukuran", ref_loading: "Memuat…", ref_none: "Belum ada berkas.",
+      ref_login: "Silakan masuk ke aplikasi terlebih dahulu. Dokumen referensi kini berada di Pusat Konteks › Dokumen › Reference.",
       explore: "Jelajahi", viz: "Visualisasi", viz_hint: "Visualisasi data Gold (lakehouse Trino)", viz_frame: "Visualisasi data Gold",
       tab_risiko: "Risiko ERM", tab_tata: "Tata Kelola Data", tab_sdm: "SDM", tab_kesegaran: "Kesegaran Data",
       tab_dashboard: "Semua dasbor", tab_grafik: "Grafik", tab_sql: "SQL Lab",
@@ -29,6 +41,18 @@
       dlg_foot: "Ragu? Pilih Batal, tidak ada yang berubah.", cancel: "Batal", confirm: "Ya, pindahkan"
     },
     en: {
+      land_viz: "Visualization", land_chip: "ERM Metadata Catalog", land_title: "Data governance in one place",
+      land_desc: "Find data assets, the business glossary, sensitivity classifications, and data owners.",
+      land_login_ids: "Sign in with IDS", land_login: "Sign in",
+      land_pending: "IDS sign-in is being activated. For now, use a local account from the UV-3 admin.",
+      land_b1: "Single sign-on with your IDS account (work email)", land_b2: "Role-based access: Data Owner, Data Steward, Data User",
+      land_b3: "Accessible only from the internal network",
+      land_footer: "dev-data.len.co.id · development environment · Len Industri Persero © 2026",
+      st_title: "Len Data Governance is starting…", st_text: "This page reloads automatically every 15 seconds.", st_back: "Back to home",
+      ref_back: "← Back", ref_back_aria: "Back to the previous page", ref_head: "Len Data Governance · Reference", ref_h2: "Reference documents",
+      ref_note: "Order: newest first. File names as-is: <b>YYMMDD CC File Name.ext</b> (upload date, upload number, name). Older versions remain available. Internal Len documents, uncontrolled: the latest version is in the LenO app.",
+      ref_name: "File name", ref_size: "Size", ref_loading: "Loading…", ref_none: "No files yet.",
+      ref_login: "Please sign in to the app first. Reference documents are now in Context Center › Documents › Reference.",
       explore: "Explore", viz: "Visualization", viz_hint: "Gold data visualization (Trino lakehouse)", viz_frame: "Gold data visualization",
       tab_risiko: "ERM Risk", tab_tata: "Data Governance", tab_sdm: "HR", tab_kesegaran: "Data Freshness",
       tab_dashboard: "All dashboards", tab_grafik: "Charts", tab_sql: "SQL Lab",
@@ -56,7 +80,7 @@
   };
   function lang() {
     var m = /(?:^|;\s*)i18next=([^;]+)/.exec(document.cookie);
-    var v = m ? decodeURIComponent(m[1]) : "";
+    var v = m ? decodeURIComponent(m[1]) : (navigator.language || "");
     return /^id\b/i.test(v) ? "id" : "en";
   }
   function t(k, v) {
@@ -64,5 +88,21 @@
     if (v) Object.keys(v).forEach(function (n) { s = s.split("{" + n + "}").join(v[n]); });
     return s;
   }
-  window.LDG_I18N = { lang: lang, t: t };
+  function apply(root) {   // halaman statis: data-i18n (teks), data-i18n-html (HTML sederhana), data-i18n-aria
+    root = root || document;
+    root.querySelectorAll("[data-i18n]").forEach(function (e) { e.textContent = t(e.getAttribute("data-i18n")); });
+    root.querySelectorAll("[data-i18n-html]").forEach(function (e) { e.innerHTML = t(e.getAttribute("data-i18n-html")); });
+    root.querySelectorAll("[data-i18n-aria]").forEach(function (e) { e.setAttribute("aria-label", t(e.getAttribute("data-i18n-aria"))); });
+    document.documentElement.setAttribute("lang", lang());
+  }
+  function setLang(l) {   // pengalih bahasa halaman statis: tulis cookie yang sama dengan aplikasi (i18next)
+    document.cookie = "i18next=" + (l === "id" ? "id-ID" : "en-US") + "; path=/; max-age=31536000; SameSite=Lax";
+    apply(document);
+    document.dispatchEvent(new CustomEvent("ldg-lang"));
+  }
+  window.LDG_I18N = { lang: lang, t: t, apply: apply, setLang: setLang };
+  if (document.querySelector("[data-i18n],[data-i18n-html],[data-i18n-aria]")) {
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { apply(document); });
+    else apply(document);
+  }
 })();

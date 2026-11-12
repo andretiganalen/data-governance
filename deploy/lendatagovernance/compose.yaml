@@ -95,7 +95,7 @@ services:
 
   superset:
     build: ./superset
-    image: lendatagovernance/superset:6.0.0-dg2
+    image: lendatagovernance/superset:6.0.0-dg3
     restart: unless-stopped
     env_file: [ "${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/secrets/superset.env" ]   # kunci & sandi DB (tidak di git)
     volumes:

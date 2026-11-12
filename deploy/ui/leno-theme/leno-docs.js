@@ -13,10 +13,13 @@
     var m = /^\s*(\d{2})[.\-]?(\d{2})[.\-]?(\d{2})(?!\d)/.exec(name || "");
     return m ? m[1] + m[2] + m[3] : "";
   }
-  var MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  function fmt(yymmdd) {   // "261016" → "16-Oct-2026"
-    var m = +yymmdd.slice(2, 4);
-    return m >= 1 && m <= 12 ? yymmdd.slice(4, 6) + "-" + MON[m - 1] + "-20" + yymmdd.slice(0, 2) : yymmdd;
+  var MON = {   // singkatan bulan mengikuti bahasa aplikasi (tidak dicampur)
+    en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    id: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
+  };
+  function fmt(yymmdd) {   // "261016" → "16-Oct-2026" (EN) / "16-Okt-2026" (ID)
+    var m = +yymmdd.slice(2, 4), l = window.LDG_I18N && window.LDG_I18N.lang() === "id" ? "id" : "en";
+    return m >= 1 && m <= 12 ? yymmdd.slice(4, 6) + "-" + MON[l][m - 1] + "-20" + yymmdd.slice(0, 2) : yymmdd;
   }
   function cc(name) { var m = /^\s*[\d.\-]{6,8}\s+(\d{2})\s/.exec(name || ""); return m ? m[1] : "00"; }
   function fileKey(f) { var n = f.displayName || f.name || ""; return (created(n) || "000000") + cc(n) + n; }
@@ -64,16 +67,17 @@
       var d = nm ? created(nm.textContent) : "";
       if (at && d) {
         setText(at, T("docs_created", { d: fmt(d) }));
-        // "Created" tampil sebelum "Size": pindahkan ke depan elemen ukuran berkas bila ada
-        var size = null;
-        row.querySelectorAll("span,div,p,td").forEach(function (e) {
-          if (!size && e !== at && !e.contains(at) && !at.contains(e) && e.children.length === 0 && /^\d+([.,]\d+)?\s*(B|KB|MB|GB|bytes?)$/i.test(e.textContent.trim())) size = e;
-        });
+        // "Dibuat/Created" tampil sebelum ukuran berkas: pindahkan pembungkusnya (+ pemisah di belakangnya) ke depan pembungkus ukuran.
+        var size = row.querySelector('[data-testid="document-size"]');
         if (size) {
-          var a = at, b = size;
-          while (a.parentNode !== b.parentNode && a.parentNode && a.parentNode !== row) a = a.parentNode;
-          while (b.parentNode !== a.parentNode && b.parentNode && b.parentNode !== row) b = b.parentNode;
-          if (a.parentNode === b.parentNode && a !== b && (a.compareDocumentPosition(b) & 4) === 0) b.parentNode.insertBefore(a, b);
+          var aw = at.parentNode, sw = size.parentNode;
+          if (aw && sw && aw !== sw && aw.parentNode === sw.parentNode && !aw.getAttribute("data-ldg-moved")) {
+            var sep = aw.nextElementSibling && aw.nextElementSibling.tagName.toLowerCase() === "svg" ? aw.nextElementSibling : null;
+            var host = sw.parentNode;
+            host.insertBefore(aw, sw);
+            if (sep) host.insertBefore(sep, sw);
+            aw.setAttribute("data-ldg-moved", "1");
+          }
         }
       }
     });

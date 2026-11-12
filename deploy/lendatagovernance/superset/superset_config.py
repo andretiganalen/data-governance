@@ -16,7 +16,7 @@ SQLALCHEMY_DATABASE_URI = (
     f"postgresql+psycopg2://superset:{os.environ['SUPERSET_DB_PASSWORD']}@postgresql:5432/superset"
 )
 
-APP_NAME = "Len Data Governance · Visualisasi"
+APP_NAME = "Len Data Governance"   # netral bahasa (judul tab); modul "Visualisasi/Visualization" ditampilkan oleh aplikasi utama
 APP_ICON = f"{APP_ROOT}/static/assets/images/len-logo.png"
 LOGO_TARGET_PATH = f"{APP_ROOT}/dashboard/list/"
 LOGO_TOOLTIP = "Len Data Governance"
@@ -71,6 +71,11 @@ FEATURE_FLAGS = {
     "ENABLE_TEMPLATE_PROCESSING": True,
     "ALERT_REPORTS": False,
 }
+
+# Bahasa: mengikuti pilihan bahasa aplikasi utama (cookie i18next → dg_sso._lang). Paket "id" dibuat sendiri
+# (translations/id, dibangun di Dockerfile dari id.po) karena Superset tidak menyediakan Bahasa Indonesia.
+BABEL_DEFAULT_LOCALE = "en"
+LANGUAGES = {"en": {"flag": "us", "name": "English"}, "id": {"flag": "id", "name": "Bahasa Indonesia"}}
 
 # Aturan data: hanya Trino; tulis (CREATE/INSERT/…/unggah berkas) hanya ke lakekeeper.workspace (dg_sso.py).
 SQL_QUERY_MUTATOR = dg_sql_guard

@@ -40,3 +40,6 @@ a:hover { color: var(--uix-primary-strong); }
 /* Di dalam Len Data Governance: tanpa menu atas Superset (navigasi lewat tab di kerangka utama) */
 html.dg-embedded header#main-menu { display: none !important; }
 html.dg-embedded body { background: var(--uix-surface-page) !important; }
+
+/* Bahasa Superset mengikuti pilihan bahasa aplikasi utama (cookie i18next): pemilih bahasa milik Superset disembunyikan agar tidak saling menimpa */
+li.ant-menu-submenu:has(> .ant-menu-submenu-title .f16) { display: none !important; }

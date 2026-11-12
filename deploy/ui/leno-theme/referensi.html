@@ -18,11 +18,13 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px 6px;
 b{font-weight:600}th{color:var(--muted);font-weight:600;font-size:12px}a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
 .v{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
 </style></head><body>
-<header><button class="back" id="back" type="button" aria-label="Kembali ke halaman sebelumnya">← Kembali</button><h1>Len Data Governance · Referensi</h1></header>
-<main><div class="c"><h2>Dokumen referensi</h2>
-<p>Urutan: terbaru di atas. Nama berkas apa adanya: <b>YYMMDD CC Nama File.ext</b> (tanggal unggah, nomor unggah, nama). Versi lama tetap tersedia. Dokumen internal Len, tidak terkontrol: versi terbaru ada di aplikasi LenO.</p>
-<table><thead><tr><th>Nama berkas</th><th>Ukuran</th></tr></thead><tbody id="b"><tr><td colspan="2">Memuat…</td></tr></tbody></table></div></main>
+<header><button class="back" id="back" type="button" data-i18n-aria="ref_back_aria" data-i18n="ref_back">← Kembali</button><h1 data-i18n="ref_head">Len Data Governance · Referensi</h1></header>
+<main><div class="c"><h2 data-i18n="ref_h2">Dokumen referensi</h2>
+<p data-i18n-html="ref_note"></p>
+<table><thead><tr><th data-i18n="ref_name">Nama berkas</th><th data-i18n="ref_size">Ukuran</th></tr></thead><tbody id="b"><tr><td colspan="2" data-i18n="ref_loading">Memuat…</td></tr></tbody></table></div></main>
+<script src="/_leno/leno-i18n.js"></script>
 <script>
+var T=function(k){return window.LDG_I18N?window.LDG_I18N.t(k):k};
 document.getElementById("back").addEventListener("click",function(){
   var same=false;try{same=document.referrer&&new URL(document.referrer).origin===location.origin}catch(e){}
   if(same&&history.length>1)history.back();else location.href="/";
@@ -37,6 +39,6 @@ fetch("/referensi/berkas/",{credentials:"same-origin"}).then(function(r){
     a.href="/referensi/berkas/"+encodeURIComponent(r.f.name);a.textContent=r.f.name;a.download=r.f.name;
     tr.insertCell().appendChild(a);
     var c=tr.insertCell();c.className="v";c.textContent=Math.max(1,Math.round(r.f.size/1024))+" KB"});
-  if(!rows.length)b.innerHTML='<tr><td colspan="2">Belum ada berkas.</td></tr>';
-}).catch(function(){document.getElementById("b").innerHTML='<tr><td colspan="2">Silakan masuk ke aplikasi dulu, lalu buka menu Referensi.</td></tr>'});
+  if(!rows.length){b.innerHTML='<tr><td colspan="2"></td></tr>';b.querySelector('td').textContent=T('ref_none')};
+}).catch(function(){var bb=document.getElementById("b");bb.innerHTML='<tr><td colspan="2"></td></tr>';bb.querySelector('td').textContent=T('ref_login')});
 </script></body></html>

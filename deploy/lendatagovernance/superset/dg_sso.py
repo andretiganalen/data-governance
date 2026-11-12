@@ -39,12 +39,26 @@ COOKIE = "dg_token"
 WRITE_SCHEMA = os.environ.get("DG_WRITE_SCHEMA", "workspace")
 TRINO_CATALOG = os.environ.get("DG_TRINO_CATALOG", "lakekeeper")
 
-NOT_SIGNED_IN = """<!doctype html><html lang="id"><head><meta charset="utf-8"><title>Visualisasi</title></head>
+def _lang() -> str:
+    """Bahasa mengikuti aplikasi utama (cookie i18next, asalnya sama); tanpa cookie → bahasa peramban; tanpa request → Indonesia."""
+    from flask import has_request_context
+    if not has_request_context():
+        return "id"
+    v = request.cookies.get("i18next", "") or request.accept_languages.best_match(["id", "en"]) or "en"
+    return "id" if v.lower().startswith("id") else "en"
+
+
+def _m(id_text: str, en_text: str) -> str:
+    return id_text if _lang() == "id" else en_text
+
+
+def not_signed_in_page() -> str:
+    return f"""<!doctype html><html lang="{_lang()}"><head><meta charset="utf-8"><title>{_m("Visualisasi", "Visualization")}</title></head>
 <body style="font-family:'UIx Poppins',Arial,sans-serif;color:#364153;background:#f9fafb;padding:40px">
 <div style="max-width:520px;margin:auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:28px">
-<h3 style="color:#101828;margin-top:0">Sesi Len Data Governance tidak ditemukan</h3>
-<p>Visualisasi memakai login Len Data Governance. Masuk terlebih dahulu, lalu buka menu <b>Visualisasi</b>.</p>
-<p><a href="/" target="_top" style="color:#ae2524">Buka Len Data Governance</a></p></div></body></html>"""
+<h3 style="color:#101828;margin-top:0">{_m("Sesi Len Data Governance tidak ditemukan", "Len Data Governance session not found")}</h3>
+<p>{_m("Visualisasi memakai login Len Data Governance. Masuk terlebih dahulu, lalu buka menu <b>Visualisasi</b>.", "Visualization uses the Len Data Governance sign-in. Sign in first, then open <b>Explore › Visualization</b>.")}</p>
+<p><a href="/" target="_top" style="color:#ae2524">{_m("Buka Len Data Governance", "Open Len Data Governance")}</a></p></div></body></html>"""
 
 
 def _sha(token: str) -> str:
@@ -67,7 +81,7 @@ def _ldg_login(appbuilder):
     info = ldg_whoami(token) if token else None
     user = appbuilder.sm.ldg_sync_user(info) if info else None
     if user is None:
-        return Response(NOT_SIGNED_IN, status=401, mimetype="text/html")
+        return Response(not_signed_in_page(), status=401, mimetype="text/html")
     login_user(user, remember=False)
     session["dg_tok"] = _sha(token)
     return redirect(next_url or appbuilder.get_url_for_index)
@@ -157,8 +171,10 @@ def dg_sql_guard(sql: str, **kwargs) -> str:
 
     write = (exp.Create, exp.Insert, exp.Delete, exp.Update, exp.Drop, exp.Alter, exp.Merge, exp.TruncateTable)
     read_cmds = {"SHOW", "DESCRIBE", "DESC", "EXPLAIN", "USE", "VALUES"}
-    hint = (f"Aturan data Len Data Governance: tabel hanya boleh dibuat/diubah di schema '{WRITE_SCHEMA}' "
-            f"(tulis lengkap: {WRITE_SCHEMA}.<nama_tabel>). Data medallion_repository dikelola loader dan hanya-baca.")
+    hint = _m(f"Aturan data Len Data Governance: tabel hanya boleh dibuat/diubah di skema '{WRITE_SCHEMA}' "
+              f"(tulis lengkap: {WRITE_SCHEMA}.<nama_tabel>). Data medallion_repository dikelola oleh loader dan bersifat hanya-baca.",
+              f"Len Data Governance data rule: tables may only be created or changed in schema '{WRITE_SCHEMA}' "
+              f"(use the full name: {WRITE_SCHEMA}.<table_name>). medallion_repository data is managed by the loader and is read-only.")
     try:
         stmts = [s for s in sqlglot.parse(sql, read="trino") if s is not None]
     except Exception:  # noqa: BLE001 — tak terurai: tolak bila tampak menulis, sisanya biar Trino yang menilai
@@ -190,7 +206,7 @@ def _register_trino_only() -> None:
 
     def check(_mapper, _conn, target):
         if not _is_trino(target.sqlalchemy_uri):
-            raise SupersetException("Aturan data Len Data Governance: hanya koneksi Trino lakehouse yang diizinkan.")
+            raise SupersetException(_m("Aturan data Len Data Governance: hanya koneksi Trino lakehouse yang diizinkan.", "Len Data Governance data rule: only Trino lakehouse connections are allowed."))
 
     event.listen(Database, "before_insert", check)
     event.listen(Database, "before_update", check)
@@ -203,7 +219,10 @@ def dg_guard(app) -> None:
 
     @app.before_request
     def _check_session_and_rules():
-        if request.path.startswith(("/static/", "/health", "/login")):
+        if request.path.startswith(("/static/", "/health")):
+            return None
+        session["locale"] = _lang()          # bahasa Superset = bahasa aplikasi utama (pilihan ID/EN di navbar)
+        if request.path.startswith("/login"):
             return None
         if current_user.is_authenticated:
             token = request.cookies.get(COOKIE)
@@ -215,6 +234,6 @@ def dg_guard(app) -> None:
             body = request.get_json(silent=True) or {}
             engine = str(body.get("engine") or body.get("backend") or "").lower()
             if not (_is_trino(body.get("sqlalchemy_uri")) or engine == "trino"):
-                return Response(json.dumps({"message": "Hanya koneksi Trino lakehouse yang diizinkan."}),
+                return Response(json.dumps({"message": _m("Hanya koneksi Trino lakehouse yang diizinkan.", "Only Trino lakehouse connections are allowed.")}),
                                 status=422, mimetype="application/json")
         return None
