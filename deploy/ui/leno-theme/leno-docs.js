@@ -1,6 +1,6 @@
 /* Len Data Governance — Context Center > Documents.
  *  1. Folder: urutan manual (FOLDER_ORDER), sisanya menurut abjad. Dokumen: menurun (terbaru dahulu) menurut tanggal dibuat.
- *  2. Baris kecil di bawah nama dokumen: "Dibuat YYMMDD" (tanggal dari awal nama berkas standar "YYMMDD CC Nama" atau "YY.MM.DD …";
+ *  2. Baris kecil di bawah nama dokumen: "Dibuat DD-MMM-YYYY" (tanggal dari awal nama berkas standar "YYMMDD CC Nama" atau "YY.MM.DD …";
  *     updatedAt tidak dipakai karena ikut berubah saat berkas dipindah/diproses).
  * Pengurutan dilakukan pada respons API (XHR) agar tidak mengganggu render React; teks baris kecil diganti idempoten di DOM. */
 (function () {
@@ -12,6 +12,11 @@
   function created(name) {   // "261016 Rev…" / "26.11.21 Timeline…" → "261016" / "261121"
     var m = /^\s*(\d{2})[.\-]?(\d{2})[.\-]?(\d{2})(?!\d)/.exec(name || "");
     return m ? m[1] + m[2] + m[3] : "";
+  }
+  var MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  function fmt(yymmdd) {   // "261016" → "16-Oct-2026"
+    var m = +yymmdd.slice(2, 4);
+    return m >= 1 && m <= 12 ? yymmdd.slice(4, 6) + "-" + MON[m - 1] + "-20" + yymmdd.slice(0, 2) : yymmdd;
   }
   function cc(name) { var m = /^\s*[\d.\-]{6,8}\s+(\d{2})\s/.exec(name || ""); return m ? m[1] : "00"; }
   function fileKey(f) { var n = f.displayName || f.name || ""; return (created(n) || "000000") + cc(n) + n; }
@@ -57,7 +62,20 @@
     document.querySelectorAll('[data-testid^="document-row-"]').forEach(function (row) {
       var nm = row.querySelector('[data-testid="document-name"]'), at = row.querySelector('[data-testid="document-updated-at"]');
       var d = nm ? created(nm.textContent) : "";
-      if (at && d) setText(at, T("docs_created", { d: d }));
+      if (at && d) {
+        setText(at, T("docs_created", { d: fmt(d) }));
+        // "Created" tampil sebelum "Size": pindahkan ke depan elemen ukuran berkas bila ada
+        var size = null;
+        row.querySelectorAll("span,div,p,td").forEach(function (e) {
+          if (!size && e !== at && !e.contains(at) && !at.contains(e) && e.children.length === 0 && /^\d+([.,]\d+)?\s*(B|KB|MB|GB|bytes?)$/i.test(e.textContent.trim())) size = e;
+        });
+        if (size) {
+          var a = at, b = size;
+          while (a.parentNode !== b.parentNode && a.parentNode && a.parentNode !== row) a = a.parentNode;
+          while (b.parentNode !== a.parentNode && b.parentNode && b.parentNode !== row) b = b.parentNode;
+          if (a.parentNode === b.parentNode && a !== b && (a.compareDocumentPosition(b) & 4) === 0) b.parentNode.insertBefore(a, b);
+        }
+      }
     });
     document.querySelectorAll("span").forEach(function (s) {
       if (s.children.length === 0 && /^(Sorted by|Diurutkan|Urutan)\b/.test(s.textContent.trim())) setText(s, T("docs_sorted"));
