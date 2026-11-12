@@ -92,8 +92,45 @@ def default_source(t: str) -> str:
     return "EGRC"
 
 
+HIGHLIGHT_DAYS = 7   # status "Diperbarui" bertahan 7 hari setelah isi Gold terakhir berubah; selebihnya "Eksisting"
+FRESH_NAME = "gold_meta_data_freshness"
+
+
+def previous_state(tq: L.Trino) -> dict[tuple, tuple]:
+    """(tabel, sumber) → (sidik isi, jumlah baris, kapan terakhir berubah, jumlah baris sebelum perubahan) dari pemeriksaan sebelumnya.
+    Harus dibaca SEBELUM ensure_table (skema baru membuat ulang tabel)."""
+    if FRESH_NAME not in set(tq.tables()) or "content_fingerprint" not in {c for c, _ in tq.columns(FRESH_NAME)}:
+        return {}
+    return {(r[0], r[1]): r[2:] for r in tq.q(
+        f"SELECT target_table, source_system, content_fingerprint, row_count, last_changed_at, previous_row_count FROM {tq.fq(FRESH_NAME)}")}
+
+
+def update_info(prev, fp: str, n: int, grab, now: datetime) -> dict:
+    """Status pembaruan — tidak pernah kosong: 'Diperbarui' (isi berubah ≤ 7 hari) atau 'Eksisting'."""
+    if prev is None or prev[0] is None:      # pemeriksaan pertama: belum ada pembanding → isi dianggap eksisting
+        chg, before, note, note_en = None, None, "Eksisting: pemeriksaan pertama, belum ada pembanding.", "Existing: first check, no baseline to compare."
+    elif prev[0] != fp:
+        chg, before = now, prev[1]
+        d = n - (prev[1] or 0)
+        note = f"Isi berubah: {prev[1]} → {n} baris ({d:+d})." if d else f"Isi berubah: jumlah baris tetap {n}, nilai ada yang berbeda."
+        note_en = f"Content changed: {prev[1]} → {n} rows ({d:+d})." if d else f"Content changed: row count unchanged at {n}, some values differ."
+    else:
+        chg, before = prev[2], prev[3]
+        note, note_en = (f"Eksisting: tidak ada perubahan isi (terakhir berubah {chg:%Y-%m-%d}).", f"Existing: no content change (last changed {chg:%Y-%m-%d}).") \
+            if chg else ("Eksisting: tidak ada perubahan isi sejak pertama dipantau.", "Existing: no content change since first monitored.")
+    recent = chg is not None and (now - chg).days < HIGHLIGHT_DAYS
+    if recent and prev is not None and prev[0] == fp:   # perubahan lama yang masih dalam masa sorotan: pakai ringkasan perubahannya
+        d = n - (before or 0)
+        note = f"Diperbarui {chg:%Y-%m-%d}: {before} → {n} baris ({d:+d})." if before is not None else f"Diperbarui {chg:%Y-%m-%d}."
+        note_en = f"Updated {chg:%Y-%m-%d}: {before} → {n} rows ({d:+d})." if before is not None else f"Updated {chg:%Y-%m-%d}."
+    return {"content_fingerprint": fp, "last_changed_at": chg, "previous_row_count": before,
+            "update_status": "Diperbarui" if recent else "Eksisting", "update_status_en": "Updated" if recent else "Existing",
+            "update_note": note, "update_note_en": note_en}
+
+
 def build_gold(tq: L.Trino, schema: dict, batch_id: str) -> int:
     now = datetime.now(timezone.utc)
+    prev_state = previous_state(tq)
     R = tq.fq("silver_fact_meta_etl_run")
     latest = {}   # source_system → (objects, last change, replica)
     for s, objs, chg, rep in tq.q(
@@ -106,9 +143,11 @@ def build_gold(tq: L.Trino, schema: dict, batch_id: str) -> int:
         cols = {c for c, _ in tq.columns(t)}
         if "_loaded_at" not in cols:
             continue
-        q = (f"SELECT _source_system, count(*), max(_loaded_at) FROM {tq.fq(t)} GROUP BY 1" if "_source_system" in cols
-             else f"SELECT NULL, count(*), max(_loaded_at) FROM {tq.fq(t)}")
-        for src, n, grab in tq.q(q):
+        content = ", ".join(f'"{c}"' for c, _ in tq.columns(t) if not c.startswith("_")) or "1"
+        fpx = f"to_hex(checksum(ROW({content})))"
+        q = (f"SELECT _source_system, count(*), max(_loaded_at), {fpx} FROM {tq.fq(t)} GROUP BY 1" if "_source_system" in cols
+             else f"SELECT NULL, count(*), max(_loaded_at), {fpx} FROM {tq.fq(t)}")
+        for src, n, grab, fp in tq.q(q):
             src = src or default_source(t)
             objs, chg, rep = latest.get(src, (None, None, None))
             h_grab = (now - grab).total_seconds() / 3600 if grab else None
@@ -128,7 +167,8 @@ def build_gold(tq: L.Trino, schema: dict, batch_id: str) -> int:
             rows.append({"target_table": t, "domain": domain(t), "source_system": src, "source_objects": objs, "row_count": n,
                          "source_last_change_at": chg, "source_replicated_at": rep, "last_etl_grab_at": grab,
                          "hours_since_grab": h_grab, "hours_replica_age": h_rep, "freshness_status": st, "status_note": note,
-                         "checked_at": now, "_batch_id": batch_id, "_loaded_at": now})
+                         "checked_at": now, **update_info(prev_state.get((t, src)), fp or "", n, grab, now),
+                         "_batch_id": batch_id, "_loaded_at": now})
     name = "gold_meta_data_freshness"
     L.ensure_table(tq, name, schema[name], set(tq.tables()), managed=True)
     L.replace_rows(tq, name, schema[name], rows)

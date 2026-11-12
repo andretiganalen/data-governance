@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Sinkronkan data/referensi/ ke Context Center > Documents, folder "Reference" (dibuat otomatis jika belum ada).
 Idempoten: berkas yang namanya sudah ada di folder dilewati. Dipanggil oleh referensi-tambah.py; aman dijalankan sendiri.
+Pakai tanpa argumen = data/referensi → folder Reference. Dengan argumen: referensi-sinkron.py <Folder> <direktori> [<berkas.xlsx> ...]
+(mis. ERM docs/bronze "261016 Rev.0.1_Data Governance_ERM.xlsx" "260930 Sumber Data E-GRC (Excel).xlsx"); berkas yang disebut saja yang diunggah.
 Catatan: folder Documents bersifat datar (API tidak mendukung sub-folder), jadi "Reference" berdampingan dengan "ERM"."""
 import json, mimetypes, re, sys, urllib.request, uuid
 from pathlib import Path
@@ -8,7 +10,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 SRC = ROOT / "data" / "referensi"
 API = "http://localhost:8585/api/v1/contextCenter/drive"
-FOLDER = "Reference"
+FOLDER = sys.argv[1] if len(sys.argv) > 1 else "Reference"
+if len(sys.argv) > 2:
+    SRC = Path(sys.argv[2]).resolve()
+ONLY = set(sys.argv[3:])
 TOKEN = re.search(r"^LDG_TOKEN=(.+)$", (ROOT / "data/secrets/loader.env").read_text(), re.M).group(1).strip()
 
 
@@ -36,7 +41,7 @@ def main():
         if not after:
             break
     for p in sorted(SRC.iterdir()) if SRC.exists() else []:
-        if not p.is_file() or p.name in have:
+        if not p.is_file() or p.name in have or (ONLY and p.name not in ONLY):
             continue
         b = uuid.uuid4().hex
         ct = mimetypes.guess_type(p.name)[0] or "application/octet-stream"

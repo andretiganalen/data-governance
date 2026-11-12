@@ -975,7 +975,7 @@ CREATE TABLE silver_fact_erm_existing_control (
 CREATE TABLE silver_fact_erm_kri_monthly (
    kri_id varchar COMMENT 'RP01…',
    company_id varchar COMMENT 'F001 – FK silver_dim_company_information (label ''Perusahaan'')',
-   company_id_is_assumed boolean COMMENT 'sheet tanpa Entity → DEFEND ID',
+   company_id_is_assumed boolean COMMENT 'sheet tanpa Entity di sumber → company_id dibiarkan NULL (tidak diisi DEFEND ID)',
    risk_id varchar COMMENT 'FK – pemetaan KRI → risiko (tabel pemetaan disetujui Risk Management)',
    org_id varchar COMMENT 'FK – unit pemilik KRI bila tersedia',
    period_year integer,

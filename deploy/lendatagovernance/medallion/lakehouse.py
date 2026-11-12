@@ -622,7 +622,9 @@ def build_erm(tq: Trino, path: Path, L: dict, snap: date) -> dict[str, list[dict
         "WHERE company_id LIKE 'COMP-%'")} if "silver_dim_company_information" in set(tq.tables()) else {}
 
     def comp(ek: str | None, year: int | None) -> dict:
-        e = ent.get(ek or "DID", {})
+        if not ek:   # Entity kosong di sumber → company kosong (NULL); tidak diganti DEFEND ID (aturan: NULL tetap NULL, tidak dikarang)
+            return {"fiscal_year": year, "company_id": None, "company_name": None, "company_acronym": None, "holding_name": HOLDING}
+        e = ent.get(ek, {})
         cid = e.get("company_id") or f"EGRC-{ek}"
         name, acr = master.get(cid, (e.get("entitas_nama"), ek))
         return {"fiscal_year": year, "company_id": cid, "company_name": name, "company_acronym": acr, "holding_name": HOLDING}

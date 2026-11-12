@@ -1103,7 +1103,7 @@ CREATE TABLE silver_fact_erm_existing_control (
 CREATE TABLE silver_fact_erm_kri_monthly (
    kri_id varchar COMMENT 'RP01…',
    company_id varchar COMMENT 'F001 – FK silver_dim_company_information (label ''Perusahaan'')',
-   company_id_is_assumed boolean COMMENT 'sheet tanpa Entity → DEFEND ID',
+   company_id_is_assumed boolean COMMENT 'sheet tanpa Entity di sumber → company_id dibiarkan NULL (tidak diisi DEFEND ID)',
    risk_id varchar COMMENT 'FK – pemetaan KRI → risiko (tabel pemetaan disetujui Risk Management)',
    org_id varchar COMMENT 'FK – unit pemilik KRI bila tersedia',
    period_year integer,
@@ -2378,6 +2378,13 @@ CREATE TABLE gold_meta_data_freshness (
    freshness_status varchar COMMENT 'Segar | Menunggu ETL | Sumber CDC tidak diperbarui | Berkas statis',
    status_note varchar,
    checked_at timestamp(6) with time zone,
+   content_fingerprint varchar COMMENT 'Sidik isi tabel Gold (checksum semua kolom selain lineage) — pembanding antar-pemeriksaan',
+   last_changed_at timestamp(6) with time zone COMMENT 'Kapan isi tabel Gold terakhir berubah (bukan sekadar dimuat ulang)',
+   previous_row_count bigint COMMENT 'Jumlah baris sebelum perubahan terakhir',
+   update_status varchar COMMENT 'Diperbarui (isi berubah dalam 7 hari terakhir) | Eksisting (tidak ada perubahan) — tidak pernah kosong',
+   update_status_en varchar COMMENT 'Updated | Existing',
+   update_note varchar COMMENT 'Ringkasan pembaruan (bahasa Indonesia)',
+   update_note_en varchar COMMENT 'Update summary (English)',
    _batch_id varchar COMMENT 'lineage',
    _loaded_at timestamp(6) with time zone COMMENT 'lineage'
 )
