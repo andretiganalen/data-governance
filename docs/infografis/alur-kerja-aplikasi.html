@@ -1,0 +1,51 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><title>Infografis Alur Kerja Len Data Governance</title>
+<style>
+@font-face{font-family:Poppins;font-weight:400;src:url(file:///home/ubuntu/data-governance/deploy/ui/leno-theme/fonts/poppins-latin-400-normal.woff2)}
+@font-face{font-family:Poppins;font-weight:500;src:url(file:///home/ubuntu/data-governance/deploy/ui/leno-theme/fonts/poppins-latin-500-normal.woff2)}
+@font-face{font-family:Poppins;font-weight:600;src:url(file:///home/ubuntu/data-governance/deploy/ui/leno-theme/fonts/poppins-latin-600-normal.woff2)}
+@page{size:A4 portrait;margin:0}
+*{box-sizing:border-box}body{margin:0;font-family:Poppins,sans-serif;color:#262626;background:#fff;width:210mm}
+.pg{padding:12mm 12mm 8mm}
+h1{margin:0;font-size:24px;color:#ae2524;font-weight:600}.sub{margin:4px 0 12px;color:#595959;font-size:12px}
+.st{display:flex;gap:10px;background:#f5f5f5;border-radius:12px;padding:9px 12px;margin:0 0 8px;align-items:flex-start}
+.n{flex:none;background:#ae2524;color:#fff;border-radius:50%;width:26px;height:26px;text-align:center;line-height:26px;font-size:13px;font-weight:600}
+.st h2{margin:0 0 2px;font-size:13px;font-weight:600}.st p{margin:0;font-size:10.5px;line-height:1.4;color:#404040}
+.tag{display:inline-block;border-radius:10px;padding:0 7px;font-size:9px;font-weight:600;margin-left:4px;vertical-align:middle}
+.ok{background:#e6f4ea;color:#1e6b34}.todo{background:#fde8e8;color:#ae2524}
+.vs{display:flex;gap:8px;margin-top:5px}.vs div{flex:1;background:#fff;border:1px solid #d9d9d9;border-radius:8px;padding:6px 8px;font-size:10px;line-height:1.35}
+.cell{display:inline-block;border-radius:4px;padding:1px 8px;font-size:10px;margin:0 3px;border:1px solid #d9d9d9}
+.r{background:#f8c9c9;color:#8a1b1b}.y{background:#fff3b0;color:#6b5600}.w{background:#fff}
+.flow{display:flex;gap:6px;margin-top:5px;align-items:stretch}.flow div{flex:1;background:#fff;border:1px solid #d9d9d9;border-radius:8px;padding:6px;font-size:10px;text-align:center}
+.flow .a{flex:none;border:0;background:none;color:#ae2524;font-size:16px;align-self:center;padding:0}
+.foot{font-size:9.5px;color:#8c8c8c;margin-top:6px;text-align:center}
+</style></head><body><div class="pg">
+<h1>Alur Kerja Len Data Governance</h1>
+<p class="sub">Dari ide aplikasi baru sampai data governance yang bisa diunduh sesuai hak akses. <span class="tag ok">Sudah ada</span> <span class="tag todo">Perlu dibangun</span></p>
+
+<div class="st"><div class="n">1</div><div><h2>Pengguna merencanakan aplikasi baru</h2><p>Dasbor, tabel, aplikasi, SOP, formulir, atau apa pun yang membutuhkan data.</p></div></div>
+
+<div class="st"><div class="n">2</div><div><h2>Buka aplikasi Len Data Governance</h2><p>Satu alamat, satu gerbang. Visualisasi tampil di dalam aplikasi yang sama.</p></div></div>
+
+<div class="st"><div class="n">3</div><div><h2>Masuk sebagai Fungsi Anda <span class="tag ok">Sudah ada</span></h2>
+<p>Login menentukan Fungsi dan hak akses Anda. Fungsi adalah <b>siapa pemilik</b> data. Domain adalah <b>topik</b> data.</p>
+<div class="vs"><div><b>Fungsi</b> = pemilik/penanggung jawab<br>contoh: Fungsi Tata Kelola, Fungsi Manajemen Risiko</div><div><b>Domain</b> = bidang isi data<br>contoh: Risk Management, Human Capital <span class="tag todo">Belum ada di aplikasi</span></div></div></div></div>
+
+<div class="st"><div class="n">4</div><div><h2>Buat tabelnya <span class="tag todo">Perlu dibangun</span></h2>
+<p>Tabel dibuat langsung di gudang <b>Trino</b>, di area kerja <b>workspace</b>. Pemiliknya otomatis Fungsi Anda.</p></div></div>
+
+<div class="st"><div class="n">5</div><div><h2>Isi daftar kolom dari panduan <span class="tag todo">Perlu dibangun</span></h2>
+<p>Nama kolom, tipe data, istilah bisnis, definisi, klasifikasi, dan aturan kualitas dipilih dari panduan (Library), bukan diketik bebas. Setiap perubahan langsung tersimpan di Trino.</p>
+<div class="flow"><div>Tabel &amp; kolom</div><div class="a">→</div><div><b>Trino</b><br>satu sumber kebenaran</div><div class="a">→</div><div>Aplikasi mana pun membaca dengan query</div></div></div></div>
+
+<div class="st"><div class="n">6</div><div><h2>Unduh hasil Data Governance lengkap dengan atributnya <span class="tag todo">Perlu dibangun</span></h2>
+<p>Berkas Excel berisi dataset, tabel, kolom, glosarium, pemilik, aturan kualitas, alur data, dan akses. <b>Isinya dibatasi sesuai Domain/Fungsi dan hak akses Anda</b>: Anda hanya mengunduh yang boleh Anda lihat.</p></div></div>
+
+<div class="st"><div class="n">7</div><div><h2>Sel kosong diberi warna peringatan <span class="tag todo">Perlu dibangun</span></h2>
+<p>Di Excel hasil unduhan dan di layar aplikasi.</p>
+<div class="vs"><div><span class="cell r">kosong</span> <b>Merah</b>: wajib diisi tetapi masih kosong</div><div><span class="cell y">kosong</span> <b>Kuning</b>: belum lengkap atau perlu ditinjau</div><div><span class="cell w">terisi</span> Tanpa warna: lengkap</div></div></div></div>
+
+<div class="st"><div class="n">8</div><div><h2>Pantau dan perbarui <span class="tag ok">Sudah ada</span></h2>
+<p>Status kelengkapan Glosarium dan kesegaran data (Diperbarui/Eksisting) dihitung otomatis. Hapus selalu ke Tempat Sampah dan bisa dipulihkan 20 hari.</p></div></div>
+
+<div class="foot">Len Data Governance · Infografis alur kerja · tanpa data sensitif</div>
+</div></body></html>
