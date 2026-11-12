@@ -1,0 +1,79 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><title>Panduan Uji Manual: Unduh Excel</title>
+<style>
+@font-face{font-family:Poppins;font-weight:400;src:url(file:///home/ubuntu/data-governance/deploy/ui/leno-theme/fonts/poppins-latin-400-normal.woff2)}
+@font-face{font-family:Poppins;font-weight:500;src:url(file:///home/ubuntu/data-governance/deploy/ui/leno-theme/fonts/poppins-latin-500-normal.woff2)}
+@font-face{font-family:Poppins;font-weight:600;src:url(file:///home/ubuntu/data-governance/deploy/ui/leno-theme/fonts/poppins-latin-600-normal.woff2)}
+@page{size:A4;margin:14mm 14mm 16mm}
+*{box-sizing:border-box}body{margin:0;font-family:Poppins,sans-serif;color:#262626;font-size:10.5px;line-height:1.5}
+h1{margin:0;font-size:22px;color:#ae2524;font-weight:600}.sub{margin:2px 0 12px;color:#595959;font-size:11px}
+h2{margin:16px 0 6px;font-size:13.5px;font-weight:600;color:#101828;border-left:4px solid #ae2524;padding-left:8px;break-after:avoid}
+p{margin:4px 0}ol,ul{margin:4px 0 6px;padding-left:20px}li{margin:2px 0}
+table{width:100%;border-collapse:collapse;margin:6px 0 8px;break-inside:avoid;font-size:10px}
+th{background:#ae2524;color:#fff;text-align:left;font-weight:500;padding:5px 7px}
+td{padding:5px 7px;border-bottom:1px solid #e5e7eb;vertical-align:top}tr:nth-child(even) td{background:#f9fafb}
+.box{background:#f5f5f5;border-radius:8px;padding:8px 12px;margin:6px 0;break-inside:avoid}
+.ok{color:#1e6b34;font-weight:600}.no{color:#ae2524;font-weight:600}
+code,pre{font-family:ui-monospace,Menlo,monospace;font-size:9.5px;background:#f2f4f7;border-radius:4px}code{padding:0 4px}
+pre{padding:8px 10px;margin:6px 0;white-space:pre-wrap;break-inside:avoid}
+.chk{display:inline-block;width:10px;height:10px;border:1.3px solid #8c8c8c;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.foot{margin-top:14px;font-size:9px;color:#8c8c8c;text-align:center}
+</style></head><body>
+<h1>Panduan Uji Manual: Unduh Excel</h1>
+<p class="sub">Len Data Governance · tombol "Unduh Excel" di Settings · disusun 12 Nov 2026</p>
+<div class="box"><b>Alamat:</b> <code>http://192.168.125.14:8585</code> (atau <code>http://dev-data.len.co.id</code> bila DNS aktif). Pakai jendela biasa dan satu jendela Incognito untuk akun kedua. Beri tanda <span class="chk"></span> untuk setiap langkah yang lulus.</div>
+
+<h2>A. Persiapan akun uji</h2>
+<p>Atur keanggotaan di <b>Settings → Members → Teams</b>. Dibutuhkan tiga akun (opsional satu lagi).</p>
+<table><tr><th>Akun</th><th>Atur sebagai</th><th>Hasil yang diharapkan</th></tr>
+<tr><td><b>Admin</b> (akun Anda)</td><td>Super Admin atau tim <code>UV-1</code></td><td>Berkas berisi semua data</td></tr>
+<tr><td><b>Fungsi</b></td><td>Anggota satu tim <code>FN_*</code>, mis. <code>FN_Manajemen_Risiko</code></td><td>Berkas hanya berisi data Fungsi itu</td></tr>
+<tr><td><b>Lihat saja</b></td><td>Hanya tim <code>Organization</code></td><td class="no">Ditolak</td></tr>
+<tr><td>Pengunduh (opsional)</td><td>Hanya tim <code>Pengunduh</code></td><td>Berkas kosong (header saja)</td></tr></table>
+
+<h2>B. Uji tombol (login sebagai Admin)</h2>
+<ol>
+<li><span class="chk"></span>Buka <b>Settings</b> (ikon roda gigi).</li>
+<li><span class="chk"></span>Cari kartu <b>Unduh Excel</b> di samping Tempat Sampah: ikon dokumen berpanah ke bawah, abu-abu; teks "Hasil Data Governance lengkap dengan atributnya, sesuai hak akses Anda."; ukuran dan bentuk sama dengan kartu di sebelahnya.</li>
+<li><span class="chk"></span>Klik kartu: teks menjadi "Menyiapkan berkas…", lalu berkas <code>YYMMDD Data Governance.xlsx</code> terunduh, teks menjadi "Berkas diunduh. Sel merah = wajib diisi, kuning = belum lengkap.", dan kembali normal setelah 6 detik.</li>
+<li><span class="chk"></span>Klik dua kali cepat: klik kedua diabaikan, hanya satu berkas terunduh.</li>
+<li><span class="chk"></span>Ganti bahasa ke <b>English</b> lalu buka Settings lagi: seluruh teks kartu berbahasa Inggris penuh, tanpa campuran.</li></ol>
+
+<h2>C. Uji isi berkas (Admin)</h2>
+<table><tr><th style="width:26%">Cek</th><th>Hasil yang benar</th></tr>
+<tr><td>Sheet terlihat</td><td>Ringkasan, Data_Dictionary, Business_Glossary, Data_Quality_Rules, Data_Flow_Lineage, Data_Security_Access</td></tr>
+<tr><td>Sheet <code>Library</code></td><td>Tersembunyi (klik kanan tab → Unhide)</td></tr>
+<tr><td>Header</td><td>Merah <code>#ae2524</code>, teks putih, baris pertama beku, filter aktif</td></tr>
+<tr><td>Jumlah baris data</td><td>Data_Dictionary 105 · Business_Glossary 66 · Data_Quality_Rules 89 · Data_Flow_Lineage 167 · Data_Security_Access 4.169</td></tr>
+<tr><td>Sheet Ringkasan</td><td>Waktu, cakupan "Semua data (admin)", tabel baris / sel merah / sel kuning</td></tr>
+<tr><td>Sel <b style="color:#8a1b1b">merah</b></td><td>Wajib terisi tetapi kosong: Data_Dictionary ±33, Business_Glossary ±13</td></tr>
+<tr><td>Sel <b style="color:#6b5600">kuning</b></td><td>Seharusnya terisi: Data_Dictionary ±47, Business_Glossary ±15, Data_Flow_Lineage 9</td></tr>
+<tr><td>Sel kosong</td><td>Tetap kosong; tidak ada isi karangan</td></tr>
+<tr><td>Dropdown</td><td>Kolom <code>CLASSIFICATION</code>: Public, Restricted, Confidential, Strictly Confidential</td></tr></table>
+<p>Angka per 12 Nov 2026; bila Gold dimuat ulang bisa bergeser sedikit. Cocokkan dengan <code>gold_meta_*</code> di DBeaver (Trino).</p>
+
+<h2>D. Uji hak akses</h2>
+<table><tr><th style="width:22%">Skenario</th><th>Langkah</th><th style="width:30%">Hasil yang benar</th></tr>
+<tr><td><b>Akun Fungsi</b> (Incognito)</td><td>Unduh seperti bagian B</td><td>Ringkasan menulis "Unit/Fungsi Anda: …"; baris sama atau lebih sedikit dari Admin (UG-1 memegang 96 dari 105 elemen)</td></tr>
+<tr><td><b>Lihat saja</b></td><td>Klik kartu</td><td class="no">Pesan "Akun Anda belum memiliki hak unduh…"; tidak ada berkas</td></tr>
+<tr><td><b>Pengunduh</b> tanpa unit</td><td>Klik kartu</td><td>Berkas terunduh, sheet data kosong (menunggu pemetaan akun P3-3)</td></tr>
+<tr><td><b>Tanpa login</b></td><td>Buka <code>/_export/governance.xlsx</code> langsung di tab baru</td><td class="no">{"error": "Silakan masuk terlebih dahulu."}; tidak ada berkas</td></tr></table>
+
+<h2>E. Cek log di server</h2>
+<pre>cd /home/ubuntu/data-governance/deploy/lendatagovernance
+docker compose logs --tail 20 ldg-export</pre>
+<p>Tiap unduhan tercatat satu baris: nama akun, tingkat, cakupan, jumlah baris. <b>Tidak boleh ada token atau isi data</b>.</p>
+
+<h2>F. Jika ada masalah</h2>
+<table><tr><th style="width:28%">Gejala</th><th>Penyebab dan tindakan</th></tr>
+<tr><td>Kartu tidak muncul</td><td>Ctrl+F5 (cache). Pastikan di <code>/settings</code>, bukan submenu</td></tr>
+<tr><td>"Berkas belum dapat dibuat"</td><td><code>docker compose ps ldg-export</code> harus <code>healthy</code>; cek log (biasanya Trino sesaat tidak menjawab, coba lagi)</td></tr>
+<tr><td>"Sesi berakhir"</td><td>Login ulang. Token dibaca dari cookie <code>dg_token</code> yang diisi <code>leno-menu.js</code></td></tr>
+<tr><td>Akun Fungsi mendapat berkas kosong</td><td>Nama tim <code>FN_*</code> tidak cocok dengan nama Fungsi di <code>silver_dim_organization</code>, atau akun belum di tim yang benar</td></tr>
+<tr><td>Tidak terunduh, tanpa pesan</td><td>Periksa pemblokir unduhan di browser</td></tr></table>
+
+<h2>Lembar hasil</h2>
+<table><tr><th>Bagian</th><th style="width:14%">Lulus / Gagal</th><th>Catatan</th></tr>
+<tr><td>B Tombol</td><td></td><td></td></tr><tr><td>C Isi berkas</td><td></td><td></td></tr>
+<tr><td>D Hak akses</td><td></td><td></td></tr><tr><td>E Log</td><td></td><td></td></tr></table>
+<div class="foot">Len Data Governance · Panduan uji Unduh Excel · tanpa data sensitif</div>
+</body></html>
