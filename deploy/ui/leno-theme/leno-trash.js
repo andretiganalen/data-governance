@@ -29,25 +29,13 @@
       ".ld-info{margin:12px 0 0;padding:12px 14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;font:400 13px/1.55 'UIx Poppins',Arial,sans-serif;color:#364153;text-align:left}" +
       ".ld-info p{margin:0 0 6px}.ld-info .ld-lead{font-weight:500;color:#101828}.ld-info .ld-h{margin:10px 0 4px;font-weight:600;color:#101828;font-size:12px}" +
       ".ld-info ul{margin:0;padding-left:18px;list-style:disc}.ld-info li{margin:0 0 3px}.ld-info .ld-foot{margin:10px 0 0;color:#6a7282;font-size:12px}" +
-      "#" + PANEL_ID + "{position:fixed;z-index:400;background:#f9fafb;overflow:auto;padding:20px 24px;font:400 13px/1.5 'UIx Poppins',Arial,sans-serif;color:#364153}" +
-      "#" + PANEL_ID + " h2{margin:0 0 4px;font:600 18px 'UIx Poppins',Arial,sans-serif;color:#101828}" +
-      "#" + PANEL_ID + " .lt-sub{margin:0 0 16px;color:#6a7282}" +
-      "#" + PANEL_ID + " .lt-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 0 0 1px rgba(16,24,40,.04),0 1px 2px rgba(16,24,40,.06);overflow:hidden}" +
-      "#" + PANEL_ID + " table{width:100%;border-collapse:collapse}" +
-      "#" + PANEL_ID + " th{text-align:left;padding:10px 14px;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-weight:600;font-size:12px;color:#6a7282}" +
-      "#" + PANEL_ID + " td{padding:10px 14px;border-bottom:1px solid #f3f4f6;vertical-align:middle}" +
-      "#" + PANEL_ID + " tr:last-child td{border-bottom:0}" +
-      "#" + PANEL_ID + " .lt-name{font-weight:500;color:#101828;word-break:break-all}" +
-      "#" + PANEL_ID + " .lt-fqn{margin-top:2px;font-size:11px;color:#6a7282;word-break:break-all}" +
-      "#" + PANEL_ID + " .lt-chip{display:inline-block;padding:2px 8px;border-radius:6px;background:#f3f4f6;font-size:12px}" +
-      "#" + PANEL_ID + " .lt-left{white-space:nowrap}" +
-      "#" + PANEL_ID + " button.lt-btn{height:30px;padding:0 12px;border:1px solid #d1d5dc;border-radius:8px;background:#fff;color:#364153;font:500 13px 'UIx Poppins',Arial,sans-serif;cursor:pointer;box-shadow:0 0 0 1px rgba(16,24,40,.04),0 1px 2px rgba(16,24,40,.06)}" +
-      "#" + PANEL_ID + " button.lt-btn:hover{background:#f3f4f6;color:#101828}" +
-      "#" + PANEL_ID + " button.lt-btn[disabled]{opacity:.5;cursor:default}" +
-      "#" + PANEL_ID + " .lt-empty{padding:40px 16px;text-align:center;color:#6a7282}" +
-      "#" + PANEL_ID + " .lt-msg{margin:0 0 12px;padding:10px 14px;border-radius:8px;background:#f3f4f6;color:#101828}" +
-      "#" + PANEL_ID + " .lt-back{background:none;border:0;padding:0 0 8px;color:#6a7282;font:400 13px 'UIx Poppins',Arial,sans-serif;cursor:pointer}" +
-      "#" + PANEL_ID + " .lt-back:hover{color:#101828}" +
+      "#" + PANEL_ID + "{position:fixed;z-index:400;background:var(--uix-page,#f9fafb);overflow:auto;padding:16px}" +
+      "#" + PANEL_ID + " .lt-gap{margin-top:16px}" +
+      "#" + PANEL_ID + " td.ant-table-cell{vertical-align:middle}" +
+      "#" + PANEL_ID + " .lt-name{font-weight:500;word-break:break-all}" +
+      "#" + PANEL_ID + " .lt-fqn{margin-top:2px;font-size:12px;opacity:.7;word-break:break-all}" +
+      "#" + PANEL_ID + " .lt-empty{padding:40px 16px;text-align:center;opacity:.7}" +
+      "#" + PANEL_ID + " .lt-msg{margin-top:16px}" +
       /* dialog hapus: tenang, bukan alarm (ikon abu-abu, tombol merah UIx biasa, bukan merah menyala) */
       ".ld-dlg [data-featured-icon]{background:#f3f4f6!important;color:#6a7282!important}" +
       ".ld-dlg [data-testid=confirm-button]{background:#ae2524!important;color:#fff!important;white-space:nowrap}" +
@@ -105,11 +93,15 @@
 
   /* ---------- 2. menu & panel Tempat Sampah ---------- */
   var panelOpen = false;
-  function place(panel) {
-    var side = document.querySelector(".left-sidebar-layout, .ant-layout-sider");
-    var nav = document.querySelector(".navbar-container, .ant-layout-header");
-    panel.style.left = (side ? Math.round(side.getBoundingClientRect().right) : 0) + "px";
-    panel.style.top = (nav ? Math.round(nav.getBoundingClientRect().bottom) : 0) + "px";
+  function place(panel) {   // persis menempel pada area konten utama (di kanan sidebar, di bawah bilah atas)
+    var main = document.querySelector("main.ant-layout-content");
+    var r = main ? main.getBoundingClientRect() : null;
+    if (!r || !r.height) {
+      var side = document.querySelector(".left-sidebar-layout, .ant-layout-sider");
+      var nav = document.querySelector("header.ant-layout-header:not(.pricing-banner)");
+      r = { left: side ? side.getBoundingClientRect().right : 0, top: nav ? nav.getBoundingClientRect().bottom : 0 };
+    }
+    panel.style.left = Math.round(r.left) + "px"; panel.style.top = Math.round(r.top) + "px";
     panel.style.right = "0"; panel.style.bottom = "0";
   }
   function daysLeft(ts) { return Math.max(0, DAYS - Math.floor((Date.now() - ts) / 86400000)); }
@@ -125,50 +117,64 @@
     Promise.all(jobs).then(function (parts) {
       var rows = [].concat.apply([], parts).sort(function (a, b) { return (b.e.updatedAt || 0) - (a.e.updatedAt || 0); });
       body.textContent = "";
-      if (!rows.length) { body.appendChild(el("div", "lt-empty", T("empty"))); return; }
-      var card = el("div", "lt-card"), tb = el("table"), th = el("thead"), hr = el("tr");
-      [T("h_name"), T("h_type"), T("h_by"), T("h_at"), T("h_left"), ""].forEach(function (h) { hr.appendChild(el("th", null, h)); });
+      var card = el("div", "ant-card ant-card-bordered lt-gap"), cb = el("div", "ant-card-body");
+      card.appendChild(cb); body.appendChild(card);
+      if (!rows.length) { cb.appendChild(el("div", "lt-empty", T("empty"))); return; }
+      var wrap = el("div", "ant-table-wrapper"), tbl = el("div", "ant-table"), cont = el("div", "ant-table-container");
+      var tb = el("table"), th = el("thead", "ant-table-thead"), hr = el("tr");
+      [T("h_name"), T("h_type"), T("h_by"), T("h_at"), T("h_left"), ""].forEach(function (h) { hr.appendChild(el("th", "ant-table-cell", h)); });
       th.appendChild(hr); tb.appendChild(th);
-      var tbody = el("tbody");
+      var tbody = el("tbody", "ant-table-tbody");
       rows.forEach(function (x) {
-        var tr = el("tr"), n = x.e.displayName || x.e.name;
-        var nc = el("td"); nc.appendChild(el("div", "lt-name", x.e.displayName || x.e.name));
-        if (x.e.fullyQualifiedName && x.e.fullyQualifiedName !== (x.e.displayName || x.e.name)) nc.appendChild(el("div", "lt-fqn", x.e.fullyQualifiedName));
+        var tr = el("tr", "ant-table-row"), n = x.e.displayName || x.e.name;
+        var nc = el("td", "ant-table-cell"); nc.appendChild(el("div", "lt-name", n));
+        if (x.e.fullyQualifiedName && x.e.fullyQualifiedName !== n) nc.appendChild(el("div", "lt-fqn", x.e.fullyQualifiedName));
         tr.appendChild(nc);
-        var c1 = el("td"); c1.appendChild(el("span", "lt-chip", T("t_" + x.t[0]))); tr.appendChild(c1);
-        tr.appendChild(el("td", null, x.e.updatedBy || "-"));
-        tr.appendChild(el("td", null, x.e.updatedAt ? fmt(x.e.updatedAt) : "-"));
+        var c1 = el("td", "ant-table-cell"); c1.appendChild(el("span", "ant-tag", T("t_" + x.t[0]))); tr.appendChild(c1);
+        tr.appendChild(el("td", "ant-table-cell", x.e.updatedBy || "-"));
+        tr.appendChild(el("td", "ant-table-cell", x.e.updatedAt ? fmt(x.e.updatedAt) : "-"));
         var left = x.e.updatedAt ? daysLeft(x.e.updatedAt) : 0;
-        tr.appendChild(el("td", "lt-left", left > 0 ? T("left", { n: left }) : T("soon")));
-        var act = el("td"), b = el("button", "lt-btn", T("restore")); b.type = "button";
+        tr.appendChild(el("td", "ant-table-cell", left > 0 ? T("left", { n: left }) : T("soon")));
+        var act = el("td", "ant-table-cell"), b = el("button", "ant-btn ant-btn-default ant-btn-sm"); b.type = "button";
+        b.appendChild(el("span", null, T("restore")));
         b.addEventListener("click", function () { restore(panel, x, tr, b, n); });
         act.appendChild(b); tr.appendChild(act); tbody.appendChild(tr);
       });
-      tb.appendChild(tbody); card.appendChild(tb); body.appendChild(card);
+      tb.appendChild(tbody); cont.appendChild(tb); tbl.appendChild(cont); wrap.appendChild(tbl); cb.appendChild(wrap);
     });
   }
   function msg(panel, text) {
     var m = panel.querySelector(".lt-msg"); if (m) m.remove();
-    m = el("div", "lt-msg", text); panel.querySelector(".lt-sub").after(m);
+    m = el("div", "ant-alert ant-alert-info lt-msg"); m.appendChild(el("div", "ant-alert-message", text));
+    panel.querySelector(".lt-head").after(m);
     setTimeout(function () { if (m.parentNode) m.remove(); }, 8000);
   }
+  function setBtn(btn, text) { var s = btn.querySelector("span"); if (s) s.textContent = text; }
   function restore(panel, x, tr, btn, name) {
-    btn.disabled = true; btn.textContent = T("restoring");
+    btn.disabled = true; setBtn(btn, T("restoring"));
     api("PUT", "/" + x.t[0] + "/restore", { id: x.e.id }).then(function (r) {
-      if (r.ok) { tr.remove(); msg(panel, "“" + name + "” sudah dipulihkan dan tampil kembali."); return; }
-      btn.disabled = false; btn.textContent = T("restore");
+      if (r.ok) { tr.remove(); msg(panel, T("restored", { n: name })); return; }
+      btn.disabled = false; setBtn(btn, T("restore"));
       msg(panel, T("restore_fail", { n: name }));
-    }).catch(function () { btn.disabled = false; btn.textContent = T("restore"); msg(panel, T("offline")); });
+    }).catch(function () { btn.disabled = false; setBtn(btn, T("restore")); msg(panel, T("offline")); });
   }
   function showPanel() {
     css();
     var panel = document.getElementById(PANEL_ID);
     if (!panel) {
       panel = el("div"); panel.id = PANEL_ID;
-      var back = el("button", "lt-back", T("back_settings")); back.type = "button";
-      back.addEventListener("click", hidePanel); panel.appendChild(back);
-      panel.appendChild(el("h2", null, T("trash")));
-      panel.appendChild(el("p", "lt-sub", T("trash_sub", { d: DAYS })));
+      // kepala halaman: struktur sama dengan halaman bawaan (kartu + page-header-container + heading/sub-heading)
+      var head = el("div", "ant-card ant-card-bordered lt-head"), hb = el("div", "ant-card-body"), row = el("div", "ant-row");
+      var c1 = el("div", "ant-col ant-col-16"), ph = el("div", "page-header-container");
+      var h = el("h5", "ant-typography heading m-b-0", T("trash")); h.setAttribute("data-testid", "heading");
+      var sp = el("div", "ant-space ant-space-horizontal ant-space-align-center"), si = el("div", "ant-space-item");
+      si.appendChild(h); sp.appendChild(si); ph.appendChild(sp);
+      var sub = el("div", "ant-typography sub-heading", T("trash_sub", { d: DAYS })); sub.setAttribute("data-testid", "sub-heading");
+      ph.appendChild(sub); c1.appendChild(ph);
+      var c2 = el("div", "ant-col ant-col-8 d-flex justify-end");
+      var back = el("button", "ant-btn ant-btn-default"); back.type = "button"; back.appendChild(el("span", null, T("back_settings")));
+      back.addEventListener("click", hidePanel); c2.appendChild(back);
+      row.appendChild(c1); row.appendChild(c2); hb.appendChild(row); head.appendChild(hb); panel.appendChild(head);
       panel.appendChild(el("div", "lt-body"));
       document.body.appendChild(panel);
       window.addEventListener("resize", function () { place(panel); });
@@ -181,17 +187,22 @@
     var p = document.getElementById(PANEL_ID); if (p) p.style.display = "none";
     panelOpen = false; document.documentElement.classList.remove("dg-trash-open");
   }
-  /* Ikon kartu Settings (hardcoded, satu keluarga dengan ikon kartu bawaan: kotak 90px, garis/outline). */
-  var TRASH = '<svg viewBox="0 0 48 48" width="52" height="52" fill="none" stroke="#4a5565" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  /* Ikon kartu Settings: struktur sama dengan ikon bawaan (svg 89x89, kotak rx 28 berwarna pucat + gambar garis di tengah, ukuran 1em). */
+  var BOX = '<path d="M0 28C0 12.536 12.536 0 28 0H61C76.464 0 89 12.536 89 28V61C89 76.464 76.464 89 61 89H28C12.536 89 0 76.464 0 61V28Z" fill="';
+  function cardSvg(fill, glyph) {
+    return '<svg viewBox="0 0 89 89" fill="none" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" aria-hidden="true" focusable="false">' +
+      BOX + fill + '"/><g transform="translate(24.5 24.5) scale(.8333)">' + glyph + "</g></svg>";
+  }
+  var TRASH = cardSvg("#F2F4F7",
+    '<g stroke="#4a5565" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
     '<path d="M6 12h36M18 12V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4M10 12l2.4 28a3 3 0 0 0 3 2.8h16.4a3 3 0 0 0 3-2.8L37 12"/>' +
-    '<g stroke-width="1.9"><path d="M21.2 24.6 24 20l2.2 3.4M25.6 30.2h-3.5a1.6 1.6 0 0 1-1.4-2.4l.5-.8M29.2 26.4l1.4 2.4a1.6 1.6 0 0 1-1.4 2.4M22.6 33l-2-2.8 2.8-.6M27 33.2l3-1.6-2.6-1.4M29.2 26.4 26.6 25l.7 2.6"/></g></svg>';
-  var THEME = '<svg viewBox="0 0 48 48" width="52" height="52" fill="none" stroke="#ae2524" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<g stroke-width="2"><path d="M21.2 24.6 24 20l2.2 3.4M25.6 30.2h-3.5a1.6 1.6 0 0 1-1.4-2.4l.5-.8M29.2 26.4l1.4 2.4a1.6 1.6 0 0 1-1.4 2.4M22.6 33l-2-2.8 2.8-.6M27 33.2l3-1.6-2.6-1.4M29.2 26.4 26.6 25l.7 2.6"/></g></g>');
+  var THEME = cardSvg("#FEF3F2",
+    '<g stroke="#ae2524" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
     '<path d="M24 5C13.5 5 5 13 5 23.5S13.2 42 21 42c3 0 4-1.8 4-3.6 0-3.4 2-4.4 4.6-4.4H36c4 0 7-2.8 7-7C43 14 34.5 5 24 5z"/>' +
-    '<circle cx="15" cy="23" r="2.4"/><circle cx="20" cy="14.5" r="2.4"/><circle cx="30" cy="14.5" r="2.4"/><circle cx="35" cy="23" r="2.4"/></svg>';
-  var TILE = "width:90px;height:90px;display:flex;align-items:center;justify-content:center;border-radius:12px;";
-  function tile(ic, svg, bg) {
+    '<circle cx="15" cy="23" r="2.4"/><circle cx="20" cy="14.5" r="2.4"/><circle cx="30" cy="14.5" r="2.4"/><circle cx="35" cy="23" r="2.4"/></g>');
+  function tile(ic, svg) {   // hanya mengganti isi ikon; ukuran/kotak ikut gaya kartu bawaan
     ic.innerHTML = '<span role="img" class="anticon">' + svg + "</span>";
-    ic.style.cssText = TILE + "background:" + bg;
     ic.setAttribute("data-ldg-icon", "1");
   }
   function decorateCards() {   // kartu "Preferences" → ikon tema (outline merah UIx)
@@ -199,7 +210,7 @@
       var t = card.querySelector(".setting-card-content .font-semibold");
       var ic = card.querySelector(".setting-card-icon");
       if (!t || !ic || ic.getAttribute("data-ldg-icon")) return;
-      if (/^(preferences|preferensi|appearance|tampilan)$/i.test(t.textContent.trim())) tile(ic, THEME, "#fdf2f2");
+      if (/^(preferences|preferensi|appearance|tampilan)$/i.test(t.textContent.trim())) tile(ic, THEME);
     });
   }
   function ensureCard() {
@@ -212,8 +223,8 @@
     var col = box.firstElementChild.cloneNode(true);
     col.id = ITEM_ID;
     var card = col.querySelector(".ant-card"); if (!card) return;
-    card.setAttribute("data-testid", "tempat-sampah"); card.style.cursor = "pointer";
-    var ic = card.querySelector(".setting-card-icon"); if (ic) tile(ic, TRASH, "#f3f4f6");
+    card.setAttribute("data-testid", "tempat-sampah"); card.style.cursor = "pointer"; card.style.flex = "1"; card.style.alignSelf = "stretch"; col.style.padding = "0 10px"; col.style.display = "flex"; col.style.alignItems = "stretch";
+    var ic = card.querySelector(".setting-card-icon"); if (ic) tile(ic, TRASH);
     var t = card.querySelector(".setting-card-content .font-semibold"); if (t) t.textContent = T("trash");
     var d = card.querySelector(".setting-card-content div"); if (d) { d.textContent = T("trash_card", { d: DAYS }); d.removeAttribute("title"); }
     card.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showPanel(); }, true);

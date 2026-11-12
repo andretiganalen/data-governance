@@ -21,7 +21,7 @@
     ["grafik", "tab_grafik", "/visualisasi/chart/list/"],
     ["sql", "tab_sql", "/visualisasi/sqllab/"]
   ];
-  var ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" ' +
+  var ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" ' +
     'aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>';
 
   /* ---------- 3. sesi: teruskan token Len Data Governance ke modul Visualisasi ---------- */
@@ -74,11 +74,15 @@
       "html.dg-vis-open #" + ITEM_ID + "{background:var(--uix-surface-muted,#f3f4f6)!important}";
     document.head.appendChild(s);
   }
-  function place(panel) {
-    var side = document.querySelector(".left-sidebar-layout, .ant-layout-sider");
-    var nav = document.querySelector(".navbar-container, .ant-layout-header");
-    panel.style.left = (side ? Math.round(side.getBoundingClientRect().right) : 0) + "px";
-    panel.style.top = (nav ? Math.round(nav.getBoundingClientRect().bottom) : 0) + "px";
+  function place(panel) {   // persis menempel pada area konten utama (di kanan sidebar, di bawah bilah atas)
+    var main = document.querySelector("main.ant-layout-content");
+    var r = main ? main.getBoundingClientRect() : null;
+    if (!r || !r.height) {
+      var side = document.querySelector(".left-sidebar-layout, .ant-layout-sider");
+      var nav = document.querySelector("header.ant-layout-header:not(.pricing-banner)");
+      r = { left: side ? side.getBoundingClientRect().right : 0, top: nav ? nav.getBoundingClientRect().bottom : 0 };
+    }
+    panel.style.left = Math.round(r.left) + "px"; panel.style.top = Math.round(r.top) + "px";
     panel.style.right = "0"; panel.style.bottom = "0";
   }
   function show(key) {
@@ -129,7 +133,7 @@
     li.className = "ant-menu-item"; li.setAttribute("role", "menuitem"); li.style.paddingLeft = "32px";
     if (id) li.id = id;
     li.innerHTML = '<span role="img" class="anticon ant-menu-item-icon"></span><span class="ant-menu-title-content">' +
-      '<span class="left-panel-item left-panel-label no-underline" style="cursor:pointer"></span></span>';
+      '<a class="left-panel-item left-panel-label no-underline" href="#"></a></span>';
     li.querySelector(".anticon").innerHTML = icon;
     li.querySelector(".left-panel-label").textContent = text;
     return li;
