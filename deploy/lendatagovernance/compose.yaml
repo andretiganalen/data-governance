@@ -112,6 +112,29 @@ services:
     networks: [ldg-egress, ldg-internal]   # ldg-internal: hanya untuk meneruskan unduhan Documents ke ldg-storage
     mem_limit: 128m
 
+  # Unduh Excel hasil Data Governance sesuai hak akses (kode: medallion/export_server.py). Hanya jaringan internal;
+  # publik lewat gateway /_export/. Egress: Trino datahub.len.co.id:443. Memvalidasi token sesi ke ldg-server.
+  ldg-export:
+    build: ./export
+    image: lendatagovernance/export:1
+    restart: unless-stopped
+    user: "${LDG_UID:-1003}:${LDG_UID:-1003}"   # trino.env bermode 600 milik pemilik data; izin berkas tidak dilonggarkan
+    environment:
+      LDG_DATA_DIR: /data
+      LDG_UPSTREAM: http://ldg-server:8585
+    volumes:
+      - ./medallion:/app:ro
+      - ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/secrets/trino.env:/data/secrets/trino.env:ro
+    depends_on:
+      ldg-server: { condition: service_healthy }
+    networks: [ldg-internal, ldg-egress]
+    mem_limit: 384m
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u;u.urlopen('http://localhost:8590/healthz',timeout=5)"]
+      interval: 20s
+      timeout: 8s
+      retries: 10
+
   superset:
     build: ./superset
     image: lendatagovernance/superset:6.0.0-dg3

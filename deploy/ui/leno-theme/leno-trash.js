@@ -6,7 +6,7 @@
 (function () {
   "use strict";
   var T = function (k, v) { return window.LDG_I18N ? window.LDG_I18N.t(k, v) : k; };
-  var DAYS = 20, ITEM_ID = "len-menu-trash", PANEL_ID = "len-trash";
+  var DAYS = 20, ITEM_ID = "len-menu-trash", PANEL_ID = "len-trash", EXPORT_ID = "len-menu-export";
   var TYPES = [["glossaryTerms"], ["glossaries"], ["tables"], ["databaseSchemas"], ["databases"], ["dashboards"], ["charts"],
     ["dataProducts"], ["domains"], ["tags"], ["classifications"], ["teams"]];
 
@@ -197,6 +197,10 @@
     '<g stroke="#4a5565" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
     '<path d="M6 12h36M18 12V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4M10 12l2.4 28a3 3 0 0 0 3 2.8h16.4a3 3 0 0 0 3-2.8L37 12"/>' +
     '<g stroke-width="2"><path d="M21.2 24.6 24 20l2.2 3.4M25.6 30.2h-3.5a1.6 1.6 0 0 1-1.4-2.4l.5-.8M29.2 26.4l1.4 2.4a1.6 1.6 0 0 1-1.4 2.4M22.6 33l-2-2.8 2.8-.6M27 33.2l3-1.6-2.6-1.4M29.2 26.4 26.6 25l.7 2.6"/></g></g>');
+  var EXCEL = cardSvg("#F2F4F7",
+    '<g stroke="#4a5565" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M28 5H13a3 3 0 0 0-3 3v32a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3V15z"/><path d="M28 5v10h10"/>' +
+    '<path d="M24 22v13M18.5 30l5.5 5.5 5.5-5.5"/></g>');
   var THEME = cardSvg("#FEF3F2",
     '<g stroke="#ae2524" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
     '<path d="M24 5C13.5 5 5 13 5 23.5S13.2 42 21 42c3 0 4-1.8 4-3.6 0-3.4 2-4.4 4.6-4.4H36c4 0 7-2.8 7-7C43 14 34.5 5 24 5z"/>' +
@@ -216,6 +220,7 @@
   function ensureCard() {
     if (/^\/settings(\/|$)/.test(location.pathname)) decorateCards();
     ensureTrashCard();
+    ensureExportCard();
   }
   function ensureTrashCard() {   // kartu "Tempat Sampah" di halaman Settings (di samping Services, Notifications, ...)
     if (!/^\/settings\/?$/.test(location.pathname) || document.getElementById(ITEM_ID)) return;
@@ -230,12 +235,43 @@
     card.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); showPanel(); }, true);
     box.appendChild(col);
   }
+  /* Unduh Excel hasil Data Governance: layanan ldg-export (gateway /_export/) menentukan hak dan cakupan dari token sesi. */
+  var exportBusy = false;
+  function setExportText(card, key, v) { var d = card.querySelector(".setting-card-content div"); if (d) { d.textContent = T(key, v); d.removeAttribute("title"); } }
+  function runExport(card) {
+    if (exportBusy) return; exportBusy = true; setExportText(card, "export_busy");
+    var H = { "Authorization": "Bearer " + token() }, back = function (k) { setTimeout(function () { setExportText(card, "export_card"); }, 6000); if (k) setExportText(card, k); exportBusy = false; };
+    fetch("/_export/governance.xlsx", { headers: H, credentials: "same-origin" }).then(function (r) {
+      if (r.status === 403) return back("export_denied");
+      if (r.status === 401) return back("export_login");
+      if (!r.ok) return back("export_error");
+      var name = (/filename="([^"]+)"/.exec(r.headers.get("Content-Disposition") || "") || [])[1] || "Data Governance.xlsx";
+      return r.blob().then(function (b) {
+        var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = name; document.body.appendChild(a); a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+        back("export_done");
+      });
+    }).catch(function () { back("export_error"); });
+  }
+  function ensureExportCard() {   // kartu "Unduh Excel" di Settings, sebelah Tempat Sampah; struktur disalin dari kartu bawaan
+    if (!/^\/settings\/?$/.test(location.pathname) || document.getElementById(EXPORT_ID)) return;
+    var box = document.querySelector(".setting-items-container"); if (!box || !box.firstElementChild) return;
+    var col = box.firstElementChild.cloneNode(true);
+    col.id = EXPORT_ID;
+    var card = col.querySelector(".ant-card"); if (!card) return;
+    card.setAttribute("data-testid", "unduh-excel"); card.style.cursor = "pointer"; card.style.flex = "1"; card.style.alignSelf = "stretch"; col.style.padding = "0 10px"; col.style.display = "flex"; col.style.alignItems = "stretch";
+    var ic = card.querySelector(".setting-card-icon"); if (ic) tile(ic, EXCEL);
+    var t = card.querySelector(".setting-card-content .font-semibold"); if (t) t.textContent = T("export");
+    setExportText(card, "export_card");
+    card.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); runExport(card); }, true);
+    box.appendChild(col);
+  }
   var lastLang = "";
   function ensure() {
     var lg = window.LDG_I18N ? window.LDG_I18N.lang() : "";
     if (lg !== lastLang) {   // bahasa berganti → bangun ulang teks panel & kartu
       lastLang = lg;
-      ["len-trash", ITEM_ID].forEach(function (id) { var n = document.getElementById(id); if (n) n.remove(); });
+      ["len-trash", ITEM_ID, EXPORT_ID].forEach(function (id) { var n = document.getElementById(id); if (n) n.remove(); });
       panelOpen = false; document.documentElement.classList.remove("dg-trash-open");
     }
     ensureCard();

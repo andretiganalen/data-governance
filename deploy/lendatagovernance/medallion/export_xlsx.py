@@ -19,8 +19,39 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-sys.path[:0] = [str(Path(__file__).resolve().parent)]
-import lakehouse as L  # noqa: E402
+import os
+import re
+import time
+
+DATA = Path(os.environ.get("LDG_DATA_DIR", "/home/ubuntu/data-governance/data"))   # berdiri sendiri: tanpa lakehouse.py (dipakai layanan ldg-export)
+
+
+class Trino:
+    """Klien Trino minimal (hanya baca) untuk ekspor; kredensial dari $DATA/secrets/trino.env."""
+
+    def __init__(self):
+        import trino
+        env = dict(l.strip().split("=", 1) for l in (DATA / "secrets" / "trino.env").read_text().splitlines()
+                   if "=" in l and not l.startswith("#"))
+        self.catalog, self.schema = env["TRINO_CATALOG"], env["TRINO_SCHEMA"]
+        self.conn = trino.dbapi.connect(
+            host=env["TRINO_HOST"], port=int(env.get("TRINO_PORT", 443)), user=env["TRINO_USER"], http_scheme="https",
+            auth=trino.auth.BasicAuthentication(env["TRINO_USER"], env["TRINO_PASSWORD"]),
+            catalog=self.catalog, schema=self.schema, source="lendatagovernance-export")
+
+    def q(self, sql: str, attempts: int = 3) -> list:
+        for i in range(attempts):
+            try:
+                cur = self.conn.cursor()
+                cur.execute(sql)
+                return cur.fetchall()
+            except Exception:  # noqa: BLE001
+                if i + 1 == attempts:
+                    raise
+                time.sleep(5 * (i + 1))
+
+    def fq(self, table: str) -> str:
+        return f'"{self.catalog}"."{self.schema}"."{table}"'
 
 WIB = timezone(timedelta(hours=7))
 PLACEHOLDERS = {"belum ada", "perlu input manual dari data governance", "tidak ada", ""}
@@ -56,6 +87,11 @@ SHEETS = {
 UNIT_COLS = ("owner_unit", "steward_unit", "user_units")
 
 
+def org_codes(text) -> set[str]:
+    """'UG-1 Risk Management; UV-3 IT Development' -> {'UG-1','UV-3'} (kode ORG_ID = kata pertama tiap bagian)."""
+    return {p.strip().split(" ")[0].upper() for p in str(text or "").split(";") if re.match(r"^[A-Za-z]{2}-\d+", p.strip())}
+
+
 def blank(v) -> bool:
     return v is None or str(v).strip().lower() in PLACEHOLDERS
 
@@ -64,17 +100,27 @@ def fetch(tq, table: str, cols: list[str]) -> list[tuple]:
     return tq.q(f"SELECT {', '.join(cols)} FROM {tq.fq(table)} ORDER BY 1")
 
 
-def build(out: Path, filt: str | None = None) -> dict:
+def build(out, filt: str | None = None, org_ids: set[str] | None = None) -> dict:
+    """out = Path atau berkas-objek (BytesIO). org_ids: batasi ke elemen data yang pemilik/steward/penggunanya memuat salah satu
+    kode ORG_ID itu (None = semua). filt (teks bebas) dipertahankan untuk pemakaian manual."""
     from openpyxl import Workbook
     from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
     from openpyxl.utils import get_column_letter
     from openpyxl.worksheet.datavalidation import DataValidation
 
-    tq = L.Trino()
+    tq = Trino()
     now = datetime.now(WIB)
     data = {n: fetch(tq, t, c) for n, (t, c, _, _) in SHEETS.items()}
     keep = None
-    if filt:
+    if org_ids is not None:
+        want = {o.upper() for o in org_ids}
+        dc = SHEETS["Data_Dictionary"][1]
+        idx = [dc.index(c) for c in UNIT_COLS]
+        keep = {r[0] for r in data["Data_Dictionary"] if any(org_codes(r[i]) & want for i in idx)}
+        for n, rows in data.items():
+            fi = SHEETS[n][1].index("field_id")
+            data[n] = [r for r in rows if r[fi] in keep]
+    elif filt:
         f = filt.lower()
         dc = SHEETS["Data_Dictionary"][1]
         idx = [dc.index(c) for c in UNIT_COLS]
@@ -128,7 +174,8 @@ def build(out: Path, filt: str | None = None) -> dict:
 
     summ["A1"], summ["A1"].font = "Hasil Data Governance — Len Data Governance", Font(name=font, size=16, bold=True, color=HEAD)
     info = [("Dibuat", now.strftime("%d-%m-%Y %H:%M WIB")), ("Sumber", "Gold di Trino (lakekeeper.medallion_repository), gold_meta_*"),
-            ("Cakupan", f"Pemilik/steward/pengguna memuat \"{filt}\"" if filt else "Semua (tanpa filter)"),
+            ("Cakupan", (f"Unit/Fungsi Anda: {', '.join(sorted(org_ids))}" if org_ids is not None else
+                        f"Pemilik/steward/pengguna memuat \"{filt}\"" if filt else "Semua data (admin)")),
             ("Merah", "Kolom wajib masih kosong / belum ada"), ("Kuning", "Kolom yang seharusnya terisi, masih kosong")]
     for i, (k, v) in enumerate(info, 3):
         summ.cell(i, 1, k).font, summ.cell(i, 2, v).font = Font(name=font, bold=True), Font(name=font)
@@ -141,7 +188,8 @@ def build(out: Path, filt: str | None = None) -> dict:
     for n, s in stats.items():
         summ.append([n, s["baris"], s["merah"], s["kuning"]])
     summ.column_dimensions["A"].width, summ.column_dimensions["B"].width = 26, 60
-    out.parent.mkdir(parents=True, exist_ok=True)
+    if isinstance(out, Path):
+        out.parent.mkdir(parents=True, exist_ok=True)
     wb.save(out)
     return stats
 
@@ -149,7 +197,7 @@ def build(out: Path, filt: str | None = None) -> dict:
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--filter")
-    ap.add_argument("--out", default=str(L.DATA / "exports" / f"{datetime.now(WIB):%y%m%d} Data Governance Export.xlsx"))
+    ap.add_argument("--out", default=str(DATA / "exports" / f"{datetime.now(WIB):%y%m%d} Data Governance Export.xlsx"))
     a = ap.parse_args()
     s = build(Path(a.out), a.filter)
     print(a.out)
