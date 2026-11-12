@@ -11,6 +11,7 @@ x-ldg-env: &ldg-env
   env_file:
     - ./lendatagovernance.base.env                       # non-secret settings (in git)
     - ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/secrets/lendatagovernance.env  # secrets + IDS (not in git)
+    - ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/secrets/storage.env  # S3 keys for the file store (not in git)
   volumes:
     - ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/secrets/jwt:/opt/openmetadata/conf/jwt:ro   # path inside the upstream image
 
@@ -52,6 +53,23 @@ services:
       timeout: 10s
       retries: 20
 
+  # File store for Context Center > Documents (the catalog only supports S3/Azure; there is no local-disk provider).
+  # One container, internal network only (no published port), data in ${LDG_DATA_DIR}/storage (migrate = copy data/).
+  ldg-storage:
+    image: chrislusf/seaweedfs:3.85
+    restart: unless-stopped
+    command: ["server", "-dir=/data", "-ip=ldg-storage", "-s3", "-s3.config=/etc/seaweedfs/s3.json", "-s3.port=8333", "-filer", "-master.volumeSizeLimitMB=1024"]
+    volumes:
+      - ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/storage:/data
+      - ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/secrets/storage-s3.json:/etc/seaweedfs/s3.json:ro
+    networks: [ldg-internal]
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8888/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+
   ldg-migrate:
     <<: *ldg-env
     image: docker.getcollate.io/openmetadata/server:2.0.7
@@ -70,6 +88,7 @@ services:
     depends_on:
       postgresql: { condition: service_healthy }
       opensearch: { condition: service_healthy }
+      ldg-storage: { condition: service_healthy }
       ldg-migrate: { condition: service_completed_successfully }
     networks: [ldg-internal, ldg-egress]   # egress needed to reach ids.len.co.id
     mem_limit: 2500m
@@ -90,7 +109,7 @@ services:
       - ./gateway/html:/usr/share/nginx/html:ro
       - ../ui/leno-theme:/usr/share/nginx/leno:ro
       - ../../data/referensi:/usr/share/nginx/referensi:ro   # berkas referensi berversi (CLP-001, CLP-002, ...)
-    networks: [ldg-egress]
+    networks: [ldg-egress, ldg-internal]   # ldg-internal: hanya untuk meneruskan unduhan Documents ke ldg-storage
     mem_limit: 128m
 
   superset:
