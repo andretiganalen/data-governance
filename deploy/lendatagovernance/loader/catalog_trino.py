@@ -116,7 +116,7 @@ def main() -> None:
     print(f"Katalog ↔ Trino: {len(names)} tabel disinkron, {len(gone)} dihapus, {sum(v for v in counts.values() if v):,} baris, {sum(1 for v in counts.values() if v is None)} tak terbaca ({stamp})")
 
 
-SENS = {"public": "Public", "restricted": "Restricted", "confidential": "Confidential", "strictly confidential": "StrictlyConfidential"}
+SENS = {"public": "Public", "restricted": "Restricted", "confidential": "Confidential", "strictly confidential": "Strictly Confidential"}
 
 
 def sensitivity_tags(om, tb: dict, tcols: list) -> None:

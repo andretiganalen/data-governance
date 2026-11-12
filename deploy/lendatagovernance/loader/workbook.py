@@ -63,7 +63,7 @@ SENSITIVITY_TAG = {
     "Public": "Public",
     "Restricted": "Restricted",
     "Confidential": "Confidential",
-    "Strictly Confidential": "StrictlyConfidential",
+    "Strictly Confidential": "Strictly Confidential",   # nama tag di aplikasi memakai spasi (diubah admin 2026-11)
 }
 
 # Workbook DATA_TYPE (sheet Library) → catalog column dataType

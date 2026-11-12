@@ -41,7 +41,7 @@ SENSITIVITY_TAGS = [
     ("Public", "Public", "Data yang dapat diakses atau dibagikan kepada publik tanpa menimbulkan dampak signifikan bagi perusahaan."),
     ("Restricted", "Restricted", "Data yang penggunaannya terbatas untuk kebutuhan internal dan hanya dapat diakses oleh pihak yang memiliki kewenangan."),
     ("Confidential", "Confidential", "Data yang akses atau pengungkapannya secara tidak sah dapat menimbulkan risiko atau kerugian bagi perusahaan, sehingga memerlukan pengendalian akses yang lebih ketat."),
-    ("StrictlyConfidential", "Strictly Confidential", "Data yang sangat sensitif dan pengungkapan atau akses tanpa kewenangan dapat menimbulkan dampak serius bagi perusahaan, sehingga memerlukan pengamanan dan akses yang sangat terbatas."),
+    ("Strictly Confidential", "Strictly Confidential", "Data yang sangat sensitif dan pengungkapan atau akses tanpa kewenangan dapat menimbulkan dampak serius bagi perusahaan, sehingga memerlukan pengamanan dan akses yang sangat terbatas."),
 ]
 
 
