@@ -1,0 +1,47 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><title>Infografis Arsitektur Len Data Governance</title>
+<style>
+@font-face{font-family:Poppins;font-weight:400;src:url(file:///home/ubuntu/data-governance/deploy/ui/leno-theme/fonts/poppins-latin-400-normal.woff2)}
+@font-face{font-family:Poppins;font-weight:500;src:url(file:///home/ubuntu/data-governance/deploy/ui/leno-theme/fonts/poppins-latin-500-normal.woff2)}
+@font-face{font-family:Poppins;font-weight:600;src:url(file:///home/ubuntu/data-governance/deploy/ui/leno-theme/fonts/poppins-latin-600-normal.woff2)}
+@page{size:A4 portrait;margin:0}
+*{box-sizing:border-box}body{margin:0;font-family:Poppins,sans-serif;color:#262626;background:#fff;width:210mm}
+.pg{padding:12mm 12mm 8mm}
+h1{margin:0;font-size:24px;color:#ae2524;font-weight:600}.sub{margin:4px 0 12px;color:#595959;font-size:12px}
+.band{background:#f5f5f5;border-radius:12px;padding:10px 14px;margin:0 0 10px}
+.band h2{margin:0 0 6px;font-size:13px;font-weight:600}.band h2 span{background:#ae2524;color:#fff;border-radius:50%;display:inline-block;width:22px;height:22px;text-align:center;line-height:22px;margin-right:6px;font-size:12px}
+.row{display:flex;gap:8px;align-items:stretch}.c{flex:1;background:#fff;border:1px solid #d9d9d9;border-radius:8px;padding:8px;font-size:10.5px;line-height:1.35}
+.c b{display:block;font-size:11.5px;margin-bottom:2px}.e{font-size:22px;display:block;margin-bottom:2px}
+.ar{align-self:center;color:#ae2524;font-size:18px;font-weight:600}
+.br{border-top:4px solid #b87333}.sv{border-top:4px solid #9e9e9e}.gd{border-top:4px solid #d4a017}
+.k{font-size:10.5px;color:#595959;margin:6px 0 0}.red{color:#ae2524;font-weight:600}
+.foot{font-size:9.5px;color:#8c8c8c;margin-top:6px;text-align:center}
+</style></head><body><div class="pg">
+<h1>Len Data Governance, dijelaskan sederhana</h1>
+<p class="sub">Bayangkan sebuah <b>perpustakaan perusahaan</b>: buku datang dari banyak tempat, dirapikan, lalu dipinjamkan dengan aturan yang jelas. Tanpa istilah teknis.</p>
+
+<div class="band"><h2><span>1</span>Dari mana data datang? (Sumber)</h2>
+<div class="row"><div class="c"><span class="e">📱</span><b>Aplikasi LenO</b>Catatan risiko operasional dari aplikasi kerja. Disalin otomatis tiap 15 menit.</div>
+<div class="c"><span class="e">📑</span><b>EGRC &amp; Workbook</b>Berkas Excel/CSV dari tim, misalnya daftar risiko dan istilah.</div>
+<div class="c"><span class="e">☁️</span><b>Folder bersama</b>Data Satgas Asta Cita yang diunggah tim di folder bersama.</div></div></div>
+
+<div class="band"><h2><span>2</span>Gudang data tiga lapis (Lakehouse, medali Perunggu → Perak → Emas)</h2>
+<div class="row"><div class="c br"><span class="e">📦</span><b>Bronze = bahan mentah</b>Data apa adanya saat tiba, belum dirapikan. Seperti kardus baru datang.</div><div class="ar">→</div>
+<div class="c sv"><span class="e">🧼</span><b>Silver = sudah dibersihkan</b>Duplikat dibuang, format disamakan, diberi keterangan Bahasa Indonesia.</div><div class="ar">→</div>
+<div class="c gd"><span class="e">🏅</span><b>Gold = siap saji</b>Angka final yang boleh dipakai pengguna. <span class="red">Hanya Gold yang dianggap benar.</span></div></div>
+<p class="k">Semua data disimpan di satu gudang bernama <b>Trino</b>. Tidak ada aplikasi yang menyimpan data sendiri di berkas lepas.</p></div>
+
+<div class="band"><h2><span>3</span>Apa yang dilihat pengguna? (Dua pintu, satu alamat)</h2>
+<div class="row"><div class="c"><span class="e">📚</span><b>Katalog (Len Data Governance)</b>Buku katalog: mencari data, siapa pemiliknya, artinya apa (Glosarium), dokumen rujukan, dan Tempat Sampah.</div>
+<div class="c"><span class="e">📊</span><b>Visualisasi</b>Membuat grafik dan dasbor dari data Gold. Tampil di dalam aplikasi yang sama, bukan situs lain.</div></div>
+<p class="k">Bisa dipakai dalam <b>Bahasa Indonesia</b> atau English. Satu tampilan tidak pernah dicampur dua bahasa.</p></div>
+
+<div class="band"><h2><span>4</span>Siapa yang menjaga pintu? (Keamanan &amp; aturan)</h2>
+<div class="row"><div class="c"><span class="e">🚪</span><b>Gerbang tunggal</b>Semua orang masuk lewat satu pintu dan satu login. Tidak ada kata sandi tambahan di Visualisasi.</div>
+<div class="c"><span class="e">🔒</span><b>Lapisan mentah disembunyikan</b>Bronze dan Silver hanya untuk admin dan tim tertentu. Pengguna umum melihat Gold.</div>
+<div class="c"><span class="e">♻️</span><b>Hapus = ke Tempat Sampah</b>Tidak ada yang langsung hilang. Bisa dipulihkan hingga 20 hari.</div>
+<div class="c"><span class="e">👥</span><b>Pemilik jelas</b>Setiap data punya pemilik: Fungsi Generik (mis. Tata Kelola).</div></div></div>
+
+<div class="band"><h2><span>5</span>Cara membaca alurnya dalam satu kalimat</h2>
+<p style="margin:0;font-size:12px;line-height:1.5"><b>Data datang dari sumber</b> → <b>masuk gudang mentah (Bronze)</b> → <b>dibersihkan (Silver)</b> → <b>disajikan (Gold)</b> → <b>dicari di Katalog &amp; digambar di Visualisasi</b>, semuanya dijaga satu gerbang dan satu set aturan.</p></div>
+<div class="foot">Len Data Governance · Infografis pengantar untuk non-data · tanpa data sensitif</div>
+</div></body></html>
