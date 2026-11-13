@@ -136,13 +136,14 @@ table.t td{border-bottom:1px solid var(--soft);padding:2mm 2.5mm;vertical-align:
       <li>Melihat data siap pakai dan membuat grafik di menu Visualisasi</li>
       <li>Membuat tabel kerja sendiri di schema workspace</li>
       <li>Menghapus ke Tempat Sampah dan memulihkan dalam 20 hari</li>
-      <li>Mengelola Glosarium Fungsi Generik; PDF-nya terbit otomatis dengan riwayat revisi</li>
+      <li>Mengelola Glosarium Fungsi Generik dan Master Organisasi; PDF revisi diterbitkan dengan satu tombol, lengkap dengan riwayat revisi</li>
+      <li>Mengunduh hasil Data Governance dalam Excel (sel merah dan kuning menandai isian yang kurang)</li>
     </ul></div>
     <div class="panel na"><h3>Belum bisa</h3><ul>
       <li>Menjalankan pemeriksaan mutu dan melihat hasilnya</li>
       <li>Menampilkan kesegaran data (waktu pembaruan terakhir)</li>
       <li>Membuat kontrak data</li>
-      <li>Membentuk domain dan produk data</li>
+      <li>Membentuk produk data dan kontrak data per Fungsi (istilah &ldquo;domain&rdquo; di aplikasi ditampilkan sebagai Fungsi)</li>
       <li>Menampilkan data SDM dan keuangan (sumbernya belum dimuat)</li>
       <li>Menautkan dokumen kebijakan dan standar ke aset</li>
       <li>Membatasi unduh data per Tier dan memetakan akun ke unit (disetujui, menunggu data pemetaan)</li>
@@ -299,7 +300,7 @@ window.render = (R) => {
     ['S11', 'Menghapus dan memulihkan data (Tempat Sampah)', 'saat ada data keliru atau tidak terpakai',
      ['Buka aset atau istilahnya, pilih menu titik tiga lalu <span class="ui">Delete</span>. Aplikasi menampilkan penjelasan: baca, lalu pilih <span class="ui">Ya, pindahkan</span>, atau <span class="ui">Batal</span> bila ragu.',
       'Data pindah ke <b>Tempat Sampah selama 20 hari</b>. Ia tidak tampil di pencarian, daftar, dan dashboard, dan tautannya ke aset lain nonaktif sementara. Data sumber tidak berubah.',
-      'Untuk memulihkan, buka menu <span class="ui">Tempat Sampah</span> di sidebar lalu pilih <span class="ui">Pulihkan</span> pada barisnya. Kolom <i>Sisa waktu</i> menunjukkan berapa hari lagi bisa dipulihkan.',
+      'Untuk memulihkan, buka kartu <span class="ui">Tempat Sampah</span> di <span class="ui">Pengaturan</span> lalu pilih <span class="ui">Pulihkan</span> pada barisnya. Kolom <i>Sisa waktu</i> menunjukkan berapa hari lagi bisa dipulihkan.',
       'Sebelum menghapus aset milik Fungsi lain, beri tahu pemiliknya dengan <b>@</b> di tab <span class="ui">Activity Feeds &amp; Tasks</span>.',
       'Setelah 20 hari data dihapus permanen otomatis dan tidak bisa dipulihkan. Bila ada yang keliru dihapus, pulihkan sebelum batas itu.'],
      'Kesalahan hapus bisa dikembalikan tanpa kehilangan data.', 'Tidak ada tombol hapus permanen untuk pengguna; penghapusan permanen hanya otomatis setelah 20 hari.'],
@@ -307,9 +308,16 @@ window.render = (R) => {
      ['Buka <span class="ui">Govern</span> › <span class="ui">Glossary</span> › <b>Organisasi dan Fungsi</b> › <b>Fungsi Generik</b>. Setiap Fungsi adalah satu istilah, dan Data Owner-nya adalah Fungsi itu sendiri (tanpa awalan &ldquo;Fungsi&rdquo;).',
       'Lengkapi dulu istilah yang definisinya bertuliskan <b>&ldquo;Perlu input manual dari Data Governance&rdquo;</b>: tulis tugas Fungsi pada skala perusahaan dalam satu atau dua kalimat. Hal yang sama berlaku untuk <i>Struktur Organisasi Saat Ini</i> dan <i>Kadaluarsa</i> (aturan kadaluarsa dan pemiliknya).',
       'Isi <span class="ui">Reviewers</span> dan tautkan istilah ke kolom tabel yang memakainya. Setiap suntingan membuat versi baru; riwayatnya terlihat di aset.',
-      'PDF <i>Glosarium Fungsi Generik Rev NN</i> terbit otomatis di menu <span class="ui">Referensi</span> setiap ada perubahan nama, definisi, atau pemilik, lengkap dengan riwayat revisi. Revisi lama tetap tersedia.',
+      'PDF <i>Glosarium Fungsi Generik Rev NN</i> tidak lagi terbit otomatis (agar tidak menumpuk). Bila perubahan sudah final, buka <span class="ui">Pengaturan</span> › <span class="ui">Terbitkan Revisi PDF</span> (hanya Admin Data Governance): kartu menunjukkan revisi terakhir dan apakah ada perubahan sejak itu. PDF terbit dalam sekitar 10 menit di <span class="ui">Dokumen</span> › <b>Reference</b>, lengkap dengan riwayat revisi. Revisi lama tetap tersedia.',
       'Pantau kemajuan lewat tabel Gold <b>gold_meta_glossary_ringkasan</b> (per glosarium) dan <b>gold_meta_glossary_status</b> (per istilah) di menu <span class="ui">Visualisasi</span>: keduanya menunjukkan istilah yang belum tuntas dan apa yang kurang.'],
      'Semua Fungsi punya definisi, pemilik, peninjau, dan tautan kolom.', 'Isi yang belum diketahui ditulis &ldquo;Perlu input manual dari Data Governance&rdquo;, bukan dikarang.'],
+    ['S13', 'Menyesuaikan pemetaan Master Organisasi', 'saat terbit nota atau keputusan organisasi baru',
+     ['Buka <span class="ui">Govern</span> › <span class="ui">Glossary</span> › <b>Fungsi</b> › <b>Master Organisasi</b>. Setiap Fungsi Generik baru (tanpa awalan &ldquo;Fungsi&rdquo;) adalah satu istilah berisi tupoksi, unit pelaksana (Direktorat › Divisi › Bagian), Fungsi lama, dan dasar dokumen.',
+      'Versi dasar: <b>Baseline</b> CLP-001 rev.01 (tanggal dokumen 28 Februari 2024) dan <b>terbaru</b> Nota 021/N/UQ/VIII/2026 (24 Agustus 2026). Tanggal dokumen menjadi tanggal pembaruan; versi lama berlaku sampai tanggal dokumen penggantinya.',
+      'Untuk menyesuaikan, pilih <span class="ui">Edit</span> pada istilahnya, ubah unit atau tupoksi, lalu tulis nomor dan tanggal dokumen dasarnya di baris <b>Dasar</b>. Hanya Admin Data Governance yang menyesuaikan; tanpa dasar dokumen, jangan ubah.',
+      'Setiap suntingan membuat versi baru di riwayat istilah dan tercatat di tabel Gold <b>gold_meta_glossary_app</b>. Versi dokumen per tanggal ada di <b>gold_meta_master_organisasi</b>.',
+      'Fungsi baru yang belum punya tim Data Owner diminta dibuatkan lewat Admin; semua 73 Fungsi pada Nota 021 sudah punya tim dan pemilik.'],
+     'Pemetaan Fungsi ke organisasi selalu bersumber dokumen resmi dan dapat ditelusuri.', 'Penyesuaian tanpa dasar dokumen tidak diterima; isi yang tidak diketahui ditulis &ldquo;Perlu input manual dari Data Governance&rdquo;.'],
   ];
   const sec = document.getElementById('prosedur');
   for (const [n, title, when, steps, out, rule] of P) {

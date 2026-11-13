@@ -217,6 +217,7 @@ figure{margin:3mm 0}figcaption{font-size:8.5pt;color:var(--muted);margin-top:1mm
         <li>Memantau permintaan Anda di <span class="ui">Tasks</span>.</li>
         <li>Melihat dashboard dan membuat grafik sendiri di menu <span class="ui">Visualisasi</span>.</li>
         <li>Membuat tabel kerja sendiri di schema <b>workspace</b> (Bagian 5).</li>
+        <li>Mengunduh hasil Data Governance dalam satu berkas Excel lewat kartu <span class="ui">Unduh Excel</span> di <span class="ui">Pengaturan</span>, sesuai hak akses Anda (sel merah = wajib diisi tetapi kosong, kuning = belum lengkap).</li>
       </ul>
     </div>
     <div>
@@ -237,11 +238,17 @@ figure{margin:3mm 0}figcaption{font-size:8.5pt;color:var(--muted);margin-top:1mm
   <p>Hanya Pemilik data (Fungsi) dan admin yang bisa menghapus. Saat Anda memilih hapus, aplikasi menampilkan penjelasan lebih dulu:</p>
   <ul>
     <li>Data <b>dipindahkan ke Tempat Sampah</b>, belum dihapus. Selama <b>20 hari</b> ia tidak tampil di pencarian, daftar, dan dashboard, tetapi bisa dipulihkan.</li>
-    <li>Pulihkan lewat menu <span class="ui">Tempat Sampah</span> di sidebar: daftar menampilkan nama, siapa dan kapan dihapus, serta sisa hari.</li>
+    <li>Pulihkan lewat kartu <span class="ui">Tempat Sampah</span> di <span class="ui">Pengaturan</span> (Settings): daftar menampilkan nama, siapa dan kapan dihapus, serta sisa hari.</li>
     <li>Setelah 20 hari data dihapus permanen secara otomatis. Yang dipindahkan hanya catatan di katalog; data sumber di Trino tidak berubah.</li>
     <li>Ragu? Pilih <span class="ui">Batal</span>, tidak ada yang berubah.</li>
   </ul>
-  <p>Daftar Fungsi beserta tugasnya di tingkat perusahaan ada di Glosarium <span class="ui">Organisasi dan Fungsi</span>. PDF-nya (lengkap dengan riwayat revisi) terbit otomatis di menu <span class="ui">Referensi</span> setiap ada perubahan.</p>
+  <p>Daftar Fungsi beserta tugasnya di tingkat perusahaan ada di Glosarium <span class="ui">Organisasi dan Fungsi</span>. PDF-nya (lengkap dengan riwayat revisi) diterbitkan Admin Data Governance atas permintaan dan tersedia di <span class="ui">Dokumen</span> › <b>Reference</b>.</p>
+
+  <h3>Fungsi dan Master Organisasi</h3>
+  <p>Di Len, pelaksana kegiatan dan pemilik data disebut <b>Fungsi</b> (Fungsi Generik). Karena itu istilah &ldquo;Domain&rdquo; di aplikasi ditampilkan sebagai
+    <b>Fungsi</b>. Daftar Fungsi, tugasnya, dan unit pelaksananya (Direktorat, Divisi, Bagian) ada di Glosarium <span class="ui">Fungsi</span> › <b>Master Organisasi</b>.
+    Versi terbaru mengikuti Nota 021/N/UQ/VIII/2026 (24 Agustus 2026); daftar Fungsi lama mengikuti CLP-001 rev.01 (28 Februari 2024).
+    Menemukan pemetaan yang tidak sesuai? Ajukan lewat Staf Data Governance.</p>
 
   <h3>Tips pencarian</h3>
   <ul>
@@ -255,7 +262,7 @@ figure{margin:3mm 0}figcaption{font-size:8.5pt;color:var(--muted);margin-top:1mm
     <dt>Mengapa saya hanya melihat tabel Gold, tidak ada Bronze atau Silver?</dt>
     <dd>Tahap data ditandai di <span class="ui">Certification</span>: Bronze (mentah) dan Silver (bersih) adalah tahap pengerjaan data dan hanya dibuka untuk Staf Data Governance. Pengguna melihat Gold, yaitu data yang siap dipakai.</dd>
     <dt>Saya tidak sengaja menghapus data. Bagaimana?</dt>
-    <dd>Tenang, tidak ada data yang langsung hilang. Penghapusan memindahkan data ke <span class="ui">Tempat Sampah</span> selama 20 hari. Buka menu itu di sidebar lalu pilih <span class="ui">Pulihkan</span>.</dd>
+    <dd>Tenang, tidak ada data yang langsung hilang. Penghapusan memindahkan data ke <span class="ui">Tempat Sampah</span> selama 20 hari. Buka kartu itu di <span class="ui">Pengaturan</span> lalu pilih <span class="ui">Pulihkan</span>.</dd>
     <dt>Mengapa saya tidak melihat angka atau isi datanya?</dt>
     <dd>Halaman katalog hanya menampilkan keterangan tentang data. Angka siap pakai ada di menu <span class="ui">Visualisasi</span>. Isi transaksi rinci ada di aplikasi asal.</dd>
     <dt>Status "Belum ada" artinya data itu tidak ada?</dt>

@@ -312,7 +312,13 @@ $PY medallion/trash_purge.py --dry                           <span class="cm"># 
 sudo cp host/systemd/lendatagovernance-trash.{service,timer} /etc/systemd/system/ &amp;&amp; sudo systemctl daemon-reload \
   &amp;&amp; sudo systemctl enable --now lendatagovernance-trash.timer   <span class="cm"># sudah terpasang (harian 02:30)</span>
 <span class="cm"># Glosarium "Organisasi dan Fungsi" + PDF Glosarium Fungsi Generik (ikut timer glosarium 10 menit)</span>
-$PY medallion/glossary_app.py ; $PY medallion/fungsi_pdf.py [--force]   <span class="cm"># --force = revisi baru walau tanpa perubahan</span>
+$PY medallion/glossary_app.py ; $PY medallion/fungsi_pdf.py [--force]   <span class="cm"># tidak otomatis lagi: terbit hanya atas permintaan kartu "Terbitkan Revisi PDF" (request.json) atau --force</span>
+<span class="cm"># Master Organisasi (baseline CLP-001 + Nota 021): ekstraksi PDF, Gold bertingkat versi, istilah glosarium, tim Data Owner</span>
+$PY medallion/nota_extract.py "docs/template/&lt;nota&gt;.pdf"      <span class="cm"># → data/medallion/master_organisasi/nota_021.json (hanya poppler)</span>
+$PY medallion/master_org.py [--force]                        <span class="cm"># Gold gold_meta_master_organisasi + istilah MasterOrganisasi.MO_*</span>
+$PY medallion/master_org.py --teams [--dry]                  <span class="cm"># tim FN_* untuk Fungsi baru + pemilik istilah (tim lama tidak dihapus)</span>
+<span class="cm"># Unduh Excel + tombol revisi PDF (kontainer ldg-export; kode di-bind-mount, cukup restart)</span>
+docker compose restart ldg-export
 <span class="cm"># fase 2: IDS (butuh client IDS + DNS dev-data.len.co.id)</span>
 scripts/enable-ids.sh</pre>
   <h3>Gangguan umum</h3>
@@ -325,7 +331,11 @@ scripts/enable-ids.sh</pre>
     <tr><td>SQL Lab: pernyataan tulis ditolak</td><td>Sesuai aturan: tulis hanya ke <code>workspace.&lt;tabel&gt;</code> dengan nama schema tertulis lengkap.</td></tr>
     <tr><td>Pengguna biasa tidak melihat tabel Bronze/Silver di Explore</td><td>Sesuai aturan: kebijakan <code>SembunyikanLapisanMentah</code> + pencarian berbasis hak akses. Staf DG (tim UV-1) dan admin melihatnya. Bila seorang staf tidak melihat, periksa keanggotaan tim UV-1.</td></tr>
     <tr><td>Hapus tidak benar-benar menghapus / tidak ada pilihan hapus permanen</td><td>Sesuai aturan: setiap hapus dari klien jaringan menjadi soft delete (Tempat Sampah 20 hari, bisa dipulihkan di menu <i>Tempat Sampah</i>). Gateway mengubah <code>hardDelete=true</code> menjadi <code>false</code> (<code>$ldg_api_uri</code> di <code>nginx.conf</code>); hanya server sendiri yang boleh hapus permanen, lewat <code>trash_purge.py</code>.</td></tr>
-    <tr><td>Perubahan <code>nginx.conf</code> tidak berlaku</td><td>Bind-mount berkas menahan inode lama bila berkas diganti (<code>sed -i</code>). Ubah berkas di tempat, atau <code>up -d --force-recreate gateway</code>; periksa dengan <code>exec gateway grep &lt;kata&gt; /etc/nginx/conf.d/default.conf</code>.</td></tr>
+    <tr><td>Perubahan <code>nginx.conf</code> tidak berlaku</td><td>Bind-mount berkas menahan inode lama (2026-11-13: ubah di tempat + <code>nginx -s reload</code> pun tidak sampai ke kontainer). Selalu <code>docker compose up -d --no-deps --force-recreate gateway</code>; periksa dengan <code>exec gateway grep &lt;kata&gt; /etc/nginx/conf.d/default.conf</code>.</td></tr>
+    <tr><td>Timer glosarium/CDC macet berjam-jam</td><td>Query Trino menggantung. Penyebab yang pernah terjadi: <code>count(DISTINCT IF(...))</code> bercampur agregat lain (OPTIMIZER_TIMEOUT 500 dtk). Unit systemd kini punya <code>TimeoutStartSec</code> (salin ulang berkas <code>host/systemd</code> dengan sudo + <code>daemon-reload</code>).</td></tr>
+    <tr><td><code>docker compose up -d &lt;layanan&gt;</code> gagal pada dependensi</td><td>Perintah ikut menyalakan layanan yang dibutuhkan. Gunakan <code>--no-deps</code> untuk memulai ulang satu layanan; healthcheck <code>ldg-storage</code> memakai <code>ldg-storage:8888</code> (bukan localhost).</td></tr>
+    <tr><td>Cadangan berkas (<code>storage-*.tgz</code>) gagal</td><td>Berkas <code>data/storage</code> milik root. <code>backup.sh</code> kini menjalankan <code>tar</code> di dalam kontainer <code>ldg-storage</code> dan memeriksa arsipnya sebelum dipakai.</td></tr>
+    <tr><td>Istilah &ldquo;Domain&rdquo; di aplikasi tampil &ldquo;Fungsi&rdquo;</td><td>Keputusan 2026-11-13: paket ID (<code>i18n/id-id.json</code>) dan English (<code>i18n/en-fungsi.js</code> lewat satu aturan <code>sub_filter</code> gateway). Bukan galat.</td></tr>
     <tr><td>Tema atau nama Len hilang</td><td>Mount <code>./ui/leno-theme</code> atau <code>sub_filter</code> gateway berubah. Cek <code>nginx -t</code>.</td></tr>
   </table>
 </section>
