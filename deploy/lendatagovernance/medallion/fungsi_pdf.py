@@ -6,8 +6,11 @@ snapshot terakhir (data/medallion/fungsi_pdf_state.json). Bila berbeda: membuat 
 Revisi (apa yang berubah, siapa, kapan), lalu mendaftarkannya ke data/referensi lewat scripts/referensi-tambah.py
 ("YYMMDD CC Glosarium Fungsi Generik Rev NN.pdf"; CC naik, berkas lama tidak pernah ditimpa). Berkas berisi definisi dari CLP-001
 (dokumen internal), jadi hanya di data/referensi (di luar git), dilayani hanya untuk pengguna yang sudah masuk.
-  python fungsi_pdf.py          # cek perubahan, terbitkan bila perlu
-  python fungsi_pdf.py --force  # terbitkan revisi baru walau tidak ada perubahan"""
+Sejak 2026-11-13 TIDAK terbit otomatis lagi (terlalu banyak PDF): revisi hanya terbit bila Admin Data Governance menekan tombol
+"Terbitkan Revisi PDF" di Settings (layanan ldg-export menulis data/medallion/pdf_request/request.json; timer 10 menit mengambilnya)
+atau lewat CLI --force. Timer tetap memperbarui status.json (apakah ada perubahan sejak revisi terakhir) untuk tombol itu.
+  python fungsi_pdf.py          # hanya perbarui status; terbitkan bila ada permintaan dari tombol
+  python fungsi_pdf.py --force  # terbitkan revisi baru sekarang"""
 from __future__ import annotations
 
 import hashlib
@@ -25,7 +28,9 @@ FONTS = ROOT / "deploy" / "ui" / "leno-theme" / "fonts"
 TAMBAH = ROOT / "deploy" / "lendatagovernance" / "scripts" / "referensi-tambah.py"
 PLACEHOLDER = "Perlu input manual dari Data Governance"
 WIB = timezone(timedelta(hours=7))
-PARENT = "OrganisasiFungsi.FungsiGenerik"
+PARENT = "Fungsi Organisasi.FungsiGenerik"
+REQ_DIR = ROOT / "data" / "medallion" / "pdf_request"
+REQUEST, STATUS = REQ_DIR / "request.json", REQ_DIR / "status.json"
 
 
 def snapshot(om) -> dict:
@@ -111,22 +116,44 @@ def publish(snap: dict, revisions: list[dict]) -> str:
     return out
 
 
+def write_status(st: dict, snap: dict, pending: bool = False) -> None:
+    """Status tanpa isi definisi, dibaca layanan ldg-export untuk tombol di UI."""
+    last = (st.get("revisions") or [{}])[-1]
+    REQ_DIR.mkdir(parents=True, exist_ok=True)
+    STATUS.write_text(json.dumps({
+        "rev": last.get("rev"), "tanggal": last.get("tanggal"), "berkas": last.get("berkas"),
+        "ada_perubahan": st.get("digest") != digest(snap) if snap else False, "menunggu": pending,
+        "diperiksa": datetime.now(WIB).strftime("%d %b %Y %H:%M WIB")}, ensure_ascii=False))
+
+
 def run(om, force: bool = False) -> str | None:
+    """Terbitkan revisi hanya bila force atau ada permintaan tombol (request.json); selain itu hanya perbarui status."""
     snap = snapshot(om)
     if len(snap) < 2:
         return None
     st = json.loads(STATE.read_text()) if STATE.exists() else {"digest": None, "snapshot": {}, "revisions": []}
-    if st["digest"] == digest(snap) and not force:
+    req = REQUEST.exists()
+    if not (force or req):
+        write_status(st, snap)
         return None
+    by = ""
+    if req:
+        try:
+            by = json.loads(REQUEST.read_text()).get("oleh", "")
+        except ValueError:
+            pass
     ch = diff(st["snapshot"], snap) if st["revisions"] else []
     ts = datetime.now(WIB).strftime("%d %b %Y %H:%M WIB")
-    st["revisions"].append({"rev": len(st["revisions"]) + 1, "tanggal": ts, "perubahan": ch,
-                            "ringkasan": f"{len(ch)} istilah berubah" if ch else f"Penerbitan awal ({len(snap) - 1} Fungsi)"})
+    st["revisions"].append({"rev": len(st["revisions"]) + 1, "tanggal": ts, "perubahan": ch, "diminta_oleh": by,
+                            "ringkasan": f"{len(ch)} istilah berubah" if ch else
+                            (f"Penerbitan awal ({len(snap) - 1} Fungsi)" if len(st["revisions"]) == 0 else "Diterbitkan manual, tanpa perubahan istilah")})
     fn = publish(snap, st["revisions"])
     st["revisions"][-1]["berkas"] = fn
     st.update({"digest": digest(snap), "snapshot": snap})
     STATE.parent.mkdir(parents=True, exist_ok=True)
     STATE.write_text(json.dumps(st, ensure_ascii=False, indent=1))
+    REQUEST.unlink(missing_ok=True)
+    write_status(st, snap)
     return fn
 
 
@@ -134,7 +161,7 @@ def main() -> None:
     sys.path[:0] = [str(Path(__file__).resolve().parent.parent / "loader")]
     from catalog_loader import Catalog
     fn = run(Catalog(dry=False), force="--force" in sys.argv)
-    print(f"fungsi_pdf: {fn or 'tidak ada perubahan'}")
+    print(f"fungsi_pdf: {fn or 'tidak ada permintaan (status diperbarui)'}")
 
 
 if __name__ == "__main__":

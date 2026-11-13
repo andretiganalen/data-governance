@@ -65,7 +65,7 @@ services:
     networks: [ldg-internal]
     mem_limit: 512m
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8888/ || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://ldg-storage:8888/ || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 20
@@ -125,6 +125,7 @@ services:
     volumes:
       - ./medallion:/app:ro
       - ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/secrets/trino.env:/data/secrets/trino.env:ro
+      - ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/medallion/pdf_request:/data/medallion/pdf_request   # permintaan "Terbitkan Revisi PDF" + status
     depends_on:
       ldg-server: { condition: service_healthy }
     networks: [ldg-internal, ldg-egress]

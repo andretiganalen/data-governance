@@ -3,6 +3,7 @@ Description=Len Data Governance: muat berkas inbox ke Trino lakehouse (Bronze ->
 After=network-online.target
 [Service]
 Type=oneshot
+TimeoutStartSec=30min
 User=ubuntu
 Environment=LDG_DATA_DIR=/home/ubuntu/data-governance/data
 # Sinkron folder sumber Nextcloud (DBASTACITA) ke inbox dulu; gagal (mis. kredensial belum ada) tidak menghentikan pemuatan.

@@ -11,6 +11,8 @@ akun/kata sandi lain. Mengunduh dicatat di log (siapa, cakupan, jumlah baris), t
 
   GET /_export/me                → {"allowed", "level", "scope", "orgs"}  (untuk tombol di UI)
   GET /_export/governance.xlsx   → berkas Excel (sel merah/kuning, lihat export_xlsx.py)
+  GET /_export/fungsi-pdf        → status revisi PDF Glosarium Fungsi (hanya isAdmin / UV-1)
+  POST /_export/fungsi-pdf       → minta revisi PDF baru: menulis request.json; timer glosarium 10 menit menerbitkannya
 """
 from __future__ import annotations
 
@@ -31,6 +33,7 @@ import export_xlsx as X  # noqa: E402
 UPSTREAM = os.environ.get("LDG_UPSTREAM", "http://ldg-server:8585")
 STAFF, DOWNLOAD = "UV-1", "Pengunduh"
 WIB = timezone(timedelta(hours=7))
+REQ_DIR = Path(os.environ.get("LDG_DATA_DIR", "/data")) / "medallion" / "pdf_request"
 ORG_RE = re.compile(r"^[A-Za-z]{2}-\d+$")
 
 
@@ -99,8 +102,17 @@ class H(BaseHTTPRequestHandler):
         try:
             a = access(user)
             if path == "/_export/me":
-                return self._json(200, {"allowed": a["allowed"], "level": a["level"], "scope": a["scope"],
+                return self._json(200, {"allowed": a["allowed"], "level": a["level"], "scope": a["scope"], "pdf": a["orgs"] is None and a["allowed"],
                                         "orgs": None if a["orgs"] is None else sorted(a["orgs"])})
+            if path == "/_export/fungsi-pdf":
+                if not (a["allowed"] and a["orgs"] is None):
+                    return self._json(403, {"error": "Hanya Admin Data Governance."})
+                try:
+                    st = json.loads((REQ_DIR / "status.json").read_text())
+                except (OSError, ValueError):
+                    st = {}
+                st["menunggu"] = (REQ_DIR / "request.json").exists()
+                return self._json(200, st)
             if path == "/_export/governance.xlsx":
                 if not a["allowed"]:
                     return self._json(403, {"error": "Akun Anda belum memiliki hak unduh."})
@@ -121,6 +133,25 @@ class H(BaseHTTPRequestHandler):
         except Exception as e:  # noqa: BLE001
             log("galat", repr(e)[:200])
             self._json(500, {"error": "Berkas belum dapat dibuat. Coba lagi sebentar."})
+
+    def do_POST(self):  # noqa: N802
+        if self.path.split("?")[0] != "/_export/fungsi-pdf":
+            return self._json(404, {"error": "tidak ditemukan"})
+        auth = self.headers.get("Authorization", "")
+        user = whoami(auth) if auth.startswith("Bearer ") else None
+        if not user:
+            return self._json(401, {"error": "Silakan masuk terlebih dahulu."})
+        try:
+            a = access(user)
+            if not (a["allowed"] and a["orgs"] is None):
+                return self._json(403, {"error": "Hanya Admin Data Governance."})
+            REQ_DIR.mkdir(parents=True, exist_ok=True)
+            (REQ_DIR / "request.json").write_text(json.dumps({"oleh": user.get("name"), "pada": datetime.now(WIB).isoformat()}))
+            log("minta revisi PDF Fungsi", user.get("name"))
+            self._json(202, {"menunggu": True})
+        except Exception as e:  # noqa: BLE001
+            log("galat", repr(e)[:200])
+            self._json(500, {"error": "Permintaan belum dapat dicatat."})
 
     def log_message(self, *a):  # log akses standar dimatikan (token tidak boleh tercetak)
         pass

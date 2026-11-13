@@ -6,7 +6,7 @@
 (function () {
   "use strict";
   var T = function (k, v) { return window.LDG_I18N ? window.LDG_I18N.t(k, v) : k; };
-  var DAYS = 20, ITEM_ID = "len-menu-trash", PANEL_ID = "len-trash", EXPORT_ID = "len-menu-export";
+  var DAYS = 20, ITEM_ID = "len-menu-trash", PANEL_ID = "len-trash", EXPORT_ID = "len-menu-export", PDF_ID = "len-menu-pdf";
   var TYPES = [["glossaryTerms"], ["glossaries"], ["tables"], ["databaseSchemas"], ["databases"], ["dashboards"], ["charts"],
     ["dataProducts"], ["domains"], ["tags"], ["classifications"], ["teams"]];
 
@@ -201,6 +201,10 @@
     '<g stroke="#4a5565" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
     '<path d="M28 5H13a3 3 0 0 0-3 3v32a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3V15z"/><path d="M28 5v10h10"/>' +
     '<path d="M24 22v13M18.5 30l5.5 5.5 5.5-5.5"/></g>');
+  var PDF = cardSvg("#F2F4F7",
+    '<g stroke="#4a5565" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M28 5H13a3 3 0 0 0-3 3v32a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3V15z"/><path d="M28 5v10h10"/>' +
+    '<path d="M16 30h16M16 36h10M16 24h8"/></g>');
   var THEME = cardSvg("#FEF3F2",
     '<g stroke="#ae2524" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
     '<path d="M24 5C13.5 5 5 13 5 23.5S13.2 42 21 42c3 0 4-1.8 4-3.6 0-3.4 2-4.4 4.6-4.4H36c4 0 7-2.8 7-7C43 14 34.5 5 24 5z"/>' +
@@ -221,6 +225,7 @@
     if (/^\/settings(\/|$)/.test(location.pathname)) decorateCards();
     ensureTrashCard();
     ensureExportCard();
+    ensurePdfCard();
   }
   function ensureTrashCard() {   // kartu "Tempat Sampah" di halaman Settings (di samping Services, Notifications, ...)
     if (!/^\/settings\/?$/.test(location.pathname) || document.getElementById(ITEM_ID)) return;
@@ -266,12 +271,50 @@
     card.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); runExport(card); }, true);
     box.appendChild(col);
   }
+  /* Terbitkan Revisi PDF (Glosarium Fungsi Generik): hanya tampil untuk Admin Data Governance; ldg-export mencatat permintaan,
+     timer glosarium 10 menit menerbitkannya ke Dokumen › Reference. */
+  var pdfAllowed = null, pdfBusy = false;
+  function pdfStatus(card) {
+    fetch("/_export/fungsi-pdf", { headers: { "Authorization": "Bearer " + token() }, credentials: "same-origin" })
+      .then(function (r) { return r.ok ? r.json() : null; }).then(function (s) {
+        if (!s) return;
+        setExportText(card, s.menunggu ? "pdf_pending" : (s.rev ? "pdf_rev" : "pdf_none"),
+          { r: String(s.rev || 0).padStart(2, "0"), t: s.tanggal || "", c: s.ada_perubahan ? T("pdf_changed") : "" });
+      }).catch(function () {});
+  }
+  function runPdf(card) {
+    if (pdfBusy) return; pdfBusy = true; setExportText(card, "pdf_busy");
+    fetch("/_export/fungsi-pdf", { method: "POST", headers: { "Authorization": "Bearer " + token() }, credentials: "same-origin" })
+      .then(function (r) { setExportText(card, r.status === 403 ? "pdf_denied" : r.ok ? "pdf_wait" : "export_error"); })
+      .catch(function () { setExportText(card, "export_error"); })
+      .then(function () { pdfBusy = false; });
+  }
+  function ensurePdfCard() {
+    if (!/^\/settings\/?$/.test(location.pathname) || document.getElementById(PDF_ID)) return;
+    if (pdfAllowed === null) {
+      pdfAllowed = false;
+      fetch("/_export/me", { headers: { "Authorization": "Bearer " + token() }, credentials: "same-origin" })
+        .then(function (r) { return r.ok ? r.json() : {}; }).then(function (m) { pdfAllowed = !!m.pdf; ensurePdfCard(); }).catch(function () { pdfAllowed = null; });
+      return;
+    }
+    if (!pdfAllowed) return;
+    var box = document.querySelector(".setting-items-container"); if (!box || !box.firstElementChild) return;
+    var col = box.firstElementChild.cloneNode(true);
+    col.id = PDF_ID;
+    var card = col.querySelector(".ant-card"); if (!card) return;
+    card.setAttribute("data-testid", "terbitkan-revisi-pdf"); card.style.cursor = "pointer"; card.style.flex = "1"; card.style.alignSelf = "stretch"; col.style.padding = "0 10px"; col.style.display = "flex"; col.style.alignItems = "stretch";
+    var ic = card.querySelector(".setting-card-icon"); if (ic) tile(ic, PDF);
+    var t = card.querySelector(".setting-card-content .font-semibold"); if (t) t.textContent = T("pdf");
+    setExportText(card, "pdf_card");
+    card.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); runPdf(card); }, true);
+    box.appendChild(col); pdfStatus(card);
+  }
   var lastLang = "";
   function ensure() {
     var lg = window.LDG_I18N ? window.LDG_I18N.lang() : "";
     if (lg !== lastLang) {   // bahasa berganti → bangun ulang teks panel & kartu
       lastLang = lg;
-      ["len-trash", ITEM_ID, EXPORT_ID].forEach(function (id) { var n = document.getElementById(id); if (n) n.remove(); });
+      ["len-trash", ITEM_ID, EXPORT_ID, PDF_ID].forEach(function (id) { var n = document.getElementById(id); if (n) n.remove(); });
       panelOpen = false; document.documentElement.classList.remove("dg-trash-open");
     }
     ensureCard();

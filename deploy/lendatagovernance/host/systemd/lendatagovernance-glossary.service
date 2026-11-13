@@ -3,6 +3,7 @@ Description=Len Data Governance: catat Glosarium aplikasi ke Trino (gold_meta_gl
 After=network-online.target
 [Service]
 Type=oneshot
+TimeoutStartSec=15min
 User=ubuntu
 Environment=LDG_DATA_DIR=/home/ubuntu/data-governance/data
 ExecStart=/home/ubuntu/data-governance/data/medallion/.venv/bin/python -u /home/ubuntu/data-governance/deploy/lendatagovernance/medallion/lakehouse.py glossary

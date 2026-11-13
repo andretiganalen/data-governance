@@ -14,7 +14,8 @@ cc = max([int(m.group(1)) for p in OUT.iterdir() if (m := re.match(r"^\d{6} (\d{
 for arg in sys.argv[1:]:
     src, _, name = arg.partition("=")
     src = Path(src)
-    dst = OUT / f"{datetime.now():%y%m%d} {cc:02d} {name or src.stem}{src.suffix.lower()}"
+    name = re.sub(r"[\\/:*?\"<>|]", "-", name or src.stem).strip()   # nama tidak boleh memuat pemisah path
+    dst = OUT / f"{datetime.now():%y%m%d} {cc:02d} {name}{src.suffix.lower()}"
     shutil.copyfile(src, dst)
     print(dst.name)
 
@@ -23,4 +24,4 @@ import subprocess
 _r = subprocess.run([sys.executable, str(Path(__file__).with_name("referensi-sinkron.py"))], capture_output=True, text=True)
 print(_r.stdout, end="")
 if _r.returncode:
-    print("PERINGATAN: sinkron ke Documents gagal:", _r.stderr.strip().splitlines()[-1:] , file=sys.stderr)
+    print("PERINGATAN: sinkron ke Documents gagal:", (_r.stderr.strip().splitlines() or ["?"])[-1], file=sys.stderr)

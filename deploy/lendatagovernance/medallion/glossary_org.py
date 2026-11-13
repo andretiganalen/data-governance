@@ -19,7 +19,7 @@ sys.path[:0] = [str(Path(__file__).resolve().parent.parent / "loader")]
 import lakehouse as L  # noqa: E402
 
 PLACEHOLDER = "Perlu input manual dari Data Governance"
-GLOSSARY = "OrganisasiFungsi"
+GLOSSARY = "Fungsi Organisasi"   # diganti nama oleh admin di aplikasi 2026-11-13 (tampil "Fungsi")
 GLOSSARY_OWNER = "FN_Tata_Kelola"
 ROOT = Path(__file__).resolve().parents[3]
 TABLE_PREFIX = "len_lakehouse_trino.lakekeeper.medallion_repository."
@@ -78,11 +78,12 @@ def team_ref(om, name: str):
 
 
 def org_counts(tq: L.Trino) -> dict:
-    sql = ("SELECT count_if(is_current), count_if(NOT is_current), count(DISTINCT IF(is_current, divisi)), "
-           "count(DISTINCT IF(is_current, direktorat)), count(DISTINCT IF(is_current, unit_kerja)), "
-           "max(IF(NOT is_current, valid_to)) FROM " + tq.fq("silver_dim_organization"))
-    r = tq.q(sql)[0]
-    return {"aktif": r[0], "kadaluarsa": r[1], "divisi": r[2], "direktorat": r[3], "unit": r[4], "terakhir_kadaluarsa": r[5]}
+    # Jangan campur count(DISTINCT IF(...)) dengan agregat lain dalam satu query: Trino menghabiskan 500 dtk di
+    # OptimizeMixedDistinctAggregations (OPTIMIZER_TIMEOUT) dan timer glosarium macet. Query sederhana, masing-masing cepat.
+    t = tq.fq("silver_dim_organization")
+    a = tq.q(f"SELECT count_if(is_current), count_if(NOT is_current), max(IF(NOT is_current, valid_to)) FROM {t}")[0]
+    d = tq.q(f"SELECT count(DISTINCT divisi), count(DISTINCT direktorat), count(DISTINCT unit_kerja) FROM {t} WHERE is_current")[0]
+    return {"aktif": a[0], "kadaluarsa": a[1], "divisi": d[0], "direktorat": d[1], "unit": d[2], "terakhir_kadaluarsa": a[2]}
 
 
 def seed(om, tq: L.Trino) -> dict:
@@ -92,7 +93,7 @@ def seed(om, tq: L.Trino) -> dict:
                            "saat ini dan kadaluarsa. Bagian yang bertuliskan \"" + PLACEHOLDER + "\" perlu dilengkapi admin Data Governance."}
     if owner:
         glos["owners"] = [owner]
-    if not om.find(f"/v1/glossaries/name/{GLOSSARY}"):
+    if not om.find(f"/v1/glossaries/name/{quote(GLOSSARY, safe='')}"):
         om.put("/v1/glossaries", glos)
     made = 0
 

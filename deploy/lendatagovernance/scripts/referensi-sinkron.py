@@ -4,7 +4,7 @@ Idempoten: berkas yang namanya sudah ada di folder dilewati. Dipanggil oleh refe
 Pakai tanpa argumen = data/referensi → folder Reference. Dengan argumen: referensi-sinkron.py <Folder> <direktori> [<berkas.xlsx> ...]
 (mis. ERM docs/bronze "261016 Rev.0.1_Data Governance_ERM.xlsx" "260930 Sumber Data E-GRC (Excel).xlsx"); berkas yang disebut saja yang diunggah.
 Catatan: folder Documents bersifat datar (API tidak mendukung sub-folder), jadi "Reference" berdampingan dengan "ERM"."""
-import json, mimetypes, re, sys, urllib.request, uuid
+import json, mimetypes, re, sys, urllib.parse, urllib.request, uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -34,7 +34,7 @@ def main():
         print("folder dibuat:", FOLDER)
     have, after = set(), None
     while True:
-        q = f"/files?fields=folder&limit=100&folderId={fid}" + (f"&after={after}" if after else "")
+        q = f"/files?fields=folder&limit=100&folderId={fid}" + (f"&after={urllib.parse.quote(after, safe='')}" if after else "")
         r = call("GET", q)
         have |= {f.get("displayName") or f["name"] for f in r["data"]}
         after = r.get("paging", {}).get("after")

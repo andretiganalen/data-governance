@@ -3,5 +3,6 @@ Description=Len Data Governance daily pg_dump
 After=docker.service
 [Service]
 Type=oneshot
+TimeoutStartSec=30min
 User=ubuntu
 ExecStart=/home/ubuntu/data-governance/deploy/lendatagovernance/scripts/backup.sh

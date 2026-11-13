@@ -3,6 +3,7 @@ Description=Len Data Governance: hapus permanen isi Tempat Sampah yang lebih dar
 After=network-online.target
 [Service]
 Type=oneshot
+TimeoutStartSec=30min
 User=ubuntu
 Environment=LDG_DATA_DIR=/home/ubuntu/data-governance/data
 ExecStart=/home/ubuntu/data-governance/data/medallion/.venv/bin/python -u /home/ubuntu/data-governance/deploy/lendatagovernance/medallion/trash_purge.py

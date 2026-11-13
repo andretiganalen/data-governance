@@ -15,6 +15,7 @@ import json
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -34,6 +35,8 @@ def call(method: str, path: str, token: str):
             return r.status, json.loads(r.read() or b"{}")
     except urllib.error.HTTPError as e:
         return e.code, {}
+    except (urllib.error.URLError, TimeoutError, ValueError):
+        return 0, {}   # jaringan/JSON gagal: jangan hentikan seluruh pembersihan
 
 
 def main() -> int:
@@ -54,8 +57,11 @@ def main() -> int:
                 if not e.get("deleted"):
                     continue
                 name = e.get("fullyQualifiedName") or e["name"]
-                age = (time.time() * 1000 - (e.get("updatedAt") or 0)) / 86400000
-                if e.get("updatedAt", 0) > cutoff:
+                if not e.get("updatedAt"):   # waktu hapus tidak diketahui: JANGAN dihapus permanen (dulu dianggap berumur 20.000 hari)
+                    kept += 1
+                    continue
+                age = (time.time() * 1000 - e["updatedAt"]) / 86400000
+                if e["updatedAt"] > cutoff:
                     kept += 1
                     continue
                 if a.dry:
@@ -72,7 +78,7 @@ def main() -> int:
             nxt = r.get("paging", {}).get("after")
             if not nxt:
                 break
-            after = "&after=" + nxt
+            after = "&after=" + urllib.parse.quote(nxt, safe="")
     print(f"Tempat Sampah: {purged} {'akan ' if a.dry else ''}dihapus permanen (> {a.days} hari), {kept} masih disimpan, {errors} gagal")
     return 1 if errors else 0
 

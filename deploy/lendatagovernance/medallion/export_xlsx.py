@@ -148,6 +148,8 @@ def build(out, filt: str | None = None, org_ids: set[str] | None = None) -> dict
             for j, (col, v) in enumerate(zip(cols, r), 1):
                 cell = ws.cell(row=ws.max_row, column=j)
                 cell.font, cell.border = Font(name=font, size=10), Border(bottom=thin)
+                if isinstance(v, str) and v.startswith("="):
+                    cell.data_type = "s"   # teks pengguna berawalan "=" jangan jadi rumus Excel (injeksi rumus)
                 if blank(v) and col in req:
                     cell.fill, red = PatternFill("solid", fgColor=RED), red + 1
                 elif blank(v) and col in should:
