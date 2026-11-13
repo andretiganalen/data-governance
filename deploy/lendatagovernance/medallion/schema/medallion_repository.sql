@@ -2456,3 +2456,26 @@ CREATE TABLE gold_meta_glossary_ringkasan (
 )
 COMMENT 'Gold: statistik kelengkapan Glosarium per glosarium. Admin Data Governance memakainya untuk menuntaskan Glosarium sampai seluruh informasi terdefinisi.';
 
+CREATE TABLE gold_meta_master_organisasi (
+   master_id varchar COMMENT 'Kunci baris: versi + unit + Fungsi Generik',
+   versi varchar COMMENT 'Versi Master Organisasi: Baseline CLP-001 | Nota 021',
+   dokumen varchar COMMENT 'Dokumen dasar (nomor dan judul)',
+   tanggal_dokumen date COMMENT 'Tanggal Dokumen = tanggal pembaruan Master Organisasi (CLP-001 rev.01: 2024-02-28; Nota 021: 2026-08-24)',
+   berlaku_mulai date COMMENT 'Mulai berlaku = tanggal dokumen',
+   berlaku_sampai date COMMENT 'Berakhir saat versi berikutnya terbit (tanggal dokumen penggantinya); NULL = masih berlaku',
+   is_current boolean COMMENT 'true = versi yang berlaku saat ini',
+   direktorat varchar COMMENT 'Direktorat (Eselon 1 atasan); NULL pada baseline CLP-001 yang tidak memetakan unit',
+   divisi varchar COMMENT 'Divisi',
+   bagian varchar COMMENT 'Bagian, atau nama Divisi bila Fungsi melekat langsung pada Divisi',
+   tingkat_unit varchar COMMENT 'Divisi | Bagian',
+   fungsi_lama varchar COMMENT 'Fungsi Generik Lama (nama CLP-001); "-" bila tidak ada padanan',
+   fungsi_generik varchar COMMENT 'Fungsi Generik tanpa awalan "Fungsi" (kunci Data Owner)',
+   fungsi_generik_dokumen varchar COMMENT 'Penulisan asli di dokumen',
+   tupoksi varchar COMMENT 'Ruang lingkup / tupoksi utama (baseline: definisi CLP-001)',
+   catatan varchar COMMENT 'Catatan dokumen (mis. Fungsi di luar Struktur Organisasi yang ditetapkan lewat surat tugas)',
+   halaman bigint COMMENT 'Halaman dokumen sumber',
+   sumber_perubahan varchar COMMENT 'Dokumen (hasil ekstraksi dokumen) | Aplikasi (disesuaikan admin Data Governance)',
+   _batch_id varchar COMMENT 'lineage',
+   _loaded_at timestamp(6) with time zone COMMENT 'lineage'
+)
+COMMENT 'Gold: Master Organisasi bertingkat versi. Baseline = CLP-001 rev.01 (2024-02-28); terbaru = Nota 021/N/UQ/VIII/2026 (2026-08-24). Tanggal Dokumen menjadi tanggal pembaruan. Penyesuaian admin di aplikasi tercatat lewat gold_meta_glossary_app.';

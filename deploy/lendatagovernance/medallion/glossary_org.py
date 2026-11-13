@@ -31,8 +31,8 @@ def norm(s: str) -> str:
     return re.sub(r"[^a-z0-9]", "", s.lower())
 
 
-def clp001_definitions() -> dict[str, str]:
-    """{nama Fungsi ternormalisasi: definisi}. Hanya butir utuh; butir yang terpotong pergantian halaman dilewati."""
+def clp001_items() -> dict[str, tuple[str, str]]:
+    """{nama Fungsi ternormalisasi: (nama asli, definisi)}. Hanya butir utuh; butir yang terpotong pergantian halaman dilewati."""
     files = sorted((ROOT / "data" / "referensi").glob("* CLP-001 *.pdf"))
     if not files:
         return {}
@@ -68,8 +68,13 @@ def clp001_definitions() -> dict[str, str]:
                 defn.append(right)
         d = re.sub(r"\s+", " ", " ".join(defn)).strip()
         if name and len(d) > 25:
-            out[norm(name)] = d
+            out[norm(name)] = (re.sub(r"\s+", " ", name).strip(), d)
     return out
+
+
+def clp001_definitions() -> dict[str, str]:
+    """{nama Fungsi ternormalisasi: definisi}."""
+    return {k: v[1] for k, v in clp001_items().items()}
 
 
 def team_ref(om, name: str):

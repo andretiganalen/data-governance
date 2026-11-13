@@ -17,3 +17,5 @@ Annotation=Anotasi; Alert=Peringatan; Report=Laporan; Role=Peran; Owner=Pemilik;
 Time range=Rentang waktu; Cache=Cache; Virtual=Virtual; Filter=Filter; Native filter=Filter Bawaan; Row Level Security=Keamanan Tingkat Baris; Share=Bagikan; Favorite=Favorit; CSS Template=Templat CSS; Theme=Tema;
 Cross filter=Filter Silang; Drill=Telusuri (Drill); Slice name=Nama grafik; Schema=Skema; Catalog=Katalog; Engine=Mesin. Nama jenis grafik (Bar Chart, Pie Chart, Heatmap, Sankey, dst.) diterjemahkan ke padanan Indonesia yang lazim (Diagram Batang, Diagram Lingkaran, Peta Panas, ...); "Chart" umum = Grafik.
 Bentuk jamak/tunggal: bahasa Indonesia tidak membedakan; berikan satu terjemahan.
+
+Keputusan 2026-11-13: istilah "Domain"/"Subdomain" = "Fungsi"/"Sub-Fungsi" (merujuk ke Fungsi Organisasi, bukan area subjek data); placeholder {{domain}} tidak diubah.
