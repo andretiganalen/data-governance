@@ -93,7 +93,9 @@ def build_gold(tq: L.Trino, schema: dict, force: bool = False) -> str:
 
 
 def term_name(display: str) -> str:
-    return re.sub(r"[^\w]+", "_", display, flags=re.U).strip("_")
+    """Nama teknis istilah harus unik di seluruh glosarium (nama Fungsi lama sudah dipakai istilah Fungsi Generik), jadi diberi
+    awalan MO_; nama tampilan tetap tanpa awalan."""
+    return "MO_" + re.sub(r"[^\w]+", "_", display, flags=re.U).strip("_")
 
 
 def describe(display: str, rows: list[dict]) -> str:
@@ -157,8 +159,8 @@ def seed(om) -> dict:
 
 def main() -> None:
     from catalog_loader import Catalog
+    L.log(f"master_org: {seed(Catalog(dry=False))}")   # glosarium dulu: tidak bergantung pada Lakekeeper yang kadang tidak stabil
     L.log(f"master_org: {build_gold(L.Trino(), L.load_schema(), '--force' in sys.argv)}")
-    L.log(f"master_org: {seed(Catalog(dry=False))}")
 
 
 if __name__ == "__main__":
