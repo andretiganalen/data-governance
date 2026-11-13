@@ -77,6 +77,15 @@ def clp001_definitions() -> dict[str, str]:
     return {k: v[1] for k, v in clp001_items().items()}
 
 
+def master_names() -> set[str]:
+    """Nama Fungsi Generik baru (Nota 021) ternormalisasi, kecuali yang juga ada di baseline CLP-001."""
+    try:
+        import master_org
+        return {norm(master_org.bare(r["fungsi_baru"])) for r in master_org.load_nota()}
+    except Exception:  # noqa: BLE001
+        return set()
+
+
 def team_ref(om, name: str):
     t = om.find(f"/v1/teams/name/{quote(name, safe='')}")
     return {"id": t["id"], "type": "team"} if t else None
@@ -137,6 +146,8 @@ def seed(om, tq: L.Trino) -> dict:
     for t in teams:
         ref = {"id": t["id"], "type": "team"}
         d = defs.get(norm(t.get("displayName") or t["name"]))
+        if not d and norm(t.get("displayName") or t["name"]) in master_names():
+            continue   # Fungsi baru (Nota 021): tupoksinya ada di istilah Master Organisasi, bukan di baseline CLP-001
         ensure(t["name"][3:], {
             "displayName": t.get("displayName") or t["name"][3:], "parent": f"{GLOSSARY}.FungsiGenerik", "owners": [ref],
             "description": d or PLACEHOLDER})

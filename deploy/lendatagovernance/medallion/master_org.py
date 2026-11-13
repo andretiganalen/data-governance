@@ -157,8 +157,74 @@ def seed(om) -> dict:
     return {"istilah_baru": made, "fungsi_generik_baru": len(groups), "dengan_pemilik": sum(1 for d in groups if G.norm(d) in owners)}
 
 
+def team_code(display: str) -> str:
+    return "FN_" + re.sub(r"[^\w]+", "_", display.replace("&", " "), flags=re.U).strip("_")
+
+
+def create_fungsi_teams(om, dry: bool = True) -> dict:
+    """Tim Data Owner FN_* untuk Fungsi Generik baru (Nota 021) yang belum punya tim: grup di bawah Divisinya, pola sama dengan tim
+    yang ada (deskripsi memuat Eselon 1 dan Eselon 2). Tim yang sudah ada tidak diubah; tim lama (nama CLP-001) tidak dihapus."""
+    teams, after = [], ""
+    while True:
+        r = om.get("/v1/teams?limit=200&fields=parents" + after)
+        teams += r["data"]
+        if not r.get("paging", {}).get("after"):
+            break
+        after = "&after=" + r["paging"]["after"]
+    have = {G.norm(t.get("displayName") or t["name"]) for t in teams if t["name"].startswith("FN_")}
+    names = {t["name"] for t in teams}
+    divs = {G.norm(t.get("displayName") or t["name"]): t for t in teams if t["name"].startswith("DIV_")}
+    groups: dict[str, list[dict]] = {}
+    for r in load_nota():
+        groups.setdefault(bare(r["fungsi_baru"]), []).append(r)
+    made, skipped = [], []
+    for display, rows in groups.items():
+        if G.norm(display) in have:
+            continue
+        divisi = list(dict.fromkeys(r["divisi"] for r in rows))
+        parent = divs.get(G.norm(divisi[0]))
+        code = team_code(display)
+        if not parent or len(divisi) != 1 or code in names:
+            skipped.append((display, "induk Divisi tidak ditemukan/ganda" if not parent or len(divisi) != 1 else "kode tim sudah dipakai"))
+            continue
+        bag = "; ".join(dict.fromkeys(r["bagian"] for r in rows if r["bagian"] and r["bagian"] != r["divisi"])) or "(melekat langsung pada Divisi)"
+        body = {"name": code, "displayName": display, "teamType": "Group", "parents": [parent["id"]],
+                "description": f"Data Owner Fungsi {display}. Eselon 1: {divisi[0]}. Eselon 2: {bag}. Dasar: Nota 021/N/UQ/VIII/2026 ({tgl(TERBARU['tanggal'])})."}
+        if not dry:
+            om.put("/v1/teams", body)
+        made.append(code)
+    return {"dibuat" if not dry else "akan_dibuat": len(made), "dilewati": skipped, "contoh": made[:4]}
+
+
+def assign_owners(om) -> int:
+    """Istilah Master Organisasi yang belum punya pemilik diberi tim FN_* yang namanya sama (tidak menimpa pemilik yang sudah ada)."""
+    owners, after = {}, ""
+    while True:
+        r = om.get("/v1/teams?limit=200" + after)
+        for t in r["data"]:
+            if t["name"].startswith("FN_"):
+                owners[G.norm(t.get("displayName") or t["name"])] = {"id": t["id"], "type": "team"}
+        if not r.get("paging", {}).get("after"):
+            break
+        after = "&after=" + r["paging"]["after"]
+    n = 0
+    for display in dict.fromkeys(bare(r["fungsi_baru"]) for r in load_nota()):
+        o = owners.get(G.norm(display))
+        t = om.find(f"/v1/glossaryTerms/name/{quote(G.GLOSSARY + '.' + PARENT + '.' + term_name(display), safe='')}?fields=owners")
+        if o and t and not [x for x in t.get("owners", []) if not x.get("inherited")]:   # pemilik warisan glosarium tidak dihitung
+            om.call("PATCH", f"/v1/glossaryTerms/{t['id']}", [{"op": "add", "path": "/owners", "value": [o]}], "application/json-patch+json")
+            n += 1
+    return n
+
+
 def main() -> None:
     from catalog_loader import Catalog
+    if "--teams" in sys.argv:
+        om = Catalog(dry=False)
+        L.log(f"master_org tim: {create_fungsi_teams(om, dry='--dry' in sys.argv)}")
+        if "--dry" not in sys.argv:
+            L.log(f"master_org pemilik istilah baru: {assign_owners(om)}")
+        return
     L.log(f"master_org: {seed(Catalog(dry=False))}")   # glosarium dulu: tidak bergantung pada Lakekeeper yang kadang tidak stabil
     L.log(f"master_org: {build_gold(L.Trino(), L.load_schema(), '--force' in sys.argv)}")
 
