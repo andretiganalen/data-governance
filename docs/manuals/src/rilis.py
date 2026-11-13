@@ -17,7 +17,7 @@ import json
 import re
 import socket
 import subprocess
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 SRC = Path(__file__).resolve().parent
@@ -226,6 +226,21 @@ def dataset_view(tq) -> list[dict]:
     return out
 
 
+MASTER_FROM = date(2026, 11, 14)   # keputusan 2026-11-13: daftar Master Organisasi masuk setiap manual mulai rilis 14 November 2026
+
+
+def master_view(tq) -> dict:
+    """Master Organisasi (Gold gold_meta_master_organisasi): versi + daftar Fungsi Generik berlaku per unit, urutan sesuai dokumen."""
+    ver = [{"versi": a, "dokumen": b, "tanggal": str(c), "baris": n, "berlaku": bool(cur)} for a, b, c, n, cur in tq.q(
+        "SELECT versi, dokumen, tanggal_dokumen, count(*), max_by(is_current, tanggal_dokumen) FROM gold_meta_master_organisasi "
+        "GROUP BY versi, dokumen, tanggal_dokumen ORDER BY tanggal_dokumen")]
+    rows = [{"direktorat": a or "", "divisi": b or "", "bagian": c or "", "fungsi": d or "", "lama": e or "", "catatan": f or ""}
+            for a, b, c, d, e, f in tq.q(
+        "SELECT direktorat, divisi, bagian, fungsi_generik, fungsi_lama, catatan FROM gold_meta_master_organisasi "
+        "WHERE is_current ORDER BY urutan")]
+    return {"versi": ver, "baris": rows, "fungsi": len({r["fungsi"] for r in rows})}
+
+
 def release_of_build() -> str:
     t = (SRC / "build/data.js").read_text()
     return json.loads(t[t.index("=") + 1:].strip().rstrip(";"))["rilis"]
@@ -257,6 +272,7 @@ def main() -> None:
         "gold": gold_status(lh, tq),
         "live": live_status(),
         "dataset": dataset_view(tq),
+        "master": master_view(tq) if now.date() >= MASTER_FROM else None,
         "alamat": "http://192.168.125.14",
         "visualisasi": "http://192.168.125.14:8585/visualisasi/",
     }

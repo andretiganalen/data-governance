@@ -2474,6 +2474,7 @@ CREATE TABLE gold_meta_master_organisasi (
    tupoksi varchar COMMENT 'Ruang lingkup / tupoksi utama (baseline: definisi CLP-001)',
    catatan varchar COMMENT 'Catatan dokumen (mis. Fungsi di luar Struktur Organisasi yang ditetapkan lewat surat tugas)',
    halaman bigint COMMENT 'Halaman dokumen sumber',
+   urutan bigint COMMENT 'Urutan baris dalam dokumen (untuk menampilkan sesuai urutan dokumen)',
    sumber_perubahan varchar COMMENT 'Dokumen (hasil ekstraksi dokumen) | Aplikasi (disesuaikan admin Data Governance)',
    _batch_id varchar COMMENT 'lineage',
    _loaded_at timestamp(6) with time zone COMMENT 'lineage'

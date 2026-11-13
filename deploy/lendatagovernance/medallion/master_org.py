@@ -56,7 +56,7 @@ def rows_all() -> list[dict]:
     def add(ver, **kw):
         base = {"versi": ver["versi"], "dokumen": ver["dokumen"], "tanggal_dokumen": ver["tanggal"], "berlaku_mulai": ver["tanggal"],
                 "direktorat": None, "divisi": None, "bagian": None, "tingkat_unit": None, "fungsi_lama": None, "catatan": None,
-                "halaman": None, "sumber_perubahan": "Dokumen", "_loaded_at": now}
+                "halaman": None, "urutan": sum(1 for x in out if x["versi"] == ver["versi"]) + 1, "sumber_perubahan": "Dokumen", "_loaded_at": now}
         base.update(kw)
         base["master_id"] = hashlib.sha1("|".join(str(base.get(k)) for k in ("versi", "direktorat", "divisi", "bagian", "fungsi_lama", "fungsi_generik_dokumen")).encode()).hexdigest()[:16]
         out.append(base)
