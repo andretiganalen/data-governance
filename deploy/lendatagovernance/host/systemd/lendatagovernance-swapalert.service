@@ -1,0 +1,7 @@
+[Unit]
+Description=Len Data Governance memory/swap alert
+[Service]
+Type=oneshot
+TimeoutStartSec=2min
+User=ubuntu
+ExecStart=/home/ubuntu/data-governance/deploy/lendatagovernance/scripts/swap-alert.sh
