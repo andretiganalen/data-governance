@@ -207,9 +207,12 @@
       var act = canEdit ? '<td class="ant-table-cell act"><div class="dg-menu"><button class="ant-btn ant-btn-default ant-btn-sm" type="button" aria-haspopup="menu" aria-expanded="false" data-menu="' + esc(r.org_id) + '">Aksi ▾</button>' +
         '<div class="dg-menu-list" role="menu" hidden><button type="button" role="menuitem" data-ubah="' + esc(r.org_id) + '">Ubah</button>' +
         '<button type="button" role="menuitem" class="danger" data-hapus="' + esc(r.org_id) + '">Hapus</button></div></div></td>' : '';
-      if (r.derived) return '<tr class="ant-table-row dg-derived" style="background:#F9FAFB"><td class="ant-table-cell id"><b>' + esc(r.org_id) + '</b></td>' +
+      if (r.derived) return '<tr class="ant-table-row dg-derived" data-lengkapi-row="' + esc(r.divisi) + '|' + esc(r.direktorat) + '" style="background:#F9FAFB;cursor:pointer"><td class="ant-table-cell id"><b>' + esc(r.org_id) + '</b></td>' +
         '<td class="ant-table-cell">' + esc(r.fungsi) + '</td><td class="ant-table-cell">' + esc(r.unit_kerja) + '</td><td class="ant-table-cell">' + esc(r.divisi) + '</td><td class="ant-table-cell">' + esc(r.direktorat) + '</td>' +
-        '<td><span class="dg-chip">Divisi</span></td><td class="ant-table-cell act" style="text-align:right;white-space:nowrap"><button class="ant-btn ant-btn-primary ant-btn-sm" type="button" data-lengkapi="' + esc(r.divisi) + '|' + esc(r.direktorat) + '"><span>Lengkapi</span></button> <button class="ant-btn ant-btn-default ant-btn-sm" type="button" data-dg-detail="1"><span>Detail</span></button></td></tr>';
+        '<td><span class="dg-chip">Divisi</span></td>' +
+        '<td class="ant-table-cell act" style="text-align:right"><div class="dg-menu"><button class="ant-btn ant-btn-default ant-btn-sm" type="button" aria-haspopup="menu" aria-expanded="false" data-menu="' + esc(r.org_id) + '">Aksi ▾</button>' +
+        '<div class="dg-menu-list" role="menu" hidden><button type="button" role="menuitem" data-lengkapi="' + esc(r.divisi) + '|' + esc(r.direktorat) + '">Lengkapi</button>' +
+        '<button type="button" role="menuitem" data-dg-detail="1">Detail</button></div></div></td></tr>';
       return '<tr class="ant-table-row" data-oid="' + esc(r.org_id) + '" style="cursor:pointer"><td class="ant-table-cell id">' + esc(r.org_id) + '</td>' +
         '<td class="ant-table-cell ant-table-cell">' + (r.fungsi ? esc(r.fungsi) : '<span class="dg-chip mn">Perlu input manual</span>') + '</td>' +
         '<td class="ant-table-cell ant-table-cell">' + esc(r.unit_kerja) + '</td><td class="ant-table-cell ant-table-cell">' + esc(r.divisi) + '</td><td class="ant-table-cell ant-table-cell">' + esc(r.direktorat) + '</td>' +
@@ -322,6 +325,12 @@
   }
   document.addEventListener('click', function (e) { if (!e.target.closest('.dg-menu')) closeMenus(null); });
 
+  function fillDivisi(s) {   // Lengkapi: tambah unit di bawah Divisi ini, Direktorat dan Divisi sudah terisi
+    var parts = s.split('|');
+    openForm(null);
+    $('f-dir').value = parts[1] || ''; $('f-div').value = parts[0] || '';
+    $('f-unit').focus();
+  }
   function openDetail(r) {
     var labels = [['org_id','ORG_ID lengkap'],['fungsi','Fungsi'],['unit_kerja','Unit kerja'],['divisi','Divisi'],['direktorat','Direktorat'],['company_id','Company ID'],['sumber','Sumber'],['diubah_oleh','Diubah oleh'],['diubah_pada','Diubah pada']];
     document.getElementById('dt-title').textContent = 'Detail · ' + r.org_id;
@@ -334,14 +343,10 @@
   document.querySelectorAll('[data-close-d]').forEach(function (b) { b.addEventListener('click', function () { document.getElementById('m-detail').hidden = true; }); });
   rowsEl.addEventListener('click', function (e) {
     var lg = e.target.closest('[data-lengkapi]');
-    if (lg) {   // Lengkapi: tambah unit di bawah Divisi ini, Direktorat dan Divisi sudah terisi
-      var parts = lg.getAttribute('data-lengkapi').split('|');
-      openForm(null);
-      $('f-dir').value = parts[1] || ''; $('f-div').value = parts[0] || '';
-      $('f-unit').focus();
-      return;
-    }
+    if (lg) { fillDivisi(lg.getAttribute('data-lengkapi')); closeMenus(null); return; }
     if (e.target.closest('.dg-menu')) return;      // aksi tidak membuka detail
+    var dtr = e.target.closest('tr[data-lengkapi-row]');
+    if (dtr) { fillDivisi(dtr.getAttribute('data-lengkapi-row')); return; }
     var tr = e.target.closest('tr[data-oid]'); if (!tr) return;
     var r = all.find(function (x) { return x.org_id === tr.getAttribute('data-oid'); }); if (r) openDetail(r);
   });
