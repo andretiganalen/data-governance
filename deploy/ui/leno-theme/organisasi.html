@@ -81,6 +81,7 @@
 <main class="dg-wrap">
   <div class="dg-crumb"><a href="/">Beranda</a> › Master data › Organisasi</div>
 <div class="dg-toolbar dg-toolbar-top">
+      <select id="fungsi-sel" aria-label="Fungsi" style="min-width:260px"><option value="">Semua fungsi</option></select>
       <input class="ant-input" id="q" type="search" placeholder="Cari unit kerja, fungsi, divisi…" aria-label="Cari unit kerja">
       <select id="dir" aria-label="Direktorat"><option value="">Semua direktorat</option></select>
       <span class="dg-count" id="count"></span>
@@ -222,7 +223,14 @@
     count.textContent = list.length + ' dari ' + view().length + ' baris' + (FUNGSI ? ' · Fungsi: ' + FUNGSI : '');
   }
 
+  function fillFungsiSel() {
+    var fs = Array.from(new Set(all.map(function (r) { return r.fungsi; }).filter(Boolean))).sort();
+    var sel = $('fungsi-sel');
+    sel.innerHTML = '<option value="">Semua fungsi</option>' + fs.map(function (v) { return '<option' + (v === FUNGSI ? ' selected' : '') + '>' + esc(v) + '</option>'; }).join('');
+  }
+  $('fungsi-sel').addEventListener('change', function () { FUNGSI = this.value; render(); });
   function fillLists() {
+    fillFungsiSel();
     $('dl-dir').innerHTML = uniq(all.map(function (r) { return r.direktorat; })).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
     $('dl-div').innerHTML = uniq(all.map(function (r) { return r.divisi; })).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
     var fs = uniq(all.map(function (r) { return r.fungsi; }));
