@@ -162,6 +162,13 @@
   </div>
 </div>
 
+  <div class="dg-modal" id="m-detail" hidden>
+    <div class="dg-dialog" style="max-width:520px">
+      <header><h2 id="dt-title">Detail Master Organisasi</h2></header>
+      <div class="body" id="dt-body" style="font-size:13px;line-height:1.8"></div>
+      <footer><button class="ant-btn ant-btn-default" type="button" data-close-d><span>Tutup</span></button></footer>
+    </div>
+  </div>
 <script src="/_leno/shell.js"></script>
 <script>
 (function () {
@@ -185,7 +192,7 @@
       var act = canEdit ? '<td class="ant-table-cell act"><div class="dg-menu"><button class="ant-btn ant-btn-default ant-btn-sm" type="button" aria-haspopup="menu" aria-expanded="false" data-menu="' + esc(r.org_id) + '">Aksi ▾</button>' +
         '<div class="dg-menu-list" role="menu" hidden><button type="button" role="menuitem" data-ubah="' + esc(r.org_id) + '">Ubah</button>' +
         '<button type="button" role="menuitem" class="danger" data-hapus="' + esc(r.org_id) + '">Hapus</button></div></div></td>' : '';
-      return '<tr class="ant-table-row"><td class="ant-table-cell id">' + esc(r.org_id) + '</td>' +
+      return '<tr class="ant-table-row" data-oid="' + esc(r.org_id) + '" style="cursor:pointer"><td class="ant-table-cell id">' + esc(String(r.org_id).split('-')[0]) + '</td>' +
         '<td class="ant-table-cell ant-table-cell">' + (r.fungsi ? esc(r.fungsi) : '<span class="dg-chip mn">Perlu input manual</span>') + '</td>' +
         '<td class="ant-table-cell ant-table-cell">' + esc(r.unit_kerja) + '</td><td class="ant-table-cell ant-table-cell">' + esc(r.divisi) + '</td><td class="ant-table-cell ant-table-cell">' + esc(r.direktorat) + '</td>' +
         '<td><span class="dg-chip">' + (r.sumber === 'Aplikasi' ? 'Aplikasi' : 'Database') + '</span></td>' + act + '</tr>';
@@ -285,6 +292,22 @@
     document.querySelectorAll('[data-menu]').forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
   }
   document.addEventListener('click', function (e) { if (!e.target.closest('.dg-menu')) closeMenus(null); });
+
+  function openDetail(r) {
+    var labels = [['org_id','ORG_ID lengkap'],['fungsi','Fungsi'],['unit_kerja','Unit kerja'],['divisi','Divisi'],['direktorat','Direktorat'],['company_id','Company ID'],['sumber','Sumber'],['diubah_oleh','Diubah oleh'],['diubah_pada','Diubah pada']];
+    document.getElementById('dt-title').textContent = 'Detail · ' + String(r.org_id).split('-')[0];
+    document.getElementById('dt-body').innerHTML = labels.map(function (l) {
+      var v = l[0] === 'sumber' ? (r.sumber || 'Database') : r[l[0]];
+      return '<div><b>' + esc(l[1]) + ':</b> ' + (v ? esc(v) : '<span class="dg-chip mn">Perlu input manual</span>') + '</div>';
+    }).join('');
+    document.getElementById('m-detail').hidden = false;
+  }
+  document.querySelectorAll('[data-close-d]').forEach(function (b) { b.addEventListener('click', function () { document.getElementById('m-detail').hidden = true; }); });
+  rowsEl.addEventListener('click', function (e) {
+    if (e.target.closest('.dg-menu')) return;      // aksi tidak membuka detail
+    var tr = e.target.closest('tr[data-oid]'); if (!tr) return;
+    var r = all.find(function (x) { return x.org_id === tr.getAttribute('data-oid'); }); if (r) openDetail(r);
+  });
   rowsEl.addEventListener('click', function (e) {
     var m = e.target.closest('[data-menu]');
     if (m) {
