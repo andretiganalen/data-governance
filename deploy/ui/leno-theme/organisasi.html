@@ -182,9 +182,19 @@
   function uniq(arr) { return Array.from(new Set(arr.filter(Boolean))).sort(); }
   function notice(msg) { banner.textContent = msg; banner.hidden = !msg; }
 
+  /* Baris Divisi: setiap Divisi juga tampil sebagai Fungsi dan Unit kerja sendiri (kode = prefiks ORG_ID, tanpa nomor). Hanya tampilan. */
+  function view() {
+    var seen = {}, divs = [];
+    all.forEach(function (r) {
+      if (!r.divisi || seen[r.divisi]) return;
+      seen[r.divisi] = true;
+      divs.push({ org_id: String(r.org_id).split('-')[0], fungsi: r.divisi, unit_kerja: r.divisi, divisi: r.divisi, direktorat: r.direktorat, derived: true });
+    });
+    return all.concat(divs);
+  }
   function render() {
     var term = q.value.trim().toLowerCase(), d = dir.value;
-    var list = all.filter(function (r) {
+    var list = view().filter(function (r) {
       if (d && r.direktorat !== d) return false;
       if (FUNGSI && r.fungsi !== FUNGSI) return false;
       return !term || [r.org_id, r.fungsi, r.unit_kerja, r.divisi, r.direktorat].some(function (v) { return v && String(v).toLowerCase().indexOf(term) >= 0; });
@@ -193,13 +203,16 @@
       var act = canEdit ? '<td class="ant-table-cell act"><div class="dg-menu"><button class="ant-btn ant-btn-default ant-btn-sm" type="button" aria-haspopup="menu" aria-expanded="false" data-menu="' + esc(r.org_id) + '">Aksi ▾</button>' +
         '<div class="dg-menu-list" role="menu" hidden><button type="button" role="menuitem" data-ubah="' + esc(r.org_id) + '">Ubah</button>' +
         '<button type="button" role="menuitem" class="danger" data-hapus="' + esc(r.org_id) + '">Hapus</button></div></div></td>' : '';
-      return '<tr class="ant-table-row" data-oid="' + esc(r.org_id) + '" style="cursor:pointer"><td class="ant-table-cell id">' + esc(String(r.org_id).split('-')[0]) + '</td>' +
+      if (r.derived) return '<tr class="ant-table-row dg-derived" style="background:#F9FAFB"><td class="ant-table-cell id"><b>' + esc(r.org_id) + '</b></td>' +
+        '<td class="ant-table-cell">' + esc(r.fungsi) + '</td><td class="ant-table-cell">' + esc(r.unit_kerja) + '</td><td class="ant-table-cell">' + esc(r.divisi) + '</td><td class="ant-table-cell">' + esc(r.direktorat) + '</td>' +
+        '<td><span class="dg-chip">Divisi</span></td><td></td></tr>';
+      return '<tr class="ant-table-row" data-oid="' + esc(r.org_id) + '" style="cursor:pointer"><td class="ant-table-cell id">' + esc(r.org_id) + '</td>' +
         '<td class="ant-table-cell ant-table-cell">' + (r.fungsi ? esc(r.fungsi) : '<span class="dg-chip mn">Perlu input manual</span>') + '</td>' +
         '<td class="ant-table-cell ant-table-cell">' + esc(r.unit_kerja) + '</td><td class="ant-table-cell ant-table-cell">' + esc(r.divisi) + '</td><td class="ant-table-cell ant-table-cell">' + esc(r.direktorat) + '</td>' +
         '<td><span class="dg-chip">' + (r.sumber === 'Aplikasi' ? 'Aplikasi' : 'Database') + '</span></td>' + act + '</tr>';
     }).join('');
     empty.hidden = list.length > 0;
-    count.textContent = list.length + ' dari ' + all.length + ' unit kerja' + (FUNGSI ? ' · Fungsi: ' + FUNGSI : '');
+    count.textContent = list.length + ' dari ' + view().length + ' baris' + (FUNGSI ? ' · Fungsi: ' + FUNGSI : '');
   }
 
   function fillLists() {
@@ -307,7 +320,7 @@
 
   function openDetail(r) {
     var labels = [['org_id','ORG_ID lengkap'],['fungsi','Fungsi'],['unit_kerja','Unit kerja'],['divisi','Divisi'],['direktorat','Direktorat'],['company_id','Company ID'],['sumber','Sumber'],['diubah_oleh','Diubah oleh'],['diubah_pada','Diubah pada']];
-    document.getElementById('dt-title').textContent = 'Detail · ' + String(r.org_id).split('-')[0];
+    document.getElementById('dt-title').textContent = 'Detail · ' + r.org_id;
     document.getElementById('dt-body').innerHTML = labels.map(function (l) {
       var v = l[0] === 'sumber' ? (r.sumber || 'Database') : r[l[0]];
       return '<div><b>' + esc(l[1]) + ':</b> ' + (v ? esc(v) : '<span class="dg-chip mn">Perlu input manual</span>') + '</div>';
