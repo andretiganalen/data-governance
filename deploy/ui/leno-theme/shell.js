@@ -94,7 +94,13 @@
 
   var main = document.createElement('div'); main.className = 'dg-main';
   var top = document.createElement('header'); top.className = 'dg-top';
-  top.innerHTML = '<span>Data Governance › ' + esc(document.title.split('·')[0].trim()) + '</span><span class="dg-user" id="dg-user"></span>';
+  top.innerHTML = '<span id="dg-top-title">Data Governance</span><span class="dg-user" id="dg-user"></span>';
+  function setTopTitle() {
+    var h = document.querySelector('h1');
+    var name = h && h.textContent.trim() ? h.textContent.trim() : document.title.split('·')[0].trim();
+    var el = document.getElementById('dg-top-title'); if (el) el.textContent = 'Data Governance › ' + name;
+  }
+  setTimeout(setTopTitle, 400); window.addEventListener('load', setTopTitle);
 
   var body = document.body;
   var kids = Array.prototype.slice.call(body.childNodes);
