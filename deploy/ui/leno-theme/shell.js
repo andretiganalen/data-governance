@@ -105,6 +105,44 @@
   var body = document.body;
   var kids = Array.prototype.slice.call(body.childNodes);
   kids.forEach(function (n) { if (n.tagName !== 'SCRIPT' && n.tagName !== 'STYLE') main.appendChild(n); });
+  /* Alur koneksi (artifact "Beranda · Alur pengisian"): 10 langkah berurutan dan kebutuhan datanya. */
+  var FLOW = [
+    { n: 1, label: 'Organisasi', href: '/organisasi/', deps: [] },
+    { n: 2, label: 'Sistem', href: '/sistem/', deps: [] },
+    { n: 3, label: 'Business Dataset', href: '/dataset/', deps: ['Sistem'] },
+    { n: 4, label: 'Database Object', href: '/objek/', deps: ['Business Dataset'] },
+    { n: 5, label: 'Data Element', href: '/elemen/', deps: ['Database Object'] },
+    { n: 6, label: 'Business Glossary', href: '/glosarium/', deps: ['Data Element'] },
+    { n: 7, label: 'Governance Assignment', href: '/assignment/', deps: ['Data Element', 'Organisasi'] },
+    { n: 8, label: 'Data Quality Rules', href: '/kualitas/', deps: ['Data Element'] },
+    { n: 9, label: 'Data Flow Lineage', href: '/lineage/', deps: ['Data Element', 'Sistem'] },
+    { n: 10, label: 'Security Access', href: '/akses/', deps: ['Data Flow Lineage', 'Organisasi'] }
+  ];
+  function renderFlow() {
+    var cur = FLOW.findIndex(function (x) { return location.pathname.replace(/\/$/, '') === x.href.replace(/\/$/, ''); });
+    if (cur < 0) return;
+    var item = FLOW[cur];
+    var hrefOf = function (name) { var f = FLOW.find(function (x) { return x.label === name; }); return f ? f.href : '/'; };
+    var chain = FLOW.map(function (x, i) {
+      var on = i === cur;
+      return '<a href="' + x.href + '" target="_self" style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;text-decoration:none;white-space:nowrap;' +
+        (on ? 'background:#ae2524;color:#fff;font-weight:600' : 'background:#EDF0F4;color:#3A4658') + '"><span>' + x.n + '</span>' + esc(x.label) + '</a>';
+    }).join('<span style="color:#99a1af;font-size:12px">›</span>');
+    var needs = item.deps.length
+      ? 'Butuh data: ' + item.deps.map(function (d) { return '<a href="' + hrefOf(d) + '" target="_self" style="color:#ae2524">' + esc(d) + '</a>'; }).join(', ')
+      : 'Langkah awal, tidak membutuhkan data dari langkah lain.';
+    var next = FLOW[cur + 1];
+    var nxt = next ? '<a href="' + next.href + '" target="_self" style="color:#ae2524;margin-left:auto">Lanjut: ' + esc(next.label) + ' →</a>' : '';
+    var bar = document.createElement('div');
+    bar.id = 'dg-flow';
+    bar.style.cssText = 'margin:0 0 12px;padding:10px 12px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;font-family:var(--uix-font)';
+    bar.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;overflow-x:auto">' + chain + '</div>' +
+      '<div style="display:flex;gap:12px;align-items:center;margin-top:8px;font-size:12px;color:#6a7282;flex-wrap:wrap"><span>' + needs + '</span>' + nxt + '</div>';
+    var crumb = document.querySelector('.dg-crumb');
+    if (crumb && crumb.parentNode) crumb.parentNode.insertBefore(bar, crumb.nextSibling);
+    else main.insertBefore(bar, top.nextSibling);
+  }
+  setTimeout(renderFlow, 0);
   main.insertBefore(top, main.firstChild);
   body.appendChild(side); body.appendChild(main);
 
