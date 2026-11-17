@@ -184,13 +184,17 @@
 
   /* Baris Divisi: setiap Divisi juga tampil sebagai Fungsi dan Unit kerja sendiri (kode = prefiks ORG_ID, tanpa nomor). Hanya tampilan. */
   function view() {
-    var seen = {}, divs = [];
+    /* Baris Divisi ditempatkan di atas unit-unit divisinya (kepala divisi = pengelola fungsi). */
+    var out = [], done = {};
     all.forEach(function (r) {
-      if (!r.divisi || seen[r.divisi]) return;
-      seen[r.divisi] = true;
-      divs.push({ org_id: String(r.org_id).split('-')[0], fungsi: r.divisi, unit_kerja: r.divisi, divisi: r.divisi, direktorat: r.direktorat, derived: true });
+      var key = r.divisi || '';
+      if (key && !done[key]) {
+        done[key] = true;
+        out.push({ org_id: String(r.org_id).split('-')[0], fungsi: r.divisi, unit_kerja: r.divisi, divisi: r.divisi, direktorat: r.direktorat, derived: true });
+      }
+      out.push(r);
     });
-    return all.concat(divs);
+    return out;
   }
   function render() {
     var term = q.value.trim().toLowerCase(), d = dir.value;
@@ -205,7 +209,7 @@
         '<button type="button" role="menuitem" class="danger" data-hapus="' + esc(r.org_id) + '">Hapus</button></div></div></td>' : '';
       if (r.derived) return '<tr class="ant-table-row dg-derived" style="background:#F9FAFB"><td class="ant-table-cell id"><b>' + esc(r.org_id) + '</b></td>' +
         '<td class="ant-table-cell">' + esc(r.fungsi) + '</td><td class="ant-table-cell">' + esc(r.unit_kerja) + '</td><td class="ant-table-cell">' + esc(r.divisi) + '</td><td class="ant-table-cell">' + esc(r.direktorat) + '</td>' +
-        '<td><span class="dg-chip">Divisi</span></td><td></td></tr>';
+        '<td><span class="dg-chip">Divisi</span></td></tr>';
       return '<tr class="ant-table-row" data-oid="' + esc(r.org_id) + '" style="cursor:pointer"><td class="ant-table-cell id">' + esc(r.org_id) + '</td>' +
         '<td class="ant-table-cell ant-table-cell">' + (r.fungsi ? esc(r.fungsi) : '<span class="dg-chip mn">Perlu input manual</span>') + '</td>' +
         '<td class="ant-table-cell ant-table-cell">' + esc(r.unit_kerja) + '</td><td class="ant-table-cell ant-table-cell">' + esc(r.divisi) + '</td><td class="ant-table-cell ant-table-cell">' + esc(r.direktorat) + '</td>' +
