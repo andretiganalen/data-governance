@@ -11,6 +11,7 @@
   .dg-wrap { max-width: none; margin: 0 auto; padding: 24px 16px 48px; }
   .dg-crumb { font-size: 13px; color: var(--uix-text-secondary); margin-bottom: 12px; }
   .dg-crumb a { color: inherit; }
+  .dg-head { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
   .dg-head h1 { margin: 0 0 4px; font-size: 22px; color: var(--uix-text-head); font-weight: 600; }
   .dg-head p { margin: 0; font-size: 14px; color: var(--uix-text-secondary); line-height: 1.6; max-width: 720px; }
   .dg-card { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-xs); margin-top: 20px; }
@@ -29,20 +30,34 @@
   th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--uix-border-subtle); vertical-align: top; }
   th { color: var(--uix-text-secondary); font-weight: 600; background: var(--uix-surface-subtle); white-space: nowrap; }
   td.id { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: var(--uix-text-secondary); white-space: nowrap; }
-  td.def { color: var(--uix-text-body); line-height: 1.5; }
-  tr.row { cursor: pointer; }
-  tr.row:hover td { background: var(--uix-surface-subtle); }
-  tr.detail td { background: var(--uix-surface-subtle); font-size: 13px; line-height: 1.6; }
+  td.def { color: var(--uix-text-body); line-height: 1.5; min-width: 320px; }
+  td.act { text-align: right; white-space: nowrap; }
   .dg-chip { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #EDF0F4; color: #3A4658; white-space: nowrap; }
   .dg-chip.ok { background: #E7F6EC; color: #0E6B33; }
-  .dg-chip.draf { background: #FFF4E5; color: #8A4B00; }
   .dg-chip.mn { background: #FCE8E9; color: #8E1418; }
+  .dg-btn { display: inline-flex; align-items: center; height: var(--uix-control-md); padding: 0 14px; border-radius: var(--uix-radius); background: var(--uix-primary); color: var(--uix-on-primary); border: 0; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+  .dg-btn.ghost { background: var(--uix-surface); color: var(--uix-text-body); border: 1px solid var(--uix-border-strong); }
+  .dg-btn.small { height: 28px; padding: 0 10px; }
+  .dg-btn[disabled] { opacity: .6; cursor: default; }
   .dg-empty { padding: 32px; text-align: center; color: var(--uix-text-secondary); }
-  .dg-legacy { margin-top: 28px; }
-  .dg-legacy h2 { font-size: 15px; color: var(--uix-text-head); margin: 0 0 6px; font-weight: 600; }
-  .dg-legacy p { margin: 0 0 10px; font-size: 13px; color: var(--uix-text-secondary); }
-  .dg-link { display: inline-flex; align-items: center; height: var(--uix-control-md); padding: 0 14px; border-radius: var(--uix-radius); border: 1px solid var(--uix-border-strong); background: var(--uix-surface); color: var(--uix-text-body); text-decoration: none; font-size: 14px; }
-  .dg-link:hover { background: var(--uix-surface-muted); }
+  .dg-modal { position: fixed; inset: 0; background: rgba(16,24,40,.45); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+  .dg-modal[hidden] { display: none; }
+  .dg-dialog { background: var(--uix-surface); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-md); width: 100%; max-width: 640px; max-height: 90vh; overflow: auto; }
+  .dg-dialog header { padding: 16px 20px; border-bottom: 1px solid var(--uix-border); }
+  .dg-dialog header h2 { margin: 0; font-size: 16px; color: var(--uix-text-head); font-weight: 600; }
+  .dg-dialog header p { margin: 4px 0 0; font-size: 13px; color: var(--uix-text-secondary); }
+  .dg-dialog .body { padding: 16px 20px; }
+  .dg-dialog footer { padding: 12px 20px; border-top: 1px solid var(--uix-border); display: flex; justify-content: flex-end; gap: 8px; }
+  .dg-field { margin-bottom: 14px; }
+  .dg-field label { display: block; font-size: 13px; color: var(--uix-text-head); font-weight: 500; margin-bottom: 6px; }
+  .dg-field textarea, .dg-field input { width: 100%; box-sizing: border-box; border: 1px solid var(--uix-field-border); border-radius: var(--uix-radius); padding: 8px 10px; font: inherit; font-size: 14px; background: var(--uix-surface); color: var(--uix-text-body); }
+  .dg-field textarea { min-height: 120px; resize: vertical; }
+  .dg-tips { background: var(--uix-surface-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius); padding: 10px 14px; font-size: 13px; line-height: 1.6; }
+  .dg-err { color: #8E1418; font-size: 12px; margin-top: 4px; }
+  .dg-banner { margin-top: 12px; padding: 10px 14px; border-radius: var(--uix-radius); background: #E7F6EC; color: #0E6B33; font-size: 13px; }
+  .dg-banner[hidden] { display: none; }
+  .dg-legacy { margin-top: 28px; font-size: 13px; color: var(--uix-text-secondary); }
+  .dg-link { display: inline-flex; align-items: center; height: var(--uix-control-md); padding: 0 14px; border-radius: var(--uix-radius); border: 1px solid var(--uix-border-strong); background: var(--uix-surface); color: var(--uix-text-body); text-decoration: none; font-size: 14px; margin-top: 8px; }
   @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
 </style>
 </head>
@@ -50,26 +65,22 @@
 <main class="dg-wrap">
   <div class="dg-crumb"><a href="/">Beranda</a> › Katalog data › Business Glossary</div>
   <section class="dg-head">
-    <h1>Business Glossary</h1>
-    <p>Definisi bisnis untuk setiap FIELD_ID. Satu FIELD_ID punya satu definisi yang berlaku di semua tabel yang memakainya.</p>
+    <div>
+      <h1>Business Glossary</h1>
+      <p>Definisi bisnis untuk setiap FIELD_ID. Satu FIELD_ID punya satu definisi yang berlaku di semua tabel yang memakainya.</p>
+    </div>
   </section>
 
-  <section class="dg-card" id="ringkas">
+  <section class="dg-card">
     <div class="dg-progress">
       <div class="dg-stat"><span>Istilah</span><b id="s-total">–</b></div>
       <div class="dg-stat"><span>Sudah ada definisi</span><b id="s-def">–</b><div class="dg-bar"><i id="s-bar" style="width:0%"></i></div></div>
-      <div class="dg-stat"><span>Status lengkap</span><b id="s-lengkap">–</b></div>
-      <div class="dg-stat"><span>Belum dinilai</span><b id="s-todo">–</b></div>
+      <div class="dg-stat"><span>Belum ada definisi</span><b id="s-todo">–</b></div>
     </div>
     <div class="dg-toolbar">
       <input id="q" type="search" placeholder="Cari FIELD_ID, business term, atau definisi…" aria-label="Cari glosarium">
-      <select id="grp" aria-label="Kelompok glosarium"><option value="">Semua kelompok</option></select>
-      <select id="st" aria-label="Status">
-        <option value="">Semua status</option>
-        <option value="Lengkap">Lengkap</option>
-        <option value="Belum tuntas">Belum tuntas</option>
-        <option value="-">Belum dinilai</option>
-      </select>
+      <select id="grp" aria-label="Kelompok"><option value="">Semua kelompok</option></select>
+      <select id="st" aria-label="Status"><option value="">Semua status</option><option value="ada">Sudah ada definisi</option><option value="kosong">Belum ada definisi</option></select>
       <span class="dg-count" id="count"></span>
     </div>
   </section>
@@ -77,76 +88,102 @@
   <section class="dg-card">
     <div class="dg-table-wrap">
       <table>
-        <thead><tr><th>FIELD_ID</th><th>BUSINESS_TERM</th><th>DEFINISI</th><th>Kelompok</th><th>Status</th></tr></thead>
+        <thead><tr><th>FIELD_ID</th><th>BUSINESS_TERM</th><th>DEFINISI</th><th>Dipakai di Data Element</th><th>Status</th><th id="th-aksi" hidden>Aksi</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
       <div class="dg-empty" id="empty" hidden>Tidak ada istilah yang cocok.</div>
     </div>
   </section>
+  <div class="dg-banner" id="banner" hidden></div>
+
+  <div class="dg-modal" id="m-def" hidden role="dialog" aria-modal="true">
+    <div class="dg-dialog">
+      <header><h2>Isi definisi</h2><p id="d-sub"></p></header>
+      <form class="body" id="f" novalidate>
+        <div class="dg-field"><label for="d-text">DEFINISI *</label><textarea id="d-text" maxlength="2000" placeholder="Tulis definisi bisnis istilah ini"></textarea><div class="dg-err" id="d-err" hidden></div></div>
+        <div class="dg-tips"><b>Tips menulis</b><br>Jelaskan arti data ini bagi bisnis, bukan cara menyimpannya.<br>Mulai dengan kata benda, misalnya "Nilai…", "Tanggal…", "Kategori…".<br>Sebutkan satuan, rentang, atau pilihan nilai jika ada.<br>Pakai istilah yang dipahami unit lain, hindari singkatan internal.</div>
+        <div class="dg-field" style="margin-top:14px"><label for="d-alasan">Alasan perubahan</label><input id="d-alasan" maxlength="500" placeholder="Opsional"></div>
+        <div class="dg-err" id="d-srv" hidden></div>
+      </form>
+      <footer><button class="dg-btn ghost" type="button" data-close>Batal</button><button class="dg-btn" type="button" id="d-save">Simpan</button></footer>
+    </div>
+  </div>
 
   <section class="dg-legacy">
-    <h2>Aplikasi Glosarium lama</h2>
-    <p>Pengeditan definisi masih dilakukan di aplikasi Len Data Governance (Glosarium). Halaman ini hanya membaca.</p>
-    <a class="dg-link" href="/glossary">Buka Glosarium di aplikasi lama</a>
+    Pengeditan istilah lain (nama, kelompok, pemilik) masih dilakukan di aplikasi Glosarium lama.
+    <br><a class="dg-link" href="/glossary">Buka Glosarium di aplikasi lama</a>
   </section>
 </main>
 <script src="/_leno/shell.js"></script>
 <script>
 (function () {
-  var all = [], $ = function (id) { return document.getElementById(id); };
+  var all = [], canEdit = false, editing = null;
+  var $ = function (id) { return document.getElementById(id); };
   var rowsEl = $('rows'), q = $('q'), grp = $('grp'), st = $('st'), count = $('count'), empty = $('empty');
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-  function statusChip(s) {
-    if (s === 'Lengkap') return '<span class="dg-chip ok">Lengkap</span>';
-    if (s === 'Belum tuntas') return '<span class="dg-chip draf">Belum tuntas</span>';
-    return '<span class="dg-chip mn">Belum dinilai</span>';
-  }
-  function stKey(r) { return r.status || '-'; }
+  function has(r) { return !!(r.definisi && String(r.definisi).trim()); }
+  function statusChip(r) { return has(r) ? '<span class="dg-chip ok">Sudah ada definisi</span>' : '<span class="dg-chip mn">Belum ada definisi</span>'; }
+  function note(m) { $('banner').textContent = m; $('banner').hidden = !m; }
   function render() {
     var term = q.value.trim().toLowerCase(), g = grp.value, s = st.value;
     var list = all.filter(function (r) {
       if (g && r.glosarium !== g) return false;
-      if (s && stKey(r) !== s) return false;
+      if (s === 'ada' && !has(r)) return false;
+      if (s === 'kosong' && has(r)) return false;
       return !term || [r.field_id, r.business_term, r.definisi].some(function (v) { return v && String(v).toLowerCase().indexOf(term) >= 0; });
     });
     rowsEl.innerHTML = list.map(function (r, i) {
-      var def = r.definisi || '';
-      var short = def.length > 140 ? def.slice(0, 140) + '…' : def;
-      return '<tr class="row" data-i="' + i + '"><td class="id">' + esc(r.field_id) + '</td><td>' + esc(r.business_term) + '</td>' +
-        '<td class="def">' + (def ? esc(short) : '<span class="dg-chip mn">Belum ada definisi</span>') + '</td>' +
-        '<td><span class="dg-chip">' + esc(r.glosarium) + '</span></td><td>' + statusChip(r.status) + '</td></tr>';
+      var def = r.definisi ? esc(String(r.definisi).length > 160 ? String(r.definisi).slice(0, 160) + '…' : r.definisi) : '<span class="dg-chip mn">Belum ada definisi</span>';
+      return '<tr><td class="id">' + esc(r.field_id) + '</td><td>' + esc(r.business_term) + '</td><td class="def">' + def + '</td>' +
+        '<td>' + esc(r.dipakai) + '</td><td>' + statusChip(r) + '</td>' +
+        (canEdit ? '<td class="act"><button class="dg-btn small" type="button" data-isi="' + esc(r.field_id) + '">Isi definisi</button></td>' : '') + '</tr>';
     }).join('');
     empty.hidden = list.length > 0;
     count.textContent = list.length + ' dari ' + all.length + ' istilah';
-    rowsEl._list = list;
   }
   rowsEl.addEventListener('click', function (e) {
-    var tr = e.target.closest('tr.row'); if (!tr) return;
-    var next = tr.nextElementSibling;
-    if (next && next.classList.contains('detail')) { next.remove(); return; }
-    var r = rowsEl._list[+tr.getAttribute('data-i')];
-    var d = document.createElement('tr'); d.className = 'detail';
-    d.innerHTML = '<td colspan="5"><b>Definisi lengkap</b><br>' + esc(r.definisi || 'Belum ada definisi.') +
-      '<br><br><b>Data Owner</b>: ' + esc(r.data_owner || '–') + ' · <b>Data Steward</b>: ' + esc(r.data_steward || '–') +
-      (r.kolom_tertaut != null ? ' · <b>Kolom terkait</b>: ' + r.kolom_tertaut : '') +
-      (r.kekurangan ? '<br><b>Kekurangan</b>: ' + esc(r.kekurangan) : '') + '</td>';
-    tr.after(d);
+    var b = e.target.closest('[data-isi]'); if (!b) return;
+    var r = all.find(function (x) { return x.field_id === b.getAttribute('data-isi'); }); if (!r) return;
+    editing = r;
+    $('d-sub').textContent = r.field_id + ' · ' + (r.business_term || '');
+    $('d-text').value = r.definisi || ''; $('d-alasan').value = ''; $('d-err').hidden = true; $('d-srv').hidden = true;
+    $('m-def').hidden = false; $('d-text').focus();
   });
-  fetch('/_export/glosarium', { credentials: 'same-origin' })
-    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (j) {
-      all = j.rows || [];
-      var n = all.length, def = all.filter(function (r) { return r.definisi; }).length;
-      var lengkap = all.filter(function (r) { return r.status === 'Lengkap'; }).length;
-      var todo = all.filter(function (r) { return !r.status; }).length;
-      $('s-total').textContent = n; $('s-def').textContent = def + ' dari ' + n;
-      $('s-bar').style.width = (n ? Math.round(def * 100 / n) : 0) + '%';
-      $('s-lengkap').textContent = lengkap; $('s-todo').textContent = todo;
-      var gs = Array.from(new Set(all.map(function (r) { return r.glosarium; }).filter(Boolean))).sort();
-      grp.insertAdjacentHTML('beforeend', gs.map(function (v) { return '<option>' + esc(v) + '</option>'; }).join(''));
-      render();
-    })
-    .catch(function () { count.textContent = ''; empty.hidden = false; empty.textContent = 'Data belum dapat dimuat. Coba lagi sebentar.'; });
+  document.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', function () { $('m-def').hidden = true; }); });
+  $('d-save').addEventListener('click', function () {
+    var txt = $('d-text').value.trim();
+    if (txt.length < 10) { $('d-err').textContent = 'Tulis minimal satu kalimat yang jelas.'; $('d-err').hidden = false; return; }
+    var btn = $('d-save'); btn.disabled = true;
+    fetch('/_export/glosarium', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ field_id: editing.field_id, definisi: txt, alasan: $('d-alasan').value.trim() }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, body: j }; }); })
+      .then(function (res) {
+        btn.disabled = false;
+        if (!res.ok) { $('d-srv').textContent = res.body.error || 'Definisi belum dapat disimpan.'; $('d-srv').hidden = false; return; }
+        $('m-def').hidden = true; note('Definisi ' + editing.field_id + ' tersimpan.'); load();
+      })
+      .catch(function () { btn.disabled = false; $('d-srv').textContent = 'Jaringan terputus. Coba lagi.'; $('d-srv').hidden = false; });
+  });
+  function stats() {
+    var n = all.length, ada = all.filter(has).length;
+    $('s-total').textContent = n; $('s-def').textContent = ada + ' dari ' + n;
+    $('s-bar').style.width = (n ? Math.round(ada * 100 / n) : 0) + '%';
+    $('s-todo').textContent = n - ada;
+  }
+  function load() {
+    return fetch('/_export/glosarium', { credentials: 'same-origin' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (j) {
+        all = j.rows || [];
+        var gs = Array.from(new Set(all.map(function (r) { return r.glosarium; }).filter(Boolean))).sort();
+        grp.innerHTML = '<option value="">Semua kelompok</option>' + gs.map(function (v) { return '<option>' + esc(v) + '</option>'; }).join('');
+        stats(); render();
+      })
+      .catch(function () { count.textContent = ''; empty.hidden = false; empty.textContent = 'Data belum dapat dimuat. Coba lagi sebentar.'; });
+  }
+  fetch('/_export/whoami', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) {
+    canEdit = !!j.bisa_ubah; $('th-aksi').hidden = !canEdit; load();
+  });
   q.addEventListener('input', render); grp.addEventListener('change', render); st.addEventListener('change', render);
 })();
 </script>

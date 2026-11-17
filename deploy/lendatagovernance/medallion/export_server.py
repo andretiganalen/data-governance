@@ -88,62 +88,25 @@ def master_organisasi() -> list[dict]:
 
 
 def glosarium() -> dict:
-    """Istilah Glosarium (gold_meta_glossary_app) + status kelengkapan (gold_meta_glossary_status). Hanya dibaca dari Trino."""
+    """Business Glossary: gold_meta_glossary_app (+ definisi dari aplikasi) + jumlah pemakaian di Data Element. Hanya dibaca dari Trino."""
+    import app_glosarium as AG
     tq = X.Trino()
-    cols = ["a.field_id", "a.business_term", "a.definisi", "a.glosarium", "a.data_owner", "a.data_steward", "a.diubah_pada",
-            "a.sumber_perubahan", "s.status", "s.kolom_tertaut", "s.kekurangan"]
-    sql = (f"SELECT {', '.join(cols)} FROM {tq.fq('gold_meta_glossary_app')} a "
-           f"LEFT JOIN {tq.fq('gold_meta_glossary_status')} s ON a.field_id = s.field_id ORDER BY a.glosarium, a.business_term")
-    keys = [c.split(".")[1] for c in cols]
+    cols = ["field_id", "business_term", "definisi", "glosarium", "data_owner", "data_steward", "diubah_pada", "sumber_perubahan"]
+    base = {r[0]: dict(zip(cols, [None if v is None else str(v) for v in r])) for r in tq.q(
+        f"SELECT field_id, business_term, definisi, glosarium, data_owner, data_steward, diubah_pada, sumber_perubahan "
+        f"FROM {tq.fq('gold_meta_glossary_app')}")}
+    status = {r[0]: str(r[1]) for r in tq.q(f"SELECT field_id, status FROM {tq.fq('gold_meta_glossary_status')}")}
+    dipakai = {r[0]: int(r[1]) for r in tq.q(f"SELECT field_id, count(*) FROM {tq.fq('silver_dim_meta_field')} GROUP BY 1")}
+    app = AG.latest_app(tq)
     rows = []
-    for r in tq.q(sql):
-        d = dict(zip(keys, [None if v is None else str(v) for v in r]))
-        d["kolom_tertaut"] = int(float(d["kolom_tertaut"])) if d["kolom_tertaut"] not in (None, "") else None
-        rows.append(d)
-    return {"rows": rows}
-
-
-def sistem() -> dict:
-    """Master Sistem: silver_dim_meta_system + perubahan aplikasi (app_sistem). Nilai kosong tetap kosong."""
-    import app_sistem as AS
-    return {"rows": AS.merged(X.Trino())}
-
-
-def dataset() -> dict:
-    """Business Dataset: silver_dim_meta_dataset + perubahan aplikasi (app_dataset). Nilai kosong tetap kosong."""
-    import app_dataset as AD
-    return {"rows": AD.merged(X.Trino())}
-
-
-def objek() -> dict:
-    """Database Object (silver_dim_meta_table + perubahan app_objek) + kolomnya (silver_dim_meta_field). Hanya dibaca dari Trino."""
-    tq = X.Trino()
-    tcols = ["table_id", "dataset_id", "dataset_name", "table_name", "object_type", "database_name", "object_owner", "row_count",
-             "sensitive_data_flag", "critical_data_flag", "source_system"]
-    fcols = ["field_id", "table_id", "column_name", "business_term", "data_type", "pk_flag", "fk_flag", "nullable_flag",
-             "sensitive_flag", "metadata_status"]
-    import app_objek as AO
-    tables = AO.merged(tq)
-    fields = [dict(zip(fcols, [None if v is None else str(v) for v in r]))
-              for r in tq.q(f"SELECT {', '.join(fcols)} FROM {tq.fq('silver_dim_meta_field')} ORDER BY table_id, field_id")]
-    return {"rows": tables, "fields": fields}
-
-
-DAFTAR = {   # kunci → (sumber Trino, kolom)  — baca saja
-    "elemen": ("silver_dim_meta_field", ["field_id", "table_name", "column_name", "business_term", "data_type", "pk_flag", "sensitive_flag", "metadata_status"]),
-    "assignment": ("silver_dim_meta_governance_assignment", ["field_id", "field_name", "business_term", "role", "org_id", "unit_kerja", "role_status"]),
-    "kualitas": ("silver_dim_meta_dq_rule", ["dq_rule_id", "field_id", "business_term", "rule", "validation", "dq_dimension", "pass_fail", "check_date"]),
-    "lineage": ("gold_meta_lineage", ["lineage_id", "system_name", "dataset_name", "table_name", "column_name", "field_id", "business_term", "target_label", "asset_type"]),
-    "akses": ("gold_meta_access_matrix", ["access_id", "screen_label", "column_name", "field_id", "org_id", "unit_kerja", "classification", "permission_category", "permission_type"]),
-}
-
-
-def daftar(key: str) -> dict:
-    """Daftar baca saja untuk layar Katalog/Tata kelola. Nilai kosong tetap kosong. Hanya dibaca dari Trino."""
-    tbl, cols = DAFTAR[key]
-    tq = X.Trino()
-    rows = [dict(zip(cols, [None if v is None else str(v) for v in r])) for r in tq.q(f"SELECT {', '.join(cols)} FROM {tq.fq(tbl)}")]
-    return {"rows": rows, "kolom": cols}
+    for fid, r in base.items():
+        a = app.get(fid)
+        d = (a["definisi"] if a and a["aksi"] == "isi" else r["definisi"]) or None
+        rows.append({"field_id": fid, "business_term": r["business_term"], "definisi": d, "glosarium": r["glosarium"],
+                     "data_owner": r["data_owner"], "data_steward": r["data_steward"], "status": status.get(fid),
+                     "dipakai": dipakai.get(fid, 0), "sumber_perubahan": "Aplikasi" if a else r["sumber_perubahan"],
+                     "diubah_oleh": a["oleh"] if a else None, "diubah_pada": a["diubah_pada"] if a else r["diubah_pada"]})
+    return {"rows": sorted(rows, key=lambda x: (x["glosarium"] or "", x["business_term"] or ""))}
 
 
 def can_edit(user: dict) -> bool:
@@ -251,6 +214,24 @@ class H(BaseHTTPRequestHandler):
         except ValueError:
             return {}
 
+    def _glosarium_write(self, user: dict):
+        import app_glosarium as AG
+        if not can_edit(user):
+            return self._json(403, {"error": "Hanya Admin Data Governance yang dapat mengisi definisi glosarium."})
+        body = self._body()
+        try:
+            tq = X.Trino()
+            current = {r[0] for r in tq.q(f"SELECT field_id FROM {tq.fq('gold_meta_glossary_app')}")}
+            fid, galat = AG.validate(body.get("field_id"), body.get("definisi"), current)
+            if galat:
+                return self._json(400, {"error": galat})
+            row = AG.append(tq, fid, body.get("definisi"), user.get("name") or "pengguna", body.get("alasan"))
+            log("glosarium-definisi", fid, "oleh", user.get("name"))
+            self._json(200, {"ok": True, "field_id": fid, "diubah_pada": row["diubah_pada"]})
+        except Exception as e:  # noqa: BLE001
+            log("galat glosarium", repr(e)[:200])
+            self._json(500, {"error": "Definisi belum dapat disimpan. Coba lagi sebentar."})
+
     def _objek_write(self, user: dict):
         import app_objek as AO
         import app_dataset as AD
@@ -331,7 +312,7 @@ class H(BaseHTTPRequestHandler):
 
     def do_POST(self):  # noqa: N802
         path = self.path.split("?")[0]
-        if path not in ("/_export/fungsi-pdf", "/_export/master-organisasi", "/_export/sistem", "/_export/dataset", "/_export/objek"):
+        if path not in ("/_export/fungsi-pdf", "/_export/master-organisasi", "/_export/sistem", "/_export/dataset", "/_export/objek", "/_export/glosarium"):
             return self._json(404, {"error": "tidak ditemukan"})
         auth = self.headers.get("Authorization", "")
         if not auth.startswith("Bearer "):
@@ -348,6 +329,8 @@ class H(BaseHTTPRequestHandler):
             return self._dataset_write(user)
         if path == "/_export/objek":
             return self._objek_write(user)
+        if path == "/_export/glosarium":
+            return self._glosarium_write(user)
         try:
             a = access(user)
             if not (a["allowed"] and a["orgs"] is None):
