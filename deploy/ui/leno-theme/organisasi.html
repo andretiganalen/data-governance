@@ -70,12 +70,21 @@
 .dg-legend-in { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--uix-text-secondary); padding: 12px 20px; border-bottom: 1px solid var(--uix-border); background: var(--uix-surface-subtle); }
   .dg-legend-in b { color: var(--uix-text-head); font-weight: 600; }
 .dg-guide { font-size: 12px; color: var(--uix-text-secondary); padding: 8px 20px 0; }
+  .dg-toolbar-top { display: flex; flex-wrap: nowrap; align-items: center; gap: 12px; margin: 0 0 16px; padding: 0; border: 0; }
+  .dg-toolbar-top input { flex: 1 1 auto; min-width: 200px; height: var(--uix-control-md); }
+  .dg-toolbar-top select { flex: 0 0 auto; width: auto; min-width: 180px; height: var(--uix-control-md); }
+  .dg-toolbar-top .dg-count { margin-left: auto; white-space: nowrap; }
   @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
 </style>
 </head>
 <body>
 <main class="dg-wrap">
   <div class="dg-crumb"><a href="/">Beranda</a> › Master data › Organisasi</div>
+<div class="dg-toolbar dg-toolbar-top">
+      <input class="ant-input" id="q" type="search" placeholder="Cari unit kerja, fungsi, divisi…" aria-label="Cari unit kerja">
+      <select id="dir" aria-label="Direktorat"><option value="">Semua direktorat</option></select>
+      <span class="dg-count" id="count"></span>
+    </div>
   <section class="dg-head">
     <div>
       <h1>Master Organisasi</h1>
@@ -113,11 +122,7 @@
   </div>
 </div>
   <section class="ant-card" style="margin-top:20px"><div class="ant-card-body" style="padding:0">
-    <div class="dg-toolbar">
-      <input class="ant-input" id="q" type="search" placeholder="Cari unit kerja, fungsi, divisi…" aria-label="Cari unit kerja">
-      <select id="dir" aria-label="Direktorat"><option value="">Semua direktorat</option></select>
-      <span class="dg-count" id="count"></span>
-    </div>
+    
     <div class="ant-table-wrapper"><div class="ant-table"><div class="ant-table-container"><div class="ant-table-content">
       <table>
         <thead class="ant-table-thead">

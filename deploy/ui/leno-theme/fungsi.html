@@ -25,19 +25,24 @@
   .dg-btn { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: var(--uix-radius); background: var(--uix-primary); color: var(--uix-on-primary); text-decoration: none; font-size: 13px; }
   .dg-btn:hover { background: var(--uix-primary-strong); }
   .dg-empty { padding: 32px; text-align: center; color: var(--uix-text-secondary); }
+  .dg-toolbar-top { display: flex; flex-wrap: nowrap; align-items: center; gap: 12px; margin: 0 0 16px; padding: 0; border: 0; }
+  .dg-toolbar-top input { flex: 1 1 auto; min-width: 200px; height: var(--uix-control-md); }
+  .dg-toolbar-top select { flex: 0 0 auto; width: auto; min-width: 180px; height: var(--uix-control-md); }
+  .dg-toolbar-top .dg-count { margin-left: auto; white-space: nowrap; }
   @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
 </style>
 </head>
 <body>
 <main class="dg-wrap">
   <div class="dg-crumb"><a href="/">Beranda</a> › Master data › Fungsi</div>
-  <section class="dg-head"><h1>Fungsi</h1></section>
-  <p class="dg-src">Dasar: CLP-001 rev.01 (28 Februari 2024) dan Nota 021/N/UQ/VIII/2026 (24 Agustus 2026). Fungsi dipilih sebelum mengisi Organisasi.</p>
-  <section class="dg-card">
-    <div class="dg-toolbar">
+<div class="dg-toolbar dg-toolbar-top">
       <input id="q" type="search" placeholder="Cari fungsi atau divisi…" aria-label="Cari fungsi">
       <span class="dg-count" id="count"></span>
     </div>
+  <section class="dg-head"><h1>Fungsi</h1></section>
+  <p class="dg-src">Dasar: CLP-001 rev.01 (28 Februari 2024) dan Nota 021/N/UQ/VIII/2026 (24 Agustus 2026). Fungsi dipilih sebelum mengisi Organisasi.</p>
+  <section class="dg-card">
+    
     <div class="dg-table-wrap">
       <table>
         <thead><tr><th>Fungsi</th><th>Eselon 1 (Divisi)</th><th>Dasar dokumen</th><th>Istilah</th><th>Tabel</th><th></th></tr></thead>

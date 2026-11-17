@@ -26,18 +26,23 @@
   .dg-chip.mn { background: #FCE8E9; color: #8E1418; }
   .dg-empty { padding: 32px; text-align: center; color: var(--uix-text-secondary); }
   .dg-note { margin-top: 12px; font-size: 12px; color: var(--uix-text-muted); }
+  .dg-toolbar-top { display: flex; flex-wrap: nowrap; align-items: center; gap: 12px; margin: 0 0 16px; padding: 0; border: 0; }
+  .dg-toolbar-top input { flex: 1 1 auto; min-width: 200px; height: var(--uix-control-md); }
+  .dg-toolbar-top select { flex: 0 0 auto; width: auto; min-width: 180px; height: var(--uix-control-md); }
+  .dg-toolbar-top .dg-count { margin-left: auto; white-space: nowrap; }
   @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
 </style>
 </head>
 <body>
 <main class="dg-wrap">
   <div class="dg-crumb" id="crumb"></div>
-  <section class="dg-head"><h1 id="judul"></h1><p id="ket"></p></section>
-  <section class="dg-card">
-    <div class="dg-toolbar">
+<div class="dg-toolbar dg-toolbar-top">
       <input id="q" type="search" placeholder="Cari…" aria-label="Cari">
       <span class="dg-count" id="count"></span>
     </div>
+  <section class="dg-head"><h1 id="judul"></h1><p id="ket"></p></section>
+  <section class="dg-card">
+    
     <div class="dg-table-wrap">
       <table><thead id="thead"></thead><tbody id="rows"></tbody></table>
       <div class="dg-empty" id="empty" hidden></div>

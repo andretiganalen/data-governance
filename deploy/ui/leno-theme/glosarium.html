@@ -60,12 +60,22 @@
 .dg-legend-in { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--uix-text-secondary); padding: 12px 20px; border-bottom: 1px solid var(--uix-border); background: var(--uix-surface-subtle); }
   .dg-legend-in b { color: var(--uix-text-head); font-weight: 600; }
 .dg-guide { font-size: 12px; color: var(--uix-text-secondary); padding: 8px 20px 0; }
+  .dg-toolbar-top { display: flex; flex-wrap: nowrap; align-items: center; gap: 12px; margin: 0 0 16px; padding: 0; border: 0; }
+  .dg-toolbar-top input { flex: 1 1 auto; min-width: 200px; height: var(--uix-control-md); }
+  .dg-toolbar-top select { flex: 0 0 auto; width: auto; min-width: 180px; height: var(--uix-control-md); }
+  .dg-toolbar-top .dg-count { margin-left: auto; white-space: nowrap; }
   @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
 </style>
 </head>
 <body>
 <main class="dg-wrap">
   <div class="dg-crumb"><a href="/">Beranda</a> › Katalog data › Business Glossary</div>
+<div class="dg-toolbar dg-toolbar-top">
+      <input class="ant-input" id="q" type="search" placeholder="Cari FIELD_ID, business term, atau definisi…" aria-label="Cari glosarium">
+      <select id="grp" aria-label="Kelompok"><option value="">Semua kelompok</option></select>
+      <select id="st" aria-label="Status"><option value="">Semua status</option><option value="ada">Sudah ada definisi</option><option value="kosong">Belum ada definisi</option></select>
+      <span class="dg-count" id="count"></span>
+    </div>
   <section class="dg-head">
     <div>
       <h1>Business Glossary</h1>
@@ -79,12 +89,7 @@
       <div class="dg-stat"><span>Sudah ada definisi</span><b id="s-def">–</b><div class="dg-bar"><i id="s-bar" style="width:0%"></i></div></div>
       <div class="dg-stat"><span>Belum ada definisi</span><b id="s-todo">–</b></div>
     </div>
-    <div class="dg-toolbar">
-      <input class="ant-input" id="q" type="search" placeholder="Cari FIELD_ID, business term, atau definisi…" aria-label="Cari glosarium">
-      <select id="grp" aria-label="Kelompok"><option value="">Semua kelompok</option></select>
-      <select id="st" aria-label="Status"><option value="">Semua status</option><option value="ada">Sudah ada definisi</option><option value="kosong">Belum ada definisi</option></select>
-      <span class="dg-count" id="count"></span>
-    </div>
+    
   </section>
 
   <div class="dg-inline" id="m-def" hidden>
