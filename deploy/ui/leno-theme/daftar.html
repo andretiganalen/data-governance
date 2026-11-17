@@ -30,6 +30,15 @@
   .dg-toolbar-top input { flex: 1 1 auto; min-width: 200px; height: var(--uix-control-md); }
   .dg-toolbar-top select { flex: 0 1 auto; width: auto; min-width: 150px; height: var(--uix-control-md); }
   .dg-toolbar-top .dg-count { margin-left: auto; white-space: nowrap; }
+  .dg-add { margin: 0 0 12px; padding: 16px 20px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; }
+  .dg-add form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0 16px; }
+  .dg-add label { display: block; font-size: 13px; font-weight: 500; color: #101828; margin-bottom: 4px; }
+  .dg-add .f { margin-bottom: 12px; }
+  .dg-add input, .dg-add select { width: 100%; box-sizing: border-box; height: 34px; border: 1px solid #99a1af; border-radius: 8px; padding: 0 10px; font: inherit; font-size: 14px; }
+  .dg-add .wide { grid-column: 1 / -1; }
+  .dg-add .err { color: #8E1418; font-size: 12px; min-height: 14px; }
+  .dg-add footer { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; }
+  .dg-add[hidden] { display: none; }
   @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
 </style>
 </head>
@@ -41,6 +50,7 @@
       <span class="dg-count" id="count"></span>
     </div>
   <section class="dg-head"><h1 id="judul"></h1><p id="ket"></p></section>
+  <div class="dg-add" id="add" hidden><form id="af" novalidate><div class="f"><label for="a-tbl">TABLE_ID (Objek) <span class="dg-chip">Otomatis dari DB</span></label><select id="a-tbl"></select><div class="err" id="e-tbl"></div></div><div class="f"><label for="a-col">Nama kolom <span class="dg-chip manual">Manual</span></label><input id="a-col" maxlength="200"><div class="err" id="e-col"></div></div><div class="f"><label for="a-bt">Business term <span class="dg-chip">Otomatis dari master</span></label><select id="a-bt"></select></div><div class="f"><label for="a-dt">Tipe data <span class="dg-chip manual">Manual</span></label><input id="a-dt" maxlength="200" placeholder="contoh Text, Enum, Number"><div class="err" id="e-dt"></div></div><div class="f wide"><label for="a-al">Alasan perubahan</label><input id="a-al" maxlength="500"></div><footer><button class="ant-btn ant-btn-default" type="button" id="a-cancel"><span>Batal</span></button><button class="ant-btn ant-btn-primary" type="button" id="a-save"><span>Simpan</span></button></footer><div class="err wide" id="e-srv"></div></form></div>
   <section class="dg-card">
     
     <div class="dg-table-wrap">
@@ -88,6 +98,37 @@
       render();
     })
     .catch(function () { document.getElementById('empty').hidden = false; document.getElementById('empty').textContent = 'Data belum dapat dimuat. Coba lagi sebentar.'; });
+
+  /* Tambah Data Element (hanya admin/UV-1): form di atas tabel, TABLE_ID dari Objek, business term dari Glosarium. */
+  if (c.key === 'elemen') {
+    var addBtn = document.createElement('button');
+    addBtn.id = 'a-open'; addBtn.type = 'button'; addBtn.className = 'ant-btn ant-btn-primary'; addBtn.hidden = true;
+    addBtn.innerHTML = '<span>Tambah Data Element</span>';
+    var bar = document.querySelector('.dg-toolbar-top'); if (bar) bar.appendChild(addBtn);
+    var A = function (id) { return document.getElementById(id); };
+    addBtn.addEventListener('click', function () { A('add').hidden = false; A('af').reset(); A('e-srv').textContent = ''; A('a-col').focus(); });
+    A('a-cancel').addEventListener('click', function () { A('add').hidden = true; });
+    fetch('/_export/whoami', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) { addBtn.hidden = !j.bisa_ubah; });
+    Promise.all([fetch('/_export/objek', { credentials: 'same-origin' }).then(function (r) { return r.json(); }),
+                 fetch('/_export/glosarium', { credentials: 'same-origin' }).then(function (r) { return r.json(); })]).then(function (x) {
+      A('a-tbl').innerHTML = '<option value="">Pilih tabel</option>' + x[0].rows.map(function (r) { return '<option value="' + r.table_id + '">' + r.table_id + ' · ' + (r.table_name || '') + '</option>'; }).join('');
+      A('a-bt').innerHTML = '<option value="">(tanpa business term)</option>' + x[1].rows.filter(function (r) { return r.business_term; }).map(function (r) { return '<option>' + r.business_term + '</option>'; }).join('');
+    });
+    A('a-save').addEventListener('click', function () {
+      var body = { table_id: A('a-tbl').value, column_name: A('a-col').value.trim(), business_term: A('a-bt').value, data_type: A('a-dt').value.trim(), alasan: A('a-al').value.trim() };
+      A('e-tbl').textContent = body.table_id ? '' : 'Pilih TABLE_ID.';
+      A('e-col').textContent = body.column_name ? '' : 'Nama kolom wajib diisi.';
+      A('e-dt').textContent = body.data_type ? '' : 'Tipe data wajib diisi.';
+      if (!body.table_id || !body.column_name || !body.data_type) return;
+      fetch('/_export/elemen', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, j: j }; }); })
+        .then(function (res) {
+          if (!res.ok) { A('e-srv').textContent = res.j.error || 'Belum dapat disimpan.'; return; }
+          A('add').hidden = true; A('e-srv').textContent = '';
+          location.reload();
+        });
+    });
+  }
   q.addEventListener('input', render);
 })();
 </script>
