@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fungsi · Data Governance</title>
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="/_leno/leno.css">
+<style>
+  body { margin: 0; background: var(--uix-surface-page); color: var(--uix-text-body); font-family: var(--uix-font); }
+  .dg-wrap { max-width: none; margin: 0 auto; padding: 24px 16px 48px; }
+  .dg-crumb { font-size: 13px; color: var(--uix-text-secondary); margin-bottom: 12px; }
+  .dg-crumb a { color: inherit; }
+  .dg-head h1 { margin: 0 0 4px; font-size: 22px; color: var(--uix-text-head); font-weight: 600; }
+  .dg-src { margin: 0 0 12px; font-size: 12px; color: var(--uix-text-muted); }
+  .dg-card { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-xs); margin-top: 16px; }
+  .dg-toolbar { display: flex; gap: 12px; padding: 16px; flex-wrap: wrap; align-items: center; border-bottom: 1px solid var(--uix-border); }
+  .dg-toolbar input { height: var(--uix-control-md); border: 1px solid var(--uix-field-border); border-radius: var(--uix-radius); padding: 0 10px; font: inherit; font-size: 14px; background: var(--uix-surface); color: var(--uix-text-body); min-width: 240px; flex: 1; }
+  .dg-count { margin-left: auto; font-size: 13px; color: var(--uix-text-secondary); }
+  .dg-table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--uix-border-subtle); vertical-align: top; }
+  th { color: var(--uix-text-secondary); font-weight: 600; background: var(--uix-surface-subtle); white-space: nowrap; }
+  td.act { text-align: right; white-space: nowrap; }
+  .dg-btn { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: var(--uix-radius); background: var(--uix-primary); color: var(--uix-on-primary); text-decoration: none; font-size: 13px; }
+  .dg-btn:hover { background: var(--uix-primary-strong); }
+  .dg-empty { padding: 32px; text-align: center; color: var(--uix-text-secondary); }
+  @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
+</style>
+</head>
+<body>
+<main class="dg-wrap">
+  <div class="dg-crumb"><a href="/">Beranda</a> › Master data › Fungsi</div>
+  <section class="dg-head"><h1>Fungsi</h1></section>
+  <p class="dg-src">Dasar: CLP-001 rev.01 (28 Februari 2024) dan Nota 021/N/UQ/VIII/2026 (24 Agustus 2026). Fungsi dipilih sebelum mengisi Organisasi.</p>
+  <section class="dg-card">
+    <div class="dg-toolbar">
+      <input id="q" type="search" placeholder="Cari fungsi atau divisi…" aria-label="Cari fungsi">
+      <span class="dg-count" id="count"></span>
+    </div>
+    <div class="dg-table-wrap">
+      <table>
+        <thead><tr><th>Fungsi</th><th>Eselon 1 (Divisi)</th><th>Dasar dokumen</th><th>Istilah</th><th>Tabel</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="dg-empty" id="empty" hidden>Tidak ada fungsi yang cocok.</div>
+    </div>
+  </section>
+</main>
+<script src="/_leno/shell.js"></script>
+<script>
+(function () {
+  var all = [], q = document.getElementById('q'), rowsEl = document.getElementById('rows');
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function render() {
+    var t = q.value.trim().toLowerCase();
+    var list = all.filter(function (r) { return !t || [r.fungsi, r.eselon1].some(function (v) { return v && String(v).toLowerCase().indexOf(t) >= 0; }); });
+    rowsEl.innerHTML = list.map(function (r) {
+      return '<tr><td>' + esc(r.fungsi) + '</td><td>' + esc(r.eselon1 || '–') + '</td><td>' + esc(r.dasar) + '</td><td>' + esc(r.jumlah_istilah) + '</td><td>' + esc(r.jumlah_tabel) + '</td>' +
+        '<td class="act"><a class="dg-btn" href="/organisasi/?fungsi=' + encodeURIComponent(r.fungsi) + '">Pilih</a></td></tr>';
+    }).join('');
+    document.getElementById('empty').hidden = list.length > 0;
+    document.getElementById('count').textContent = list.length + ' dari ' + all.length + ' fungsi';
+  }
+  fetch('/_export/fungsi', { credentials: 'same-origin' })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (j) { all = j.rows || []; render(); })
+    .catch(function () { document.getElementById('empty').hidden = false; document.getElementById('empty').textContent = 'Data belum dapat dimuat. Coba lagi sebentar.'; });
+  q.addEventListener('input', render);
+})();
+</script>
+</body>
+</html>

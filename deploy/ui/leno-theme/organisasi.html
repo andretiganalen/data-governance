@@ -160,6 +160,7 @@
 <script src="/_leno/shell.js"></script>
 <script>
 (function () {
+  var FUNGSI = new URLSearchParams(location.search).get('fungsi') || '';
   var all = [], canEdit = false, editing = null, hapusId = null, FUNGSI_BARU = '__baru__';
   var $ = function (id) { return document.getElementById(id); };
   var rowsEl = $('rows'), q = $('q'), dir = $('dir'), count = $('count'), empty = $('empty'), banner = $('banner');
@@ -172,6 +173,7 @@
     var term = q.value.trim().toLowerCase(), d = dir.value;
     var list = all.filter(function (r) {
       if (d && r.direktorat !== d) return false;
+      if (FUNGSI && r.fungsi !== FUNGSI) return false;
       return !term || [r.org_id, r.fungsi, r.unit_kerja, r.divisi, r.direktorat].some(function (v) { return v && String(v).toLowerCase().indexOf(term) >= 0; });
     });
     rowsEl.innerHTML = list.map(function (r) {
@@ -184,7 +186,7 @@
         '<td><span class="dg-chip">' + (r.sumber === 'Aplikasi' ? 'Aplikasi' : 'Database') + '</span></td>' + act + '</tr>';
     }).join('');
     empty.hidden = list.length > 0;
-    count.textContent = list.length + ' dari ' + all.length + ' unit kerja';
+    count.textContent = list.length + ' dari ' + all.length + ' unit kerja' + (FUNGSI ? ' · Fungsi: ' + FUNGSI : '');
   }
 
   function fillLists() {

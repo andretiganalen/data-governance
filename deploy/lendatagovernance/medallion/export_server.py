@@ -125,6 +125,17 @@ def uicss() -> dict:
     return {"css": css}
 
 
+def fungsi() -> dict:
+    """Fungsi (gold_meta_fungsi). Dasar dokumen ditentukan per baris: Nota 021 bila deskripsi menyebutnya, selain itu CLP-001. Hanya dibaca dari Trino."""
+    tq = X.Trino()
+    rows = []
+    for r in tq.q(f"SELECT team_name, fungsi, eselon1, deskripsi, jumlah_istilah_dimiliki, jumlah_tabel_dimiliki FROM {tq.fq('gold_meta_fungsi')} ORDER BY fungsi"):
+        team, nama, eselon, desk, istilah, tabel = [None if v is None else str(v) for v in r]
+        dasar = "Nota 021/N/UQ/VIII/2026 (24 Agustus 2026)" if desk and "Nota 021" in desk else "CLP-001 rev.01 (28 Februari 2024)"
+        rows.append({"team_name": team, "fungsi": nama, "eselon1": eselon, "dasar": dasar, "jumlah_istilah": istilah, "jumlah_tabel": tabel})
+    return {"rows": rows}
+
+
 def can_edit(user: dict) -> bool:
     """Tulis Master Organisasi: isAdmin atau tim UV-1 (Admin Data Governance)."""
     return bool(user.get("isAdmin")) or any(t.get("name") == STAFF for t in (user.get("teams") or []))
@@ -172,6 +183,8 @@ class H(BaseHTTPRequestHandler):
             if path == "/_export/whoami":   # nama untuk kerangka halaman (tanpa data lain)
                 nama = user.get("displayName") or user.get("name") or ""
                 return self._json(200, {"nama": nama, "bisa_ubah": can_edit(user)})
+            if path == "/_export/fungsi":   # baca saja
+                return self._json(200, fungsi())
             if path == "/_export/uicss":   # berkas CSS aplikasi untuk halaman kita (gaya UIx asli)
                 return self._json(200, uicss())
             if path.startswith("/_export/daftar/"):   # baca saja

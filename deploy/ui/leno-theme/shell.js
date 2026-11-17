@@ -5,6 +5,7 @@
   var NAV = [
     { title: null, items: [{ label: 'Beranda', href: '/' }] },
     { title: 'Master data', items: [
+      { label: 'Fungsi', href: '/fungsi/' },
       { label: 'Organisasi', href: '/organisasi/' },
       { label: 'Sistem', href: '/sistem/' }] },
     { title: 'Katalog data', items: [
