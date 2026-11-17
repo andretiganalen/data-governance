@@ -176,6 +176,14 @@ def daftar(key: str) -> dict:
     tbl, cols = DAFTAR[key]
     tq = X.Trino()
     rows = [dict(zip(cols, [None if v is None else str(v) for v in r])) for r in tq.q(f"SELECT {', '.join(cols)} FROM {tq.fq(tbl)}")]
+    if key == "elemen":   # tambahan dari aplikasi (app_elemen)
+        import app_elemen as AE
+        import app_objek as AO
+        nama_tabel = {r["table_id"]: r.get("table_name") for r in AO.merged(tq)}
+        for a in AE.added(tq):
+            rows.append({"field_id": a["field_id"], "table_name": None, "column_name": a["column_name"], "business_term": a["business_term"],
+                         "data_type": a["data_type"], "pk_flag": None, "sensitive_flag": None, "metadata_status": "Perlu dilengkapi"})
+            rows[-1]["table_name"] = nama_tabel.get(a["table_id"]) or a["table_id"]
     return {"rows": rows, "kolom": cols}
 
 
@@ -306,6 +314,26 @@ class H(BaseHTTPRequestHandler):
             log("galat glosarium", repr(e)[:200])
             self._json(500, {"error": "Definisi belum dapat disimpan. Coba lagi sebentar."})
 
+    def _elemen_write(self, user: dict):
+        import app_elemen as AE
+        if not can_edit(user):
+            return self._json(403, {"error": "Hanya Admin Data Governance yang dapat menambah Data Element."})
+        body = self._body()
+        try:
+            tq = X.Trino()
+            import app_objek as AO
+            tables = {r["table_id"] for r in AO.merged(tq)}
+            terms = {r[0] for r in tq.q(f"SELECT business_term FROM {tq.fq('gold_meta_glossary_app')}")}
+            galat = AE.validate(tq, body, tables, terms)
+            if galat:
+                return self._json(400, {"error": galat})
+            row = AE.append(tq, body, user.get("name") or "pengguna", body.get("alasan"))
+            log("data-element", row["field_id"], "oleh", user.get("name"))
+            self._json(200, {"ok": True, "field_id": row["field_id"], "diubah_pada": row["diubah_pada"]})
+        except Exception as e:  # noqa: BLE001
+            log("galat data-element", repr(e)[:200])
+            self._json(500, {"error": "Data Element belum dapat disimpan. Coba lagi sebentar."})
+
     def _objek_write(self, user: dict):
         import app_objek as AO
         import app_dataset as AD
@@ -386,7 +414,7 @@ class H(BaseHTTPRequestHandler):
 
     def do_POST(self):  # noqa: N802
         path = self.path.split("?")[0]
-        if path not in ("/_export/fungsi-pdf", "/_export/master-organisasi", "/_export/sistem", "/_export/dataset", "/_export/objek", "/_export/glosarium"):
+        if path not in ("/_export/fungsi-pdf", "/_export/master-organisasi", "/_export/sistem", "/_export/dataset", "/_export/objek", "/_export/glosarium", "/_export/elemen"):
             return self._json(404, {"error": "tidak ditemukan"})
         auth = self.headers.get("Authorization", "")
         if not auth.startswith("Bearer "):
@@ -403,6 +431,8 @@ class H(BaseHTTPRequestHandler):
             return self._dataset_write(user)
         if path == "/_export/objek":
             return self._objek_write(user)
+        if path == "/_export/elemen":
+            return self._elemen_write(user)
         if path == "/_export/glosarium":
             return self._glosarium_write(user)
         try:
