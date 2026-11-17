@@ -116,14 +116,14 @@ def dataset() -> dict:
 
 
 def objek() -> dict:
-    """Database Object (silver_dim_meta_table) + kolomnya (silver_dim_meta_field). Nilai kosong tetap kosong. Hanya dibaca dari Trino."""
+    """Database Object (silver_dim_meta_table + perubahan app_objek) + kolomnya (silver_dim_meta_field). Hanya dibaca dari Trino."""
     tq = X.Trino()
     tcols = ["table_id", "dataset_id", "dataset_name", "table_name", "object_type", "database_name", "object_owner", "row_count",
              "sensitive_data_flag", "critical_data_flag", "source_system"]
     fcols = ["field_id", "table_id", "column_name", "business_term", "data_type", "pk_flag", "fk_flag", "nullable_flag",
              "sensitive_flag", "metadata_status"]
-    tables = [dict(zip(tcols, [None if v is None else str(v) for v in r]))
-              for r in tq.q(f"SELECT {', '.join(tcols)} FROM {tq.fq('silver_dim_meta_table')} ORDER BY table_id")]
+    import app_objek as AO
+    tables = AO.merged(tq)
     fields = [dict(zip(fcols, [None if v is None else str(v) for v in r]))
               for r in tq.q(f"SELECT {', '.join(fcols)} FROM {tq.fq('silver_dim_meta_field')} ORDER BY table_id, field_id")]
     return {"rows": tables, "fields": fields}
@@ -229,6 +229,27 @@ class H(BaseHTTPRequestHandler):
         except ValueError:
             return {}
 
+    def _objek_write(self, user: dict):
+        import app_objek as AO
+        import app_dataset as AD
+        if not can_edit(user):
+            return self._json(403, {"error": "Hanya Admin Data Governance yang dapat mengubah Database Object."})
+        body = self._body()
+        aksi = str(body.get("aksi") or "")
+        try:
+            tq = X.Trino()
+            current = {r["table_id"]: r for r in AO.merged(tq)}
+            datasets = {r["dataset_id"] for r in AD.merged(tq)}
+            tid, galat = AO.validate(tq, aksi, body.get("table_id"), body, current, datasets)
+            if galat:
+                return self._json(400, {"error": galat})
+            row = AO.append(tq, aksi, tid, body, user.get("name") or "pengguna", body.get("alasan"))
+            log("database-object", aksi, tid, "oleh", user.get("name"))
+            self._json(200, {"ok": True, "table_id": tid, "aksi": aksi, "diubah_pada": row["diubah_pada"]})
+        except Exception as e:  # noqa: BLE001
+            log("galat database-object", repr(e)[:200])
+            self._json(500, {"error": "Perubahan belum dapat disimpan. Coba lagi sebentar."})
+
     def _dataset_write(self, user: dict):
         import app_dataset as AD
         if not can_edit(user):
@@ -288,7 +309,7 @@ class H(BaseHTTPRequestHandler):
 
     def do_POST(self):  # noqa: N802
         path = self.path.split("?")[0]
-        if path not in ("/_export/fungsi-pdf", "/_export/master-organisasi", "/_export/sistem", "/_export/dataset"):
+        if path not in ("/_export/fungsi-pdf", "/_export/master-organisasi", "/_export/sistem", "/_export/dataset", "/_export/objek"):
             return self._json(404, {"error": "tidak ditemukan"})
         auth = self.headers.get("Authorization", "")
         if not auth.startswith("Bearer "):
@@ -303,6 +324,8 @@ class H(BaseHTTPRequestHandler):
             return self._sistem_write(user)
         if path == "/_export/dataset":
             return self._dataset_write(user)
+        if path == "/_export/objek":
+            return self._objek_write(user)
         try:
             a = access(user)
             if not (a["allowed"] and a["orgs"] is None):
