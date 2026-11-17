@@ -21,7 +21,7 @@
   /* Menu aplikasi lama (sidebar bawah) tetap dilampirkan: item yang tidak ada di desain. */
   var NAV_BAWAH = { title: 'Lainnya', items: [
     { label: 'Explore', href: '/explore' },
-    { label: 'Visualisasi', href: '/visualisasi/' },
+    { label: 'Visualisasi', href: '/explore' },
     { label: 'Glosarium (aplikasi lama)', href: '/glossary' },
     { label: 'Documents', href: '/docs' },
     { label: 'Pengaturan', href: '/settings' }] };
@@ -35,8 +35,9 @@
     '.dg-side a:hover{background:var(--uix-surface-muted);}',
     '.dg-side a[aria-current="page"]{background:var(--uix-primary-soft);color:var(--uix-primary);font-weight:600;}',
     '.dg-side span.dg-off{color:var(--uix-text-muted);cursor:default;}',
-    '.dg-side .dg-fold{display:flex;align-items:center;justify-content:space-between;width:100%;margin:16px 0 6px;padding:0 8px;background:none;border:0;font:inherit;font-size:12px;font-weight:600;color:var(--uix-text-muted);cursor:pointer;text-align:left;}',
-    '.dg-side .dg-fold:hover{color:var(--uix-text-body);}',
+    '.dg-side .dg-fold{display:flex;align-items:center;justify-content:space-between;width:100%;margin:8px 0 0;padding:7px 10px;border-radius:var(--uix-radius);background:none;border:0;font:inherit;font-size:14px;color:var(--uix-text-body);cursor:pointer;text-align:left;}',
+    '.dg-side .dg-fold:hover{background:var(--uix-surface-muted);}',
+    '.dg-side .dg-grp a{padding-left:24px;}',
     '.dg-side .dg-fold .dg-car{transition:transform .15s;display:inline-block;}',
     '.dg-side .dg-fold[aria-expanded="false"] .dg-car{transform:rotate(-90deg);}',
     '.dg-side .dg-grp[hidden]{display:none;}',
@@ -63,7 +64,7 @@
     g.items.forEach(function (it) {
       if (!it.href) { html += '<span class="dg-off" title="Belum tersedia">' + esc(it.label) + '</span>'; return; }
       var cur = it.href === '/' ? path === '/' : path.indexOf(it.href) === 0;
-      html += '<a href="' + it.href + '"' + (cur ? ' aria-current="page"' : '') + '>' + esc(it.label) + '</a>';
+      html += '<a href="' + it.href + '" target="_self"' + (cur ? ' aria-current="page"' : '') + '>' + esc(it.label) + '</a>';
     });
     if (fold) html += '</div>';
   });
