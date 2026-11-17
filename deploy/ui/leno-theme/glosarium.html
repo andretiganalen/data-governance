@@ -145,7 +145,7 @@
       var def = r.definisi ? esc(String(r.definisi).length > 160 ? String(r.definisi).slice(0, 160) + '…' : r.definisi) : '<span class="dg-chip mn">Belum ada definisi</span>';
       return '<tr class="ant-table-row"><td class="ant-table-cell" style="white-space:nowrap;font-family:monospace;font-size:12px;width:120px">' + esc(r.field_id) + '</td><td class="ant-table-cell">' + esc(r.business_term) + '</td><td class="ant-table-cell" style="width:40%">' + def + '</td>' +
         '<td class="ant-table-cell">' + esc(r.dipakai) + '</td><td class="ant-table-cell">' + statusChip(r) + '</td>' +
-        (canEdit ? '<td class="ant-table-cell" style="text-align:right"><button class="ant-btn ant-btn-primary ant-btn-sm" type="button" data-isi="' + esc(r.field_id) + '"><span>Isi definisi</span></button></td>' : '') + '</tr>';
+        (canEdit ? '<td class="ant-table-cell act" style="text-align:right"><div class="dg-menu"><button class="ant-btn ant-btn-default ant-btn-sm" type="button" data-dg-menu="1"><span>Aksi ▾</span></button><div class="dg-menu-list" role="menu" hidden><button type="button" role="menuitem" data-isi="' + esc(r.field_id) + '">Isi definisi</button></div></div></td>' : '') + '</tr>';
     }).join('');
     empty.hidden = list.length > 0;
     count.textContent = list.length + ' dari ' + all.length + ' istilah';

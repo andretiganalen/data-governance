@@ -53,7 +53,53 @@
     '.ant-table-wrapper .ant-table-cell{padding:10px 8px !important;}',
     '.dg-chip{white-space:normal;}',
     '.ant-table-wrapper table{width:100%;}',
-    '@media (max-width:820px){.dg-side{display:none;}}'
+    '@media (max-width:820px){.dg-side{display:none;}}',
+    /* ===== Standar tombol, menu Aksi, chip, dan isian otomatis (artifact "Data Governance Portal – Iterasi 2").
+       Satu sumber untuk semua halaman; menimpa gaya lokal halaman dan antd. ===== */
+    /* Tombol dasar: tinggi 40, radius 8, Poppins 600 */
+    '.dg-main .ant-btn,.dg-main .dg-btn{display:inline-flex !important;align-items:center;justify-content:center;gap:8px;height:40px !important;min-height:40px;padding:0 18px !important;border-radius:8px !important;font-family:var(--uix-font) !important;font-size:14px !important;font-weight:600 !important;line-height:1 !important;cursor:pointer;text-decoration:none;box-sizing:border-box;transition:background .15s,border-color .15s,box-shadow .15s;white-space:nowrap;}',
+    '.dg-main .ant-btn>span{display:inline-flex;align-items:center;gap:8px;}',
+    /* Utama: merah UIx bergradasi */
+    '.dg-main .ant-btn-primary,.dg-main .dg-btn{background:linear-gradient(180deg,#c0302e,#ae2524) !important;color:#fff !important;border:0 !important;box-shadow:0 2px 6px rgba(174,37,36,.25) !important;}',
+    '.dg-main .ant-btn-primary:hover,.dg-main .dg-btn:hover{background:linear-gradient(180deg,#ae2524,#8e1418) !important;color:#fff !important;}',
+    /* Netral (Batal, Tutup): putih, garis abu */
+    '.dg-main .ant-btn-default,.dg-main .dg-btn.ghost{background:#fff !important;color:#16202E !important;border:1px solid #C9CFDA !important;box-shadow:none !important;font-weight:500 !important;}',
+    '.dg-main .ant-btn-default:hover,.dg-main .dg-btn.ghost:hover{background:#F4F5F7 !important;border-color:#AEB6C4 !important;color:#16202E !important;}',
+    /* Sekunder (Simpan & tambah lagi): garis merah */
+    '.dg-main .dg-btn-sec{background:#fff !important;color:#ae2524 !important;border:1px solid #ae2524 !important;font-weight:600 !important;}',
+    '.dg-main .dg-btn-sec:hover{background:#FCE8E9 !important;color:#8e1418 !important;border-color:#8e1418 !important;}',
+    /* Hapus (konfirmasi): kuning tua, tenang, bukan merah alarm */
+    '.dg-main .dg-btn-hapus,.dg-main .ant-btn-dangerous{background:#B45309 !important;color:#fff !important;border:0 !important;box-shadow:none !important;}',
+    '.dg-main .dg-btn-hapus:hover,.dg-main .ant-btn-dangerous:hover{background:#92400E !important;color:#fff !important;}',
+    /* Kecil (Aksi ▾, Pilih): tinggi 32 */
+    '.dg-main .ant-btn-sm,.dg-main td .dg-btn{height:32px !important;min-height:32px;padding:0 12px !important;font-size:13px !important;}',
+    '.dg-main .ant-btn[disabled],.dg-main .ant-btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none !important;}',
+    '.dg-main .ant-btn:focus-visible,.dg-main .dg-btn:focus-visible,.dg-main .dg-menu-list button:focus-visible{outline:2px solid #ae2524;outline-offset:2px;}',
+    '.dg-main .dg-plus{width:16px;height:16px;flex:0 0 16px;}',
+    /* Urutan tombol form: Batal · Simpan & tambah lagi · Simpan, rata kanan */
+    '.dg-main form footer,.dg-main .dg-dialog footer{display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap;}',
+    /* Menu Aksi: satu tampilan untuk semua tabel */
+    '.dg-main .dg-menu{position:relative;display:inline-block;}',
+    '.dg-main .dg-menu-list{position:absolute !important;right:0 !important;top:36px !important;min-width:168px !important;background:#fff !important;border:1px solid #E3E6EB !important;border-radius:8px !important;box-shadow:0 12px 24px rgba(16,24,40,.12) !important;padding:4px !important;z-index:40 !important;text-align:left !important;}',
+    '.dg-main .dg-menu-list[hidden]{display:none !important;}',
+    '.dg-main .dg-menu-list button{display:flex !important;align-items:center;width:100% !important;min-height:36px;text-align:left !important;background:none !important;border:0 !important;padding:0 12px !important;font-family:var(--uix-font) !important;font-size:13px !important;font-weight:500 !important;color:#16202E !important;border-radius:6px !important;cursor:pointer;}',
+    '.dg-main .dg-menu-list button:hover{background:#F4F5F7 !important;}',
+    '.dg-main .dg-menu-list [data-ubah],.dg-main .dg-menu-list [data-lengkapi],.dg-main .dg-menu-list [data-isi]{color:#ae2524 !important;}',
+    '.dg-main .dg-menu-list [data-hapus]{color:#9A4A06 !important;border-top:1px solid #EEF0F3 !important;border-radius:0 0 6px 6px !important;margin-top:4px;}',
+    '.dg-main .dg-menu-list [data-hapus]:hover{background:#FDF1E3 !important;}',
+    /* Chip sumber isian: Otomatis / Otomatis dari DB / Dari master = abu, Manual = merah muda */
+    '.dg-main .dg-chip,.dg-main .dg-ch{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:999px;background:#EDF0F4;color:#3A4658;font-size:11px;font-weight:600;line-height:18px;white-space:nowrap;vertical-align:middle;}',
+    '.dg-main .dg-chip.mn,.dg-main .dg-chip.manual,.dg-main .dg-ch.mn,.dg-main .dg-ch.manual{background:#FCE8E9;color:#8E1418;}',
+    '.dg-main .dg-chip.ok{background:#E7F6EC;color:#0E6B33;}',
+    /* Label isian: nama di kiri, chip di kanan (seperti artifact) */
+    '.dg-main .dg-field>label,.dg-main .dg-form .f>label,.dg-main .dg-add .f>label{display:flex !important;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 8px;font-size:13px !important;font-weight:600 !important;color:#16202E !important;margin-bottom:6px !important;}',
+    '.dg-main .dg-field>label .dg-chip,.dg-main .dg-field>label .dg-ch,.dg-main .f>label .dg-chip,.dg-main .f>label .dg-ch{margin-left:auto;white-space:normal;max-width:100%;text-align:left;}',
+    /* Isian otomatis: garis putus-putus, latar abu, ikon gembok, tidak bisa diketik */
+    '.dg-main .dg-auto,.dg-main form input[readonly],.dg-main form input:disabled,.dg-main form select:disabled{border:1px dashed #AEB6C4 !important;background-color:#F5F6F8 !important;color:#3A4658 !important;cursor:not-allowed;' +
+      'padding-left:32px !important;background-repeat:no-repeat !important;background-position:10px center !important;background-size:14px 14px !important;' +
+      'background-image:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%236A7282%27 stroke-width=%272.4%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Crect x=%275%27 y=%2711%27 width=%2714%27 height=%279%27 rx=%272%27/%3E%3Cpath d=%27M8 11V8a4 4 0 0 1 8 0v3%27/%3E%3C/svg%3E") !important;}',
+    /* Isian form dan pencarian: tinggi 40 agar sejajar dengan tombol */
+    '.dg-main form input:not([type=checkbox]):not([type=radio]),.dg-main form select,.dg-main .dg-toolbar-top input,.dg-main .dg-toolbar-top select,.dg-main .dg-toolbar input,.dg-main .dg-toolbar select{height:40px !important;border-radius:8px !important;box-sizing:border-box;}'
   ].join('');
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
@@ -160,6 +206,11 @@
     }
     table.querySelectorAll('tbody tr').forEach(function (tr) {
       if (tr.children.length === 0) return;
+      /* baris rincian (satu sel melebar) bukan baris data: tidak diberi Aksi */
+      if (tr.classList.contains('detail') || (tr.children.length === 1 && tr.children[0].colSpan > 1)) {
+        var stray = tr.querySelector('td.dg-aksi-td'); if (stray) stray.remove();
+        return;
+      }
       var list = tr.querySelector('.dg-menu-list');
       if (list) {   // baris yang sudah punya menu (Ubah, Hapus, Lengkapi): pastikan Detail ada di dalamnya
         if (!list.querySelector('[data-dg-detail]')) {
@@ -230,8 +281,39 @@
     document.querySelectorAll('.dg-menu-list').forEach(function (m) { m.hidden = true; });
     var tr = b.closest('tr'); if (tr) openRowDetail(tr);
   }, true);
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watchTables); else watchTables();
-  setInterval(function () { watchTables(); document.querySelectorAll("table").forEach(ensureActions); }, 1500);
+  /* Seragamkan tombol dan menu yang dibuat halaman masing-masing (peran ditentukan id/atribut, bukan teks). */
+  var PLUS = '<svg class="dg-plus" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+  var ORDER = ['data-dg-detail', 'data-ubah', 'data-lengkapi', 'data-isi', 'data-hapus'];
+  function rank(b) { for (var i = 0; i < ORDER.length; i++) if (b.hasAttribute(ORDER[i])) return i; return 2; }
+  function standardize() {
+    var t = document.getElementById('btn-tambah');
+    if (t && !t.querySelector('.dg-plus')) t.insertAdjacentHTML('afterbegin', PLUS);
+    document.querySelectorAll('#f-save-new,#a-again').forEach(function (b) { b.classList.remove('ant-btn-default'); b.classList.add('ant-btn', 'dg-btn-sec'); });
+    document.querySelectorAll('#h-ok').forEach(function (b) {
+      b.classList.remove('ant-btn-primary', 'ant-btn-dangerous'); b.classList.add('ant-btn', 'dg-btn-hapus'); b.style.background = '';
+    });
+    document.querySelectorAll('.dg-menu > [data-menu],.dg-menu > [data-dg-menu]').forEach(function (b) {
+      b.classList.add('ant-btn', 'ant-btn-default', 'ant-btn-sm');
+      b.setAttribute('aria-haspopup', 'menu');
+    });
+    document.querySelectorAll('.dg-menu-list').forEach(function (list) {
+      list.setAttribute('role', 'menu');
+      var items = Array.prototype.slice.call(list.children).filter(function (c) { return c.tagName === 'BUTTON'; });
+      items.forEach(function (b) { b.setAttribute('role', 'menuitem'); b.removeAttribute('style'); });
+      var sorted = items.slice().sort(function (a, b) { return rank(a) - rank(b); });
+      if (sorted.some(function (b, i) { return b !== items[i]; })) sorted.forEach(function (b) { list.appendChild(b); });
+    });
+  }
+  /* Setelah memilih item menu, semua menu Aksi ditutup. */
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('.dg-menu-list button')) {
+      setTimeout(function () { document.querySelectorAll('.dg-menu-list').forEach(function (m) { m.hidden = true; }); }, 0);
+    }
+  });
+  function tick() { watchTables(); document.querySelectorAll('table').forEach(ensureActions); standardize(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tick); else tick();
+  new MutationObserver(function () { standardize(); }).observe(document.body, { childList: true, subtree: true });
+  setInterval(tick, 1500);
 
   fetch('/_export/whoami', { credentials: 'same-origin' })
     .then(function (r) { return r.ok ? r.json() : null; })
