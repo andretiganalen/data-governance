@@ -92,13 +92,13 @@
 
   <div class="dg-inline" id="m-form" hidden><div class="dg-dialog">
     <header><h2 id="f-title">Tambah Database Object</h2></header>
-    <div class="dg-legend-in"><span><span class="dg-ch">Otomatis</span> Dibuat sistem, tidak bisa diketik</span><span><span class="dg-ch">Dari DB</span> Pilihannya ditarik dari database</span><span><span class="dg-ch">Dari master</span> Dipilih dari halaman lain</span><span><span class="dg-ch manual">Manual</span> Diketik atau dipilih pengguna</span></div><div class="dg-guide"><b>Petunjuk:</b> Pilih dataset induk, lalu isi nama tabel. TABLE_ID mengikuti format TB diikuti tiga angka.</div>
+    <div class="dg-legend-in"><span><span class="dg-ch">Otomatis</span> Dibuat sistem, tidak bisa diketik</span><span><span class="dg-ch">Otomatis dari DB</span> Pilihannya ditarik dari database</span><span><span class="dg-ch">Dari master</span> Dipilih dari halaman lain</span><span><span class="dg-ch manual">Manual</span> Diketik atau dipilih pengguna</span></div><div class="dg-guide"><b>Petunjuk:</b> Pilih dataset induk, lalu isi nama tabel. TABLE_ID mengikuti format TB diikuti tiga angka.</div>
       <form class="body" id="f" novalidate>
       <div class="dg-field"><label for="f-id">TABLE_ID * <span class="dg-ch manual">Manual</span></label><input id="f-id" placeholder="contoh TB019"><div class="err" data-err="table_id"></div></div>
       <div class="dg-field"><label for="f-ds">Dataset * <span class="dg-ch">Dari master</span></label><select id="f-ds"></select><div class="err" data-err="dataset_id"></div></div>
-      <div class="dg-field"><label for="f-nama">Nama tabel * <span class="dg-ch">Dari DB</span></label><input id="f-nama" placeholder="contoh erm_riskregister"><div class="err" data-err="table_name"></div></div>
+      <div class="dg-field"><label for="f-nama">Nama tabel * <span class="dg-ch">Otomatis dari DB</span></label><input id="f-nama" placeholder="contoh erm_riskregister"><div class="err" data-err="table_name"></div></div>
       <div class="dg-field"><label for="f-jenis">Jenis objek <span class="dg-ch manual">Manual</span></label><select id="f-jenis"><option>Table</option><option>View</option></select></div>
-      <div class="dg-field"><label for="f-db">Database <span class="dg-ch">Dari DB</span></label><input id="f-db" placeholder="contoh ERM (opsional)"></div>
+      <div class="dg-field"><label for="f-db">Database <span class="dg-ch">Otomatis dari DB</span></label><input id="f-db" placeholder="contoh ERM (opsional)"></div>
       <div class="dg-field"><label for="f-alasan">Alasan perubahan</label><input id="f-alasan" placeholder="Opsional"></div>
       <div class="err" id="f-err" hidden></div>
     </form>

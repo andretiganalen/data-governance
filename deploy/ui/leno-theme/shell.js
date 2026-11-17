@@ -49,6 +49,9 @@
     '.dg-top .dg-av{width:32px;height:32px;border-radius:999px;background:var(--uix-primary);color:var(--uix-on-primary);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;}',
     '.dg-top .dg-name{font-weight:600;color:var(--uix-text-head);}',
     '.ant-table-content{overflow-x:auto;}',
+    '.ant-table-cell{white-space:normal;}',
+    '.ant-table-wrapper .ant-table-cell{padding:10px 8px !important;}',
+    '.dg-chip{white-space:normal;}',
     '.ant-table-wrapper table{width:100%;}',
     '@media (max-width:820px){.dg-side{display:none;}}'
   ].join('');
@@ -98,6 +101,68 @@
   kids.forEach(function (n) { if (n.tagName !== 'SCRIPT' && n.tagName !== 'STYLE') main.appendChild(n); });
   main.insertBefore(top, main.firstChild);
   body.appendChild(side); body.appendChild(main);
+
+  /* Kolom Aksi paling kanan di setiap tabel. Baris yang sudah punya menu Aksi (admin) tidak diubah;
+     baris lain mendapat tombol Detail yang membuka popup berisi isi baris. */
+  function ensureActions(table) {
+    var head = table.querySelector('thead tr');
+    if (head) {
+      var th = head.querySelector('#th-aksi');
+      if (th) { th.hidden = false; }
+      else if (!head.querySelector('.dg-aksi-th')) {
+        var h = document.createElement('th'); h.className = 'ant-table-cell dg-aksi-th'; h.style.textAlign = 'right'; h.textContent = 'Aksi';
+        head.appendChild(h);
+      }
+    }
+    table.querySelectorAll('tbody tr').forEach(function (tr) {
+      if (tr.querySelector('td.act, td.dg-aksi-td')) return;
+      if (tr.children.length === 0) return;
+      var td = document.createElement('td'); td.className = 'ant-table-cell act dg-aksi-td'; td.style.textAlign = 'right';
+      td.innerHTML = '<button class="ant-btn ant-btn-default ant-btn-sm" type="button" data-dg-detail="1"><span>Detail</span></button>';
+      tr.appendChild(td);
+    });
+  }
+  function watchTables() {
+    document.querySelectorAll('table').forEach(function (table) {
+      if (table.dataset.dgWatch) return;
+      table.dataset.dgWatch = '1';
+      var obs = new MutationObserver(function () { ensureActions(table); });
+      obs.observe(table, { childList: true, subtree: true });
+      ensureActions(table);
+    });
+  }
+  function openRowDetail(tr) {
+    var table = tr.closest('table'); if (!table) return;
+    var heads = Array.prototype.map.call(table.querySelectorAll('thead th'), function (th) { return th.textContent.trim(); });
+    var cells = Array.prototype.slice.call(tr.children).filter(function (td) { return !td.classList.contains('dg-aksi-td') && !td.classList.contains('act'); });
+    var box = document.getElementById('dg-detail');
+    if (!box) {
+      box = document.createElement('div'); box.id = 'dg-detail';
+      box.style.cssText = 'position:fixed;inset:0;background:rgba(16,24,40,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:200;';
+      box.innerHTML = '<div style="background:#fff;border-radius:12px;box-shadow:0 12px 24px rgba(16,24,40,.2);width:100%;max-width:560px;max-height:90vh;overflow:auto;font-family:var(--uix-font)">' +
+        '<div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;font-weight:600;color:#101828" id="dg-detail-title">Detail</div>' +
+        '<div style="padding:16px 20px;font-size:13px;line-height:1.8" id="dg-detail-body"></div>' +
+        '<div style="padding:12px 20px;border-top:1px solid #e5e7eb;text-align:right"><button class="ant-btn ant-btn-default" type="button" id="dg-detail-close"><span>Tutup</span></button></div></div>';
+      document.body.appendChild(box);
+      box.addEventListener('click', function (e) { if (e.target === box || e.target.id === 'dg-detail-close' || e.target.closest('#dg-detail-close')) box.style.display = 'none'; });
+    }
+    var first = cells[0] ? cells[0].textContent.trim() : '';
+    document.getElementById('dg-detail-title').textContent = 'Detail · ' + first;
+    document.getElementById('dg-detail-body').innerHTML = cells.map(function (td, i) {
+      var v = td.textContent.trim();
+      return '<div><b>' + (heads[i] || '') + ':</b> ' + (v ? v.replace(/[&<>]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }) : '<span style="color:#8E1418">Perlu input manual</span>') + '</div>';
+    }).join('');
+    box.style.display = 'flex';
+  }
+  /* di fase capture: tombol Detail tidak ikut memicu aksi baris lain */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-dg-detail]');
+    if (!b) return;
+    e.stopPropagation(); e.preventDefault();
+    var tr = b.closest('tr'); if (tr) openRowDetail(tr);
+  }, true);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watchTables); else watchTables();
+  setInterval(function () { watchTables(); document.querySelectorAll("table").forEach(ensureActions); }, 1500);
 
   fetch('/_export/whoami', { credentials: 'same-origin' })
     .then(function (r) { return r.ok ? r.json() : null; })

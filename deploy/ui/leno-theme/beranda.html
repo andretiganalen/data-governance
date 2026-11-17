@@ -66,7 +66,7 @@
       <a class="dg-card" href="/organisasi/">
         <span class="no">LANGKAH 1</span><h3>Organisasi</h3>
         <p>Unit kerja dan ORG_ID ditarik dari database, BPO melengkapi fungsinya.</p>
-        <div class="dg-chips"><span class="dg-chip">Dari DB</span><span class="dg-chip mn">Manual</span></div>
+        <div class="dg-chips"><span class="dg-chip">Otomatis dari DB</span><span class="dg-chip mn">Manual</span></div>
         <span class="dg-dep">Butuh data: –</span>
       </a>
       <a class="dg-card" href="/sistem/">
@@ -82,19 +82,19 @@
       <a class="dg-card" href="/dataset/">
         <span class="no">LANGKAH 3</span><h3>Business Dataset</h3>
         <p>Kelompok data bisnis, domain, sistem, dan database-nya.</p>
-        <div class="dg-chips"><span class="dg-chip">Otomatis</span><span class="dg-chip">Dari master</span><span class="dg-chip">Dari DB</span><span class="dg-chip mn">Manual</span></div>
+        <div class="dg-chips"><span class="dg-chip">Otomatis</span><span class="dg-chip">Dari master</span><span class="dg-chip">Otomatis dari DB</span><span class="dg-chip mn">Manual</span></div>
         <span class="dg-dep">Butuh data: Sistem</span>
       </a>
       <a class="dg-card" href="/objek/">
         <span class="no">LANGKAH 4</span><h3>Database Object</h3>
         <p>Pilih tabel dari database milik dataset, tipe objek terisi sendiri.</p>
-        <div class="dg-chips"><span class="dg-chip">Otomatis</span><span class="dg-chip">Dari master</span><span class="dg-chip">Dari DB</span></div>
+        <div class="dg-chips"><span class="dg-chip">Otomatis</span><span class="dg-chip">Dari master</span><span class="dg-chip">Otomatis dari DB</span></div>
         <span class="dg-dep">Butuh data: Business Dataset</span>
       </a>
       <a class="dg-card" href="/">
         <span class="no">LANGKAH 5</span><h3>Data Element</h3>
         <p>Kolom tabel, tipe data, generic data type, dan business term.</p>
-        <div class="dg-chips"><span class="dg-chip">Otomatis</span><span class="dg-chip">Dari DB</span><span class="dg-chip mn">Manual</span></div>
+        <div class="dg-chips"><span class="dg-chip">Otomatis</span><span class="dg-chip">Otomatis dari DB</span><span class="dg-chip mn">Manual</span></div>
         <span class="dg-dep">Butuh data: Database Object</span>
       </a>
       <a class="dg-card" href="/glosarium/">
@@ -138,7 +138,7 @@
     <h2>Arti label pada setiap isian</h2>
     <div class="dg-legend">
       <div class="dg-item"><b>Otomatis</b><br>Dibuat sistem saat disimpan, tidak bisa diketik.<br><i>Contoh: SYSTEM_ID, FIELD_ID, ACCESS_ID</i></div>
-      <div class="dg-item"><b>Dari DB</b><br>Pilihannya ditarik langsung dari database.<br><i>Contoh: Unit kerja, TABLE_NAME, COLUMN_NAME</i></div>
+      <div class="dg-item"><b>Otomatis dari DB</b><br>Pilihannya ditarik langsung dari database.<br><i>Contoh: Unit kerja, TABLE_NAME, COLUMN_NAME</i></div>
       <div class="dg-item"><b>Dari master</b><br>Dipilih dari halaman lain, nilai turunannya terisi sendiri.<br><i>Contoh: DATASET_ID, ORG_ID, LINEAGE_ID</i></div>
       <div class="dg-item"><b>Manual</b><br>Diketik atau dipilih oleh BPO.<br><i>Contoh: Business term, definisi, aturan kualitas</i></div>
     </div>

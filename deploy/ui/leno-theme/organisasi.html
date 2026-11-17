@@ -99,13 +99,13 @@
       <h2 id="f-title">Tambah Master Organisasi</h2>
       <p id="f-sub">Unit kerja dan ORG_ID diambil langsung dari database. BPO memilih unit kerja dan melengkapi fungsinya.</p>
     </header>
-    <div class="dg-legend-in"><span><span class="dg-ch">Otomatis</span> Dibuat sistem, tidak bisa diketik</span><span><span class="dg-ch">Dari DB</span> Pilihannya ditarik dari database</span><span><span class="dg-ch">Dari master</span> Dipilih dari halaman lain</span><span><span class="dg-ch manual">Manual</span> Diketik atau dipilih pengguna</span></div><div class="dg-guide"><b>Petunjuk:</b> Isi unit kerja dari database; fungsi dipilih atau dibuat baru. ORG_ID mengikuti format huruf-angka seperti UD-1.</div>
+    <div class="dg-legend-in"><span><span class="dg-ch">Otomatis</span> Dibuat sistem, tidak bisa diketik</span><span><span class="dg-ch">Otomatis dari DB</span> Pilihannya ditarik dari database</span><span><span class="dg-ch">Dari master</span> Dipilih dari halaman lain</span><span><span class="dg-ch manual">Manual</span> Diketik atau dipilih pengguna</span></div><div class="dg-guide"><b>Petunjuk:</b> Isi unit kerja dari database; fungsi dipilih atau dibuat baru. ORG_ID mengikuti format huruf-angka seperti UD-1.</div>
       <form class="dg-form body" id="f" novalidate>
-      <div class="dg-field"><label for="f-dir">Direktorat * <span class="dg-chip">Dari DB</span></label>
+      <div class="dg-field"><label for="f-dir">Direktorat * <span class="dg-chip">Otomatis dari DB</span></label>
         <input id="f-dir" list="dl-dir" autocomplete="off" placeholder="Ketik atau pilih direktorat"><datalist id="dl-dir"></datalist><div class="err" data-err="direktorat"></div></div>
-      <div class="dg-field"><label for="f-div">Divisi * <span class="dg-chip">Dari DB</span></label>
+      <div class="dg-field"><label for="f-div">Divisi * <span class="dg-chip">Otomatis dari DB</span></label>
         <input id="f-div" list="dl-div" autocomplete="off" placeholder="Ketik atau pilih divisi"><datalist id="dl-div"></datalist><div class="err" data-err="divisi"></div></div>
-      <div class="dg-field"><label for="f-unit">Unit kerja * <span class="dg-chip">Dari DB</span></label>
+      <div class="dg-field"><label for="f-unit">Unit kerja * <span class="dg-chip">Otomatis dari DB</span></label>
         <input id="f-unit" autocomplete="off" placeholder="Nama unit kerja"><div class="err" data-err="unit_kerja"></div></div>
       <div class="dg-field"><label for="f-id">ORG_ID * <span class="dg-ch manual">Manual</span></label>
         <input id="f-id" autocomplete="off" placeholder="contoh UD-1"><small>Format huruf-angka, misalnya UD-1. Tidak bisa diubah setelah disimpan.</small><div class="err" data-err="org_id"></div></div>
