@@ -159,13 +159,37 @@
       }
     }
     table.querySelectorAll('tbody tr').forEach(function (tr) {
-      if (tr.querySelector('td.act, td.dg-aksi-td')) return;
       if (tr.children.length === 0) return;
+      var list = tr.querySelector('.dg-menu-list');
+      if (list) {   // baris yang sudah punya menu (Ubah, Hapus, Lengkapi): pastikan Detail ada di dalamnya
+        if (!list.querySelector('[data-dg-detail]')) {
+          list.insertAdjacentHTML('afterbegin', '<button type="button" role="menuitem" data-dg-detail="1">Detail</button>');
+        }
+        return;
+      }
+      if (tr.querySelector('td.dg-aksi-td')) return;
       var td = document.createElement('td'); td.className = 'ant-table-cell act dg-aksi-td'; td.style.textAlign = 'right';
-      td.innerHTML = '<button class="ant-btn ant-btn-default ant-btn-sm" type="button" data-dg-detail="1"><span>Detail</span></button>';
+      td.innerHTML = '<div class="dg-menu" style="position:relative;display:inline-block"><button class="ant-btn ant-btn-default ant-btn-sm" type="button" data-dg-menu="1"><span>Aksi ▾</span></button>' +
+        '<div class="dg-menu-list" role="menu" hidden style="position:absolute;right:0;top:32px;min-width:140px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 12px 24px rgba(16,24,40,.12);padding:4px;z-index:30;text-align:left">' +
+        '<button type="button" role="menuitem" data-dg-detail="1" style="display:block;width:100%;text-align:left;background:none;border:0;padding:8px 10px;font:inherit;font-size:13px;cursor:pointer">Detail</button></div></div>';
       tr.appendChild(td);
     });
   }
+  /* Menu Aksi seragam: satu tombol Aksi ▾ per baris. Buka/tutup di sini; Detail membuka popup. */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-dg-menu]');
+    if (b) {
+      e.stopPropagation();
+      var list = b.parentNode.querySelector('.dg-menu-list');
+      var open = list.hidden;
+      document.querySelectorAll('.dg-menu-list').forEach(function (m) { m.hidden = true; });
+      list.hidden = !open;
+      return;
+    }
+    if (!(e.target.closest && e.target.closest('.dg-menu'))) {
+      document.querySelectorAll('.dg-menu-list').forEach(function (m) { m.hidden = true; });
+    }
+  }, true);
   function watchTables() {
     document.querySelectorAll('table').forEach(function (table) {
       if (table.dataset.dgWatch) return;
@@ -203,6 +227,7 @@
     var b = e.target.closest && e.target.closest('[data-dg-detail]');
     if (!b) return;
     e.stopPropagation(); e.preventDefault();
+    document.querySelectorAll('.dg-menu-list').forEach(function (m) { m.hidden = true; });
     var tr = b.closest('tr'); if (tr) openRowDetail(tr);
   }, true);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watchTables); else watchTables();
