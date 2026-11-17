@@ -145,7 +145,21 @@ def sistem() -> dict:
 def dataset() -> dict:
     """Business Dataset: silver_dim_meta_dataset + perubahan aplikasi (app_dataset). Nilai kosong tetap kosong."""
     import app_dataset as AD
-    return {"rows": AD.merged(X.Trino())}
+    import app_sistem as AS
+    import app_objek as AO
+    tq = X.Trino()
+    sys_nama = {r["system_id"]: r["system_name"] for r in AS.merged(tq)}
+    tabel = {}
+    for o in AO.merged(tq):
+        tabel.setdefault(o.get("dataset_id"), []).append(o.get("table_name") or o.get("table_id"))
+    rows = []
+    for r in AD.merged(tq):
+        r = dict(r)
+        r["system_name"] = sys_nama.get(r.get("system_id")) or r.get("system_name")
+        r["tabel"] = len(tabel.get(r["dataset_id"], []))
+        r["tabel_nama"] = ", ".join(tabel.get(r["dataset_id"], [])) or None
+        rows.append(r)
+    return {"rows": rows}
 
 
 def objek() -> dict:
@@ -398,12 +412,15 @@ class H(BaseHTTPRequestHandler):
         try:
             tq = X.Trino()
             current = {r["dataset_id"]: r for r in AD.merged(tq)}
-            did, galat = AD.validate(aksi, body.get("dataset_id"), body, current)
+            import app_sistem as AS
+            systems = {r["system_id"] for r in AS.merged(tq)}
+            dbs = {r[0] for r in tq.q(f"SELECT DISTINCT database_name FROM {tq.fq('silver_dim_meta_table')}") if r[0]}
+            did, galat = AD.validate(aksi, body.get("dataset_id"), body, current, systems, dbs)
             if galat:
                 return self._json(400, {"error": galat})
             row = AD.append(tq, aksi, did, body, user.get("name") or "pengguna", body.get("alasan"))
             log("business-dataset", aksi, did, "oleh", user.get("name"))
-            self._json(200, {"ok": True, "dataset_id": did, "aksi": aksi, "diubah_pada": row["diubah_pada"]})
+            self._json(200, {"ok": True, "dataset_id": row["dataset_id"], "aksi": aksi, "diubah_pada": row["diubah_pada"]})
         except Exception as e:  # noqa: BLE001
             log("galat business-dataset", repr(e)[:200])
             self._json(500, {"error": "Perubahan belum dapat disimpan. Coba lagi sebentar."})

@@ -11,221 +11,166 @@
   .dg-wrap { max-width: none; margin: 0 auto; padding: 24px 16px 48px; }
   .dg-crumb { font-size: 13px; color: var(--uix-text-secondary); margin-bottom: 12px; }
   .dg-crumb a { color: inherit; }
+  .dg-head { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
   .dg-head h1 { margin: 0 0 4px; font-size: 22px; color: var(--uix-text-head); font-weight: 600; }
   .dg-head p { margin: 0; font-size: 14px; color: var(--uix-text-secondary); line-height: 1.6; max-width: 720px; }
-  .dg-card { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-xs); margin-top: 20px; }
-  .dg-toolbar { display: flex; gap: 12px; padding: 16px; flex-wrap: wrap; align-items: center; border-bottom: 1px solid var(--uix-border); }
-  .dg-toolbar input { height: var(--uix-control-md); border: 1px solid var(--uix-field-border); border-radius: var(--uix-radius); padding: 0 10px; font: inherit; font-size: 14px; background: var(--uix-surface); color: var(--uix-text-body); min-width: 240px; flex: 1; }
-  .dg-count { margin-left: auto; font-size: 13px; color: var(--uix-text-secondary); }
+  .dg-toolbar-top { display: flex; flex-wrap: nowrap; align-items: center; gap: 12px; margin: 0 0 16px; }
+  .dg-toolbar-top input { flex: 1 1 auto; min-width: 200px; height: var(--uix-control-md); border: 1px solid var(--uix-field-border); border-radius: var(--uix-radius); padding: 0 10px; font: inherit; font-size: 14px; }
+  .dg-toolbar-top select { flex: 0 1 auto; min-width: 150px; height: var(--uix-control-md); border: 1px solid var(--uix-field-border); border-radius: var(--uix-radius); padding: 0 8px; font: inherit; font-size: 14px; background: #fff; }
+  .dg-count { white-space: nowrap; font-size: 13px; color: var(--uix-text-secondary); }
+  .dg-chip { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #EDF0F4; color: #3A4658; white-space: nowrap; margin-left: 6px; font-weight: 500; }
+  .dg-chip.manual { background: #FCE8E9; color: #8E1418; }
+  .dg-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 0 0 1px rgba(16,24,40,.04), 0 1px 2px rgba(16,24,40,.06); margin-top: 16px; }
+  .dg-legend-in { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--uix-text-secondary); padding: 12px 20px; border-bottom: 1px solid #e5e7eb; background: #f9fafb; }
+  .dg-guide { font-size: 12px; color: var(--uix-text-secondary); padding: 8px 20px 0; }
+  .dg-form { padding: 16px 20px 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0 16px; }
+  .dg-form .f { margin-bottom: 12px; }
+  .dg-form label { display: block; font-size: 13px; font-weight: 500; color: #101828; margin-bottom: 4px; }
+  .dg-form input, .dg-form select { width: 100%; box-sizing: border-box; height: 34px; border: 1px solid #99a1af; border-radius: 8px; padding: 0 10px; font: inherit; font-size: 14px; background: #fff; }
+  .dg-form input[readonly] { background: #f3f4f6; color: #6a7282; }
+  .dg-form .wide { grid-column: 1 / -1; }
+  .dg-form .err { color: #8E1418; font-size: 12px; min-height: 14px; }
+  .dg-form footer { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; }
+  .dg-add[hidden] { display: none; }
   .dg-table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--uix-border-subtle); vertical-align: top; }
-  th { color: var(--uix-text-secondary); font-weight: 600; background: var(--uix-surface-subtle); white-space: nowrap; }
-  td.id { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: var(--uix-text-secondary); white-space: nowrap; }
-  tr.row { cursor: pointer; }
-  tr.row:hover td { background: var(--uix-surface-subtle); }
-  tr.detail td { background: var(--uix-surface-subtle); font-size: 13px; line-height: 1.7; }
-  .dg-chip { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #EDF0F4; color: #3A4658; white-space: nowrap; }
-  .dg-chip.mn { background: #FCE8E9; color: #8E1418; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+  th { background: #f9fafb; color: #6a7282; font-weight: 600; white-space: nowrap; }
+  td.id { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: #6a7282; }
   .dg-empty { padding: 32px; text-align: center; color: var(--uix-text-secondary); }
   .dg-note { margin-top: 12px; font-size: 12px; color: var(--uix-text-muted); }
-  .dg-head { display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; align-items:flex-start; }
-  .ant-btn ant-btn-primary { display:inline-flex; align-items:center; height:var(--uix-control-md); padding:0 14px; border-radius:var(--uix-radius); background:var(--uix-primary); color:var(--uix-on-primary); border:0; font:inherit; font-size:14px; font-weight:500; cursor:pointer; }
-  .ant-btn ant-btn-primary.ghost { background:var(--uix-surface); color:var(--uix-text-body); border:1px solid var(--uix-border-strong); }
-  .dg-modal { position:fixed; inset:0; background:rgba(16,24,40,.45); display:flex; align-items:center; justify-content:center; padding:16px; z-index:50; }
-  .dg-modal[hidden] { display:none; }
-  .dg-dialog { background:var(--uix-surface); border-radius:var(--uix-radius-md); box-shadow:var(--uix-shadow-md); width:100%; max-width:560px; max-height:90vh; overflow:auto; }
-  .dg-dialog header { padding:16px 20px; border-bottom:1px solid var(--uix-border); }
-  .dg-dialog header h2 { margin:0; font-size:16px; color:var(--uix-text-head); font-weight:600; }
-  .dg-dialog .body { padding:16px 20px; }
-  .dg-dialog footer { padding:12px 20px; border-top:1px solid var(--uix-border); display:flex; justify-content:flex-end; gap:8px; }
-  .dg-field { margin-bottom:14px; }
-  .dg-field label { display:block; font-size:13px; color:var(--uix-text-head); font-weight:500; margin-bottom:6px; }
-  .dg-field input, .dg-field textarea { width:100%; box-sizing:border-box; border:1px solid var(--uix-field-border); border-radius:var(--uix-radius); padding:8px 10px; font:inherit; font-size:14px; background:var(--uix-surface); color:var(--uix-text-body); }
-  .dg-field input { height:var(--uix-control-md); }
-  .dg-field .err { color:#8E1418; font-size:12px; margin-top:4px; }
-  .dg-banner { margin-top:12px; padding:10px 14px; border-radius:var(--uix-radius); background:#E7F6EC; color:#0E6B33; font-size:13px; }
-  .dg-banner[hidden] { display:none; }
-.dg-menu { position:relative; display:inline-block; }
-  .dg-menu-list { position:absolute; right:0; top:32px; min-width:140px; background:var(--uix-surface); border:1px solid var(--uix-border); border-radius:var(--uix-radius); box-shadow:var(--uix-shadow-md); padding:4px; z-index:20; }
-  .dg-menu-list[hidden] { display:none; }
-  .dg-menu-list button { display:block; width:100%; text-align:left; background:none; border:0; padding:8px 10px; font:inherit; font-size:13px; color:var(--uix-text-body); border-radius:var(--uix-radius-sm); cursor:pointer; }
-  .dg-menu-list button:hover { background:var(--uix-surface-muted); }
-  .dg-menu-list button.danger { color:#8E1418; }
-  td.act { text-align:right; white-space:nowrap; }
-  .dg-inline { margin-top: 20px; background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-xs); }
-  .dg-inline .dg-dialog { max-width: none; box-shadow: none; border-radius: var(--uix-radius-md); max-height: none; overflow: visible; }
-  .dg-inline[hidden] { display: none; }
-  .dg-inline form.body { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0 16px; align-items: start; }
-  .dg-inline form.body .dg-field { margin-bottom: 12px; }
-  .dg-inline form.body .dg-field:has(textarea), .dg-inline form.body > .err, .dg-inline form.body > .dg-tips { grid-column: 1 / -1; }
-  .dg-inline .dg-dialog footer { justify-content: flex-end; }
-  .dg-ch { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #EDF0F4; color: #3A4658; white-space: nowrap; margin-left: 6px; font-weight: 500; }
-  .dg-ch.manual { background: #FCE8E9; color: #8E1418; }
-.dg-legend-in { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--uix-text-secondary); padding: 12px 20px; border-bottom: 1px solid var(--uix-border); background: var(--uix-surface-subtle); }
-  .dg-legend-in b { color: var(--uix-text-head); font-weight: 600; }
-.dg-guide { font-size: 12px; color: var(--uix-text-secondary); padding: 8px 20px 0; }
-  .dg-toolbar-top { display: flex; flex-wrap: nowrap; align-items: center; gap: 12px; margin: 0 0 16px; padding: 0; border: 0; }
-  .dg-toolbar-top input { flex: 1 1 auto; min-width: 200px; height: var(--uix-control-md); }
-  .dg-toolbar-top select { flex: 0 1 auto; width: auto; min-width: 150px; height: var(--uix-control-md); }
-  .dg-toolbar-top .dg-count { margin-left: auto; white-space: nowrap; }
-  @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
+  @media (max-width: 600px) { .dg-wrap { padding: 16px; } }
 </style>
 </head>
 <body>
 <main class="dg-wrap">
   <div class="dg-crumb"><a href="/">Beranda</a> › Katalog data › Business Dataset</div>
-<div class="dg-toolbar dg-toolbar-top">
-      <input class="ant-input" id="q" type="search" placeholder="Cari dataset, fungsi, atau sistem…" aria-label="Cari dataset">
-      <span class="dg-count" id="count"></span>
-      <button class="ant-btn ant-btn-primary" id="btn-tambah" type="button" hidden>Tambah Business Dataset</button>
-    </div>
   <section class="dg-head">
     <div>
-    <h1>Business Dataset</h1>
-    <p>Kelompok data bisnis, fungsi, sistem, dan pemiliknya. Kolom yang belum ada di sumber ditandai "Perlu input manual".</p>
+      <h1>Business Dataset</h1>
+      <p>Kelompok data bisnis beserta domain dan sistem sumbernya. DATASET_ID dipakai sebagai acuan di Database Object.</p>
     </div>
   </section>
 
-  <div class="dg-inline" id="m-form" hidden>
-    <div class="dg-dialog">
-      <header><h2 id="f-title">Tambah Business Dataset</h2></header>
-      <div class="dg-legend-in"><span><span class="dg-ch">Otomatis</span> Dibuat sistem, tidak bisa diketik</span><span><span class="dg-ch">Otomatis dari DB</span> Pilihannya ditarik dari database</span><span><span class="dg-ch">Dari master</span> Dipilih dari halaman lain</span><span><span class="dg-ch manual">Manual</span> Diketik atau dipilih pengguna</span></div><div class="dg-guide"><b>Petunjuk:</b> Isi nama business dataset. Fungsi dan sistem dipilih dari halaman lain bila sudah tersedia.</div>
-      <form class="body" id="f" novalidate>
-      <div class="dg-field"><label for="f-fungsi">Fungsi <span class="dg-ch">Dari master</span></label><input id="f-fungsi" placeholder="Nama fungsi (opsional)"></div>
-        <div class="dg-field"><label for="f-id">DATASET_ID * <span class="dg-ch manual">Manual</span></label><input id="f-id" placeholder="contoh DS006"><div class="err" data-err="dataset_id"></div></div>
-        <div class="dg-field"><label for="f-nama">Nama dataset * <span class="dg-ch manual">Manual</span></label><input id="f-nama" placeholder="Nama business dataset"><div class="err" data-err="dataset_name"></div></div>
-        
-        <div class="dg-field"><label for="f-sys">SYSTEM_ID <span class="dg-ch">Dari master</span></label><input id="f-sys" placeholder="contoh SYS001 (opsional)"></div>
-        <div class="dg-field"><label for="f-alasan">Alasan perubahan</label><textarea id="f-alasan" rows="2" maxlength="500" placeholder="Opsional"></textarea></div>
-        <div class="err" id="f-err" hidden></div>
-      </form>
-      <footer><button class="ant-btn ant-btn-default" type="button" data-close>Batal</button><button class="ant-btn ant-btn-primary" type="button" id="f-save">Simpan</button></footer>
-    </div>
+  <div class="dg-toolbar-top">
+    <input id="q" type="search" placeholder="Cari business dataset…" aria-label="Cari business dataset">
+    <select id="dom" aria-label="Domain"><option value="">Semua domain</option></select>
+    <span class="dg-count" id="count"></span>
+    <button class="ant-btn ant-btn-primary" id="btn-tambah" type="button" hidden><span>Tambah Business Dataset</span></button>
   </div>
-  <section class="ant-card" style="margin-top:20px"><div class="ant-card-body" style="padding:0">
-    
-    <div class="ant-table-wrapper"><div class="ant-table"><div class="ant-table-container"><div class="ant-table-content">
+
+  <section class="dg-card dg-add" id="add" hidden>
+    <div class="dg-legend-in"><span><span class="dg-chip">Otomatis</span> ID dibuat oleh sistem</span><span><span class="dg-chip">Otomatis dari DB</span> ditarik langsung dari database</span><span><span class="dg-chip">Dari master</span> dipilih dari master data</span><span><span class="dg-chip manual">Manual</span> diketik oleh pengguna</span></div>
+    <div class="dg-guide"><b>Petunjuk:</b> Kolom bertanda * wajib diisi. Business domain bebas diketik; domain yang sudah dipakai muncul sebagai saran.</div>
+    <form class="dg-form" id="af" novalidate>
+      <div class="f"><label for="x-id">DATASET_ID <span class="dg-chip">Otomatis</span></label><input id="x-id" value="Otomatis" readonly></div>
+      <div class="f"><label for="x-name">BUSINESS_DATASET * <span class="dg-chip manual">Manual</span></label><input id="x-name" maxlength="200"><div class="err" id="e-name"></div></div>
+      <div class="f"><label for="x-dom">BUSINESS_DOMAIN * <span class="dg-chip manual">Manual</span></label><input id="x-dom" list="dl-dom" maxlength="200"><datalist id="dl-dom"></datalist><div class="err" id="e-dom"></div></div>
+      <div class="f"><label for="x-sys">SYSTEM_ID <span class="dg-chip">Dari master</span></label><select id="x-sys"></select></div>
+      <div class="f"><label for="x-sysn">SYSTEM_NAME <span class="dg-chip">Dari master</span></label><input id="x-sysn" readonly></div>
+      <div class="f"><label for="x-db">Nama Database <span class="dg-chip">Otomatis dari DB</span></label><select id="x-db"></select></div>
+      <div class="f wide"><label for="x-al">Alasan perubahan</label><input id="x-al" maxlength="500"></div>
+      <div class="err wide" id="e-srv"></div>
+      <footer>
+        <button class="ant-btn ant-btn-default" type="button" id="a-cancel"><span>Batal</span></button>
+        <button class="ant-btn ant-btn-default" type="button" id="a-again"><span>Simpan &amp; tambah lagi</span></button>
+        <button class="ant-btn ant-btn-primary" type="button" id="a-save"><span>Simpan</span></button>
+      </footer>
+    </form>
+  </section>
+
+  <section class="dg-card">
+    <div class="dg-table-wrap">
       <table>
-        <thead class="ant-table-thead"><tr><th class="ant-table-cell">DATASET_ID</th><th class="ant-table-cell">Nama dataset</th><th class="ant-table-cell">Sumber</th><th class="ant-table-cell">Fungsi</th><th class="ant-table-cell">Sistem</th><th class="ant-table-cell">Data owner</th><th class="ant-table-cell">Status</th><th class="ant-table-cell" id="th-aksi" hidden>Aksi</th></tr></thead>
-        <tbody id="rows" class="ant-table-tbody"></tbody>
-      </table></div></div></div>
-      <div class="dg-empty" id="empty" hidden>Tidak ada dataset yang cocok.</div>
+        <thead><tr><th>DATASET_ID</th><th>BUSINESS_DATASET</th><th>BUSINESS_DOMAIN</th><th>SYSTEM_ID</th><th>SYSTEM_NAME</th><th>Nama Database</th><th>Tabel Database Object</th><th>Sumber</th><th id="th-aksi" hidden>Aksi</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="dg-empty" id="empty" hidden>Tidak ada business dataset yang cocok.</div>
     </div>
   </section>
-  <div class="dg-banner" id="banner" hidden></div>
-  <div class="dg-modal" id="m-hapus" hidden role="dialog" aria-modal="true">
-    <div class="dg-dialog">
-      <header><h2>Hapus dataset dari daftar?</h2><p id="h-sub" style="font-size:13px;color:#6a7282;margin:4px 0 0"></p></header>
-      <div class="body" style="font-size:13px;line-height:1.6">Dataset ini tidak akan tampil di daftar. Riwayat tetap tersimpan, dan dataset dapat ditambahkan kembali dengan DATASET_ID yang sama.
-        <div class="dg-field" style="margin-top:14px"><label for="h-alasan">Alasan (opsional)</label><textarea id="h-alasan" rows="2" maxlength="500"></textarea></div>
-        <div class="err" id="h-err" hidden style="color:#8E1418;font-size:12px"></div></div>
-      <footer><button class="ant-btn ant-btn-default" type="button" data-close-h>Batal</button><button class="ant-btn ant-btn-primary" type="button" id="h-ok" style="background:#FCE8E9;color:#8E1418;border:1px solid #E7B3B5">Ya, hapus</button></footer>
-    </div>
-  </div>
-  
-  <p class="dg-note">Data hanya dibaca dari Trino (silver_dim_meta_dataset, sumber Excel ERM). Penambahan dan perubahan dataset belum tersedia di halaman ini.</p>
+  <p class="dg-note">Data dibaca dari Trino (silver_dim_meta_dataset dan perubahan aplikasi).</p>
 </main>
 <script src="/_leno/shell.js"></script>
 <script>
 (function () {
-  var all = [], $ = function (id) { return document.getElementById(id); };
-  var rowsEl = $('rows'), q = $('q'), count = $('count'), empty = $('empty');
+  var all = [], canEdit = false, editing = null;
+  var $ = function (id) { return document.getElementById(id); };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-  function val(v) { return v ? esc(v) : '<span class="dg-chip mn">Perlu input manual</span>'; }
+  function cell(v) { return v ? esc(v) : '<span class="dg-chip manual">Perlu input manual</span>'; }
   function render() {
-    var term = q.value.trim().toLowerCase();
+    var t = $('q').value.trim().toLowerCase(), d = $('dom').value;
     var list = all.filter(function (r) {
-      return !term || [r.dataset_id, r.dataset_name, r.business_dataset, r.business_domain, r.system_name].some(function (v) { return v && String(v).toLowerCase().indexOf(term) >= 0; });
+      if (d && r.business_domain !== d) return false;
+      return !t || [r.dataset_id, r.dataset_name, r.business_domain, r.system_name].some(function (v) { return v && String(v).toLowerCase().indexOf(t) >= 0; });
     });
-    rowsEl.innerHTML = list.map(function (r, i) {
-      return '<tr class="row" data-i="' + i + '"><td class="ant-table-cell id">' + esc(r.dataset_id) + '</td><td class="ant-table-cell ant-table-cell">' + val(r.dataset_name) + '</td>' +
-        '<td><span class="dg-chip">' + (r.sumber === 'Aplikasi' ? 'Aplikasi' : 'Database') + '</span></td><td class="ant-table-cell ant-table-cell">' + val(r.business_domain) + '</td><td class="ant-table-cell ant-table-cell">' + val(r.system_name) + '</td>' +
-        '<td class="ant-table-cell ant-table-cell">' + val(r.data_owner) + '</td><td class="ant-table-cell ant-table-cell">' + val(r.data_asset_status) + '</td>' + (canEdit ? '<td class="ant-table-cell act"><div class="dg-menu"><button class="ant-btn ant-btn-default" type="button" data-menu="1">Aksi ▾</button><div class="dg-menu-list" hidden><button type="button" data-ubah="' + esc(r.dataset_id) + '">Ubah</button><button type="button" class="danger" data-hapus="' + esc(r.dataset_id) + '">Hapus</button></div></div></td>' : '') + '</tr>';
+    $('rows').innerHTML = list.map(function (r) {
+      var menu = canEdit ? '<td class="ant-table-cell act" style="text-align:right"><div class="dg-menu" style="position:relative;display:inline-block"><button class="ant-btn ant-btn-default ant-btn-sm" type="button" data-dg-menu="1"><span>Aksi ▾</span></button><div class="dg-menu-list" role="menu" hidden style="position:absolute;right:0;top:32px;min-width:140px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 12px 24px rgba(16,24,40,.12);padding:4px;z-index:30;text-align:left"><button type="button" role="menuitem" data-ubah="' + esc(r.dataset_id) + '" style="display:block;width:100%;text-align:left;background:none;border:0;padding:8px 10px;font:inherit;font-size:13px;cursor:pointer">Ubah</button><button type="button" role="menuitem" data-hapus="' + esc(r.dataset_id) + '" style="display:block;width:100%;text-align:left;background:none;border:0;padding:8px 10px;font:inherit;font-size:13px;color:#8E1418;cursor:pointer">Hapus</button></div></div></td>' : '';
+      return '<tr class="ant-table-row"><td class="ant-table-cell id">' + esc(r.dataset_id) + '</td><td class="ant-table-cell">' + cell(r.dataset_name) + '</td>' +
+        '<td class="ant-table-cell">' + cell(r.business_domain) + '</td><td class="ant-table-cell">' + cell(r.system_id) + '</td><td class="ant-table-cell">' + cell(r.system_name) + '</td>' +
+        '<td class="ant-table-cell">' + cell(r.database_name) + '</td><td class="ant-table-cell">' + cell(r.tabel ? r.tabel + ' tabel' : '') + '</td>' +
+        '<td><span class="dg-chip">' + (r.sumber === 'Aplikasi' ? 'Aplikasi' : 'Database') + '</span></td>' + menu + '</tr>';
     }).join('');
-    empty.hidden = list.length > 0;
-    count.textContent = list.length + ' dari ' + all.length + ' dataset';
-    rowsEl._list = list;
+    $('empty').hidden = list.length > 0;
+    $('count').textContent = list.length + ' dari ' + all.length + ' dataset';
   }
-  rowsEl.addEventListener('click', function (e) {
-    var tr = e.target.closest('tr.row'); if (!tr) return;
-    var next = tr.nextElementSibling;
-    if (next && next.classList.contains('detail')) { next.remove(); return; }
-    var r = rowsEl._list[+tr.getAttribute('data-i')];
-    var labels = [['data_domain','Domain ID'],['subdomain','Sub-Fungsi'],['data_steward','Data steward'],['criticality','Kekritisan'],['classification','Klasifikasi data'],['record_count','Jumlah record']];
-    var d = document.createElement('tr'); d.className = 'detail';
-    d.innerHTML = '<td colspan="7">' + labels.map(function (l) { return '<b>' + l[1] + '</b>: ' + (r[l[0]] ? esc(r[l[0]]) : '<span class="dg-chip mn">Perlu input manual</span>'); }).join('<br>') + '</td>';
-    tr.after(d);
-  });
-  function load() {
-    return fetch('/_export/dataset', { credentials: 'same-origin' })
-      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function (j) { all = j.rows || []; render(); })
-      .catch(function () { count.textContent = ''; empty.hidden = false; empty.textContent = 'Data belum dapat dimuat. Coba lagi sebentar.'; });
+  function fillForm(r) {
+    editing = r ? r.dataset_id : null;
+    $('x-id').value = r ? r.dataset_id : 'Otomatis';
+    $('x-name').value = r ? (r.dataset_name || '') : ''; $('x-dom').value = r ? (r.business_domain || '') : '';
+    $('x-sys').value = r ? (r.system_id || '') : ''; $('x-sysn').value = r ? (r.system_name || '') : '';
+    $('x-db').value = r ? (r.database_name || '') : ''; $('x-al').value = '';
+    document.querySelectorAll('.dg-form .err').forEach(function (e) { e.textContent = ''; });
+    $('e-srv').textContent = ''; $('a-again').hidden = !!editing;
   }
-  load();
-
-  var canEdit = false, banner = document.getElementById('banner'), editing = null, hapusId = null;
-  var G = function (id) { return document.getElementById(id); };
-  function note(m) { banner.textContent = m; banner.hidden = !m; }
-  function openForm() {
-    editing = null; G('f-title').textContent = 'Tambah Business Dataset'; G('f-id').disabled = false;
-    ['f-id','f-nama','f-fungsi','f-sys','f-alasan'].forEach(function (i) { G(i).value = ''; });
-    G('f-err').hidden = true; document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; });
-    G('m-form').hidden = false; document.getElementById('m-form') && document.getElementById('m-form').scrollIntoView({block:'start', behavior:'smooth'}); document.getElementById('m-def') && document.getElementById('m-def').scrollIntoView({block:'start', behavior:'smooth'}); G('f-id').focus();
-  }
-  function openEdit(r) {
-    editing = r.dataset_id; G('f-title').textContent = 'Ubah Business Dataset'; G('f-id').value = r.dataset_id; G('f-id').disabled = true;
-    G('f-nama').value = r.dataset_name || ''; G('f-fungsi').value = r.business_domain || ''; G('f-sys').value = r.system_id || ''; G('f-alasan').value = '';
-    G('f-err').hidden = true; document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; });
-    G('m-form').hidden = false; document.getElementById('m-form') && document.getElementById('m-form').scrollIntoView({block:'start', behavior:'smooth'}); document.getElementById('m-def') && document.getElementById('m-def').scrollIntoView({block:'start', behavior:'smooth'}); G('f-nama').focus();
-  }
-  G('btn-tambah').addEventListener('click', openForm);
-  document.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', function () { G('m-form').hidden = true; }); });
-  document.querySelectorAll('[data-close-h]').forEach(function (b) { b.addEventListener('click', function () { G('m-hapus').hidden = true; }); });
-  function closeMenus() { document.querySelectorAll('.dg-menu-list').forEach(function (m) { m.hidden = true; }); }
-  document.addEventListener('click', function (e) { if (!e.target.closest('.dg-menu')) closeMenus(); });
-  G('rows').addEventListener('click', function (e) {
-    var mb = e.target.closest('[data-menu]');
-    if (mb) { var list = mb.parentNode.querySelector('.dg-menu-list'); var open = list.hidden; closeMenus(); list.hidden = !open; return; }
-    closeMenus();
-    var u = e.target.closest('[data-ubah]'), h = e.target.closest('[data-hapus]');
-    if (u) { var r = (G('rows')._list || []).find(function (x) { return x.dataset_id === u.getAttribute('data-ubah'); }); if (r) openEdit(r); }
-    if (h) { hapusId = h.getAttribute('data-hapus'); G('h-sub').textContent = 'DATASET_ID ' + hapusId; G('h-alasan').value = ''; G('h-err').hidden = true; G('m-hapus').hidden = false; }
-  });
-  G('h-ok').addEventListener('click', function () {
-    var btn = this; btn.disabled = true;
-    fetch('/_export/dataset', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ aksi: 'hapus', dataset_id: hapusId, alasan: G('h-alasan').value.trim() }) })
-      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, body: j }; }); })
-      .then(function (res) {
-        btn.disabled = false;
-        if (!res.ok) { G('h-err').textContent = res.body.error || 'Belum dapat dihapus.'; G('h-err').hidden = false; return; }
-        G('m-hapus').hidden = true; note('Dataset ' + hapusId + ' dihapus dari daftar.'); load();
-      })
-      .catch(function () { btn.disabled = false; G('h-err').textContent = 'Jaringan terputus. Coba lagi.'; G('h-err').hidden = false; });
-  });
-  G('f-save').addEventListener('click', function () {
-    var v = function (i) { return G(i).value.trim(); };
-    var body = { aksi: editing ? 'ubah' : 'tambah', dataset_id: editing || v('f-id'), dataset_name: v('f-nama'), business_domain: v('f-fungsi'), system_id: v('f-sys'), alasan: v('f-alasan') };
-    var local = {};
-    if (!editing && !/^DS\d{3}$/i.test(body.dataset_id)) local.dataset_id = 'Format DATASET_ID seperti DS006.';
-    if (!body.dataset_name) local.dataset_name = 'Nama dataset wajib diisi.';
-    document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = local[e.getAttribute('data-err')] || ''; });
-    if (Object.keys(local).length) return;
-    var btn = G('f-save'); btn.disabled = true;
+  function openForm(r) { fillForm(r); $('add').hidden = false; $('add').scrollIntoView({ block: 'start', behavior: 'smooth' }); $('x-name').focus(); }
+  function save(again) {
+    var body = { aksi: editing ? 'ubah' : 'tambah', dataset_id: editing || '', dataset_name: $('x-name').value.trim(), business_domain: $('x-dom').value.trim(),
+      system_id: $('x-sys').value, database_name: $('x-db').value, alasan: $('x-al').value.trim() };
+    var bad = false;
+    $('e-name').textContent = body.dataset_name ? '' : 'Business dataset wajib diisi.'; if (!body.dataset_name) bad = true;
+    $('e-dom').textContent = body.business_domain ? '' : 'Business domain wajib diisi.'; if (!body.business_domain) bad = true;
+    if (bad) return;
     fetch('/_export/dataset', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, body: j }; }); })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, j: j }; }); })
       .then(function (res) {
-        btn.disabled = false;
-        if (!res.ok) { G('f-err').textContent = res.body.error || 'Perubahan belum dapat disimpan.'; G('f-err').hidden = false; return; }
-        G('m-form').hidden = true; note('Dataset ' + res.body.dataset_id + ' tersimpan.'); load();
-      })
-      .catch(function () { btn.disabled = false; G('f-err').textContent = 'Jaringan terputus. Coba lagi.'; G('f-err').hidden = false; });
+        if (!res.ok) { $('e-srv').textContent = res.j.error || 'Belum dapat disimpan.'; return; }
+        if (again) { fillForm(null); $('x-name').focus(); } else { $('add').hidden = true; }
+        load();
+      });
+  }
+  $('rows').addEventListener('click', function (e) {
+    var u = e.target.closest('[data-ubah]'), h = e.target.closest('[data-hapus]');
+    if (u) { var r = all.find(function (x) { return x.dataset_id === u.getAttribute('data-ubah'); }); if (r) openForm(r); return; }
+    if (h) {
+      var id = h.getAttribute('data-hapus');
+      if (!confirm('Hapus ' + id + ' dari daftar? Riwayat tetap tersimpan.')) return;
+      fetch('/_export/dataset', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ aksi: 'hapus', dataset_id: id }) }).then(load);
+    }
+  });
+  $('btn-tambah').addEventListener('click', function () { openForm(null); });
+  $('a-cancel').addEventListener('click', function () { $('add').hidden = true; });
+  $('a-save').addEventListener('click', function () { save(false); });
+  $('a-again').addEventListener('click', function () { save(true); });
+  $('x-sys').addEventListener('change', function () { var s = all.find(function (x) { return x.system_id === this.value; }, this); $('x-sysn').value = s ? (s.system_name || '') : ''; });
+  $('q').addEventListener('input', render); $('dom').addEventListener('change', render);
+  function load() {
+    fetch('/_export/dataset', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
+      all = j.rows || [];
+      var doms = Array.from(new Set(all.map(function (r) { return r.business_domain; }).filter(Boolean))).sort();
+      $('dom').innerHTML = '<option value="">Semua domain</option>' + doms.map(function (v) { return '<option>' + esc(v) + '</option>'; }).join('');
+      $('dl-dom').innerHTML = doms.map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
+      render();
+    });
+  }
+  Promise.all([fetch('/_export/sistem', { credentials: 'same-origin' }).then(function (r) { return r.json(); }),
+               fetch('/_export/objek', { credentials: 'same-origin' }).then(function (r) { return r.json(); })]).then(function (x) {
+    $('x-sys').innerHTML = '<option value="">(belum terdaftar)</option>' + x[0].rows.map(function (s) { return '<option value="' + esc(s.system_id) + '">' + esc(s.system_id + ' · ' + (s.system_name || '')) + '</option>'; }).join('');
+    var dbs = Array.from(new Set(['ERM'].concat(x[1].rows.map(function (o) { return o.database_name; }).filter(Boolean))));
+    $('x-db').innerHTML = '<option value="">(pilih database)</option>' + dbs.map(function (v) { return '<option>' + esc(v) + '</option>'; }).join('');
   });
   fetch('/_export/whoami', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) {
-    canEdit = !!j.bisa_ubah; G('btn-tambah').hidden = !canEdit; G('th-aksi').hidden = !canEdit; render();
+    canEdit = !!j.bisa_ubah; $('btn-tambah').hidden = !canEdit; $('th-aksi').hidden = !canEdit; load();
   });
-  q.addEventListener('input', render);
 })();
 </script>
 </body>
