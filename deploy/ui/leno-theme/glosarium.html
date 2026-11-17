@@ -26,19 +26,9 @@
   .dg-toolbar input { min-width: 240px; flex: 1; }
   .dg-count { margin-left: auto; font-size: 13px; color: var(--uix-text-secondary); }
   .dg-table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--uix-border-subtle); vertical-align: top; }
-  th { color: var(--uix-text-secondary); font-weight: 600; background: var(--uix-surface-subtle); white-space: nowrap; }
-  td.id { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: var(--uix-text-secondary); white-space: nowrap; }
-  td.def { color: var(--uix-text-body); line-height: 1.5; min-width: 320px; }
-  td.act { text-align: right; white-space: nowrap; }
   .dg-chip { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #EDF0F4; color: #3A4658; white-space: nowrap; }
   .dg-chip.ok { background: #E7F6EC; color: #0E6B33; }
   .dg-chip.mn { background: #FCE8E9; color: #8E1418; }
-  .dg-btn { display: inline-flex; align-items: center; height: var(--uix-control-md); padding: 0 14px; border-radius: var(--uix-radius); background: var(--uix-primary); color: var(--uix-on-primary); border: 0; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
-  .dg-btn.ghost { background: var(--uix-surface); color: var(--uix-text-body); border: 1px solid var(--uix-border-strong); }
-  .dg-btn.small { height: 28px; padding: 0 10px; }
-  .dg-btn[disabled] { opacity: .6; cursor: default; }
   .dg-empty { padding: 32px; text-align: center; color: var(--uix-text-secondary); }
   .dg-modal { position: fixed; inset: 0; background: rgba(16,24,40,.45); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
   .dg-modal[hidden] { display: none; }
@@ -71,26 +61,26 @@
     </div>
   </section>
 
-  <section class="dg-card">
+  <section class="ant-card" style="margin-top:20px"><div class="ant-card-body" style="padding:0">
     <div class="dg-progress">
       <div class="dg-stat"><span>Istilah</span><b id="s-total">–</b></div>
       <div class="dg-stat"><span>Sudah ada definisi</span><b id="s-def">–</b><div class="dg-bar"><i id="s-bar" style="width:0%"></i></div></div>
       <div class="dg-stat"><span>Belum ada definisi</span><b id="s-todo">–</b></div>
     </div>
     <div class="dg-toolbar">
-      <input id="q" type="search" placeholder="Cari FIELD_ID, business term, atau definisi…" aria-label="Cari glosarium">
+      <input class="ant-input" id="q" type="search" placeholder="Cari FIELD_ID, business term, atau definisi…" aria-label="Cari glosarium">
       <select id="grp" aria-label="Kelompok"><option value="">Semua kelompok</option></select>
       <select id="st" aria-label="Status"><option value="">Semua status</option><option value="ada">Sudah ada definisi</option><option value="kosong">Belum ada definisi</option></select>
       <span class="dg-count" id="count"></span>
     </div>
   </section>
 
-  <section class="dg-card">
-    <div class="dg-table-wrap">
-      <table>
-        <thead><tr><th>FIELD_ID</th><th>BUSINESS_TERM</th><th>DEFINISI</th><th>Dipakai di Data Element</th><th>Status</th><th id="th-aksi" hidden>Aksi</th></tr></thead>
-        <tbody id="rows"></tbody>
-      </table>
+  <section class="ant-card" style="margin-top:20px"><div class="ant-card-body" style="padding:0">
+    <div class="ant-table-wrapper"><div class="ant-spin-nested-loading"><div class="ant-spin-container"><div class="ant-table"><div class="ant-table-container"><div class="ant-table-content">
+      <table style="width:100%;table-layout:auto">
+        <thead class="ant-table-thead"><tr><th class="ant-table-cell">FIELD_ID</th><th class="ant-table-cell">BUSINESS_TERM</th><th class="ant-table-cell">DEFINISI</th><th class="ant-table-cell">Dipakai di Data Element</th><th class="ant-table-cell">Status</th><th class="ant-table-cell" id="th-aksi" hidden style="text-align:right">Aksi</th></tr></thead>
+        <tbody id="rows" class="ant-table-tbody"></tbody>
+      </table></div></div></div></div></div></div>
       <div class="dg-empty" id="empty" hidden>Tidak ada istilah yang cocok.</div>
     </div>
   </section>
@@ -105,13 +95,13 @@
         <div class="dg-field" style="margin-top:14px"><label for="d-alasan">Alasan perubahan</label><input id="d-alasan" maxlength="500" placeholder="Opsional"></div>
         <div class="dg-err" id="d-srv" hidden></div>
       </form>
-      <footer><button class="dg-btn ghost" type="button" data-close>Batal</button><button class="dg-btn" type="button" id="d-save">Simpan</button></footer>
+      <footer><button class="ant-btn ant-btn-default" type="button" data-close><span>Batal</span></button><button class="ant-btn ant-btn-primary" type="button" id="d-save"><span>Simpan</span></button></footer>
     </div>
   </div>
 
   <section class="dg-legacy">
     Pengeditan istilah lain (nama, kelompok, pemilik) masih dilakukan di aplikasi Glosarium lama.
-    <br><a class="dg-link" href="/glossary">Buka Glosarium di aplikasi lama</a>
+    <br><a class="ant-btn ant-btn-default" href="/glossary" style="text-decoration:none">Buka Glosarium di aplikasi lama</a>
   </section>
 </main>
 <script src="/_leno/shell.js"></script>
@@ -134,9 +124,9 @@
     });
     rowsEl.innerHTML = list.map(function (r, i) {
       var def = r.definisi ? esc(String(r.definisi).length > 160 ? String(r.definisi).slice(0, 160) + '…' : r.definisi) : '<span class="dg-chip mn">Belum ada definisi</span>';
-      return '<tr><td class="id">' + esc(r.field_id) + '</td><td>' + esc(r.business_term) + '</td><td class="def">' + def + '</td>' +
-        '<td>' + esc(r.dipakai) + '</td><td>' + statusChip(r) + '</td>' +
-        (canEdit ? '<td class="act"><button class="dg-btn small" type="button" data-isi="' + esc(r.field_id) + '">Isi definisi</button></td>' : '') + '</tr>';
+      return '<tr class="ant-table-row"><td class="ant-table-cell" style="white-space:nowrap;font-family:monospace;font-size:12px">' + esc(r.field_id) + '</td><td class="ant-table-cell">' + esc(r.business_term) + '</td><td class="ant-table-cell" style="min-width:320px">' + def + '</td>' +
+        '<td class="ant-table-cell">' + esc(r.dipakai) + '</td><td class="ant-table-cell">' + statusChip(r) + '</td>' +
+        (canEdit ? '<td class="ant-table-cell" style="text-align:right"><button class="ant-btn ant-btn-primary ant-btn-sm" type="button" data-isi="' + esc(r.field_id) + '"><span>Isi definisi</span></button></td>' : '') + '</tr>';
     }).join('');
     empty.hidden = list.length > 0;
     count.textContent = list.length + ' dari ' + all.length + ' istilah';

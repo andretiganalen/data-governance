@@ -55,6 +55,13 @@
   function initials(n) { return n.split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0].toUpperCase(); }).join(''); }
 
   var style = document.createElement('style'); style.textContent = CSS; document.head.appendChild(style);
+  /* Gaya UIx asli aplikasi (antd): dimuat dari berkas yang dipakai ldg-server, agar kelas ant-* tampil sama. */
+  fetch('/_export/uicss', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : { css: [] }; }).then(function (j) {
+    (j.css || []).forEach(function (href) {
+      if (document.querySelector('link[href="' + href + '"]')) return;
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href; document.head.appendChild(l);
+    });
+  }).catch(function () {});
 
   var path = location.pathname.replace(/index\.html$/, '');
   var side = document.createElement('aside'); side.className = 'dg-side'; side.setAttribute('aria-label', 'Navigasi');

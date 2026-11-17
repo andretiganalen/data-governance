@@ -109,6 +109,22 @@ def glosarium() -> dict:
     return {"rows": sorted(rows, key=lambda x: (x["glosarium"] or "", x["business_term"] or ""))}
 
 
+_UI_CSS: dict = {"t": 0.0, "css": []}
+
+
+def uicss() -> dict:
+    """Berkas CSS aplikasi (UIx/antd) yang sedang dipakai ldg-server. Nama berkas berubah tiap build, jadi dibaca dari /signin (cache 10 menit)."""
+    import time
+    import re as _re
+    if time.time() - _UI_CSS["t"] < 600 and _UI_CSS["css"]:
+        return {"css": _UI_CSS["css"]}
+    with urllib.request.urlopen(UPSTREAM + "/signin", timeout=15) as r:
+        html = r.read().decode("utf-8", "replace")
+    css = [h for h in _re.findall(r'href="(/assets/[^"]+\.css)"', html)]
+    _UI_CSS.update({"t": time.time(), "css": css})
+    return {"css": css}
+
+
 def can_edit(user: dict) -> bool:
     """Tulis Master Organisasi: isAdmin atau tim UV-1 (Admin Data Governance)."""
     return bool(user.get("isAdmin")) or any(t.get("name") == STAFF for t in (user.get("teams") or []))
@@ -156,6 +172,8 @@ class H(BaseHTTPRequestHandler):
             if path == "/_export/whoami":   # nama untuk kerangka halaman (tanpa data lain)
                 nama = user.get("displayName") or user.get("name") or ""
                 return self._json(200, {"nama": nama, "bisa_ubah": can_edit(user)})
+            if path == "/_export/uicss":   # berkas CSS aplikasi untuk halaman kita (gaya UIx asli)
+                return self._json(200, uicss())
             if path.startswith("/_export/daftar/"):   # baca saja
                 key = path.rsplit("/", 1)[-1]
                 if key not in DAFTAR:
