@@ -54,6 +54,27 @@
     };
   }
   if (/^\/(signin|signup|logout)/.test(location.pathname)) clearToken();
+  /* Beranda = halaman awal. SPA pindah ke "/" lewat history (tanpa muat ulang), sehingga UI lama tetap tampil.
+     Navigasi ke "/" dipaksa muat ulang penuh; gateway lalu menyajikan Beranda untuk pengguna yang sudah login. */
+  (function () {
+    function toRoot(url) {
+      try {
+        var u = new URL(url, location.href);
+        if (u.origin === location.origin && u.pathname === "/" && location.pathname !== "/") {
+          window.location.assign("/");
+          return true;
+        }
+      } catch (e) { /* abaikan */ }
+      return false;
+    }
+    ["pushState", "replaceState"].forEach(function (fn) {
+      var orig = history[fn];
+      history[fn] = function (state, title, url) {
+        if (url != null && toRoot(url)) return;
+        return orig.apply(this, arguments);
+      };
+    });
+  })();
 
   /* ---------- 2. panel Visualisasi di area konten ---------- */
   function css() {
