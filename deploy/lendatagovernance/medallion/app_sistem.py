@@ -59,10 +59,18 @@ def merged(tq) -> list[dict]:
     return sorted(out.values(), key=lambda r: r["system_id"])
 
 
+def next_id(current: dict[str, dict]) -> str:
+    """SYSTEM_ID otomatis: nomor SYS berikutnya dari daftar yang berlaku."""
+    nums = [int(m.group(1)) for k in current for m in [re.search(r"(\d+)$", k)] if m]
+    return f"SYS{(max(nums) if nums else 0) + 1:03d}"
+
+
 def validate(aksi: str, system_id: str | None, data: dict, current: dict[str, dict]) -> tuple[str, str]:
     if aksi not in AKSI:
         return "", "Aksi tidak dikenal."
     sid = (system_id or "").strip().upper()
+    if aksi == "tambah":
+        sid = next_id(current)   # otomatis dari server, input dari form diabaikan
     if not ID_RE.match(sid):
         return sid, "SYSTEM_ID harus berbentuk seperti SYS002."
     if aksi == "tambah" and sid in current:

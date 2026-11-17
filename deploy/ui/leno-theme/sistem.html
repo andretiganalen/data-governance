@@ -92,7 +92,7 @@
       <header><h2 id="f-title">Tambah Sistem</h2></header>
       <div class="dg-legend-in"><span><span class="dg-ch">Otomatis</span> Dibuat sistem, tidak bisa diketik</span><span><span class="dg-ch">Otomatis dari DB</span> Pilihannya ditarik dari database</span><span><span class="dg-ch">Dari master</span> Dipilih dari halaman lain</span><span><span class="dg-ch manual">Manual</span> Diketik atau dipilih pengguna</span></div><div class="dg-guide"><b>Petunjuk:</b> Isi nama dan deskripsi aplikasi sumber data. SYSTEM_ID mengikuti format SYS diikuti tiga angka.</div>
       <form class="body" id="f" novalidate>
-        <div class="dg-field"><label for="f-id">SYSTEM_ID * <span class="dg-ch manual">Manual</span></label><input id="f-id" placeholder="contoh SYS002"><small style="font-size:12px;color:#99a1af">Format SYS diikuti tiga angka. Tidak bisa diubah setelah disimpan.</small><div class="err" data-err="system_id"></div></div>
+        <div class="dg-field"><label for="f-id">SYSTEM_ID <span class="dg-ch">Otomatis</span></label><input id="f-id" placeholder="Otomatis (SYS berikutnya)" disabled><small style="font-size:12px;color:#99a1af">Format SYS diikuti tiga angka. Tidak bisa diubah setelah disimpan.</small><div class="err" data-err="system_id"></div></div>
         <div class="dg-field"><label for="f-nama">Nama sistem * <span class="dg-ch manual">Manual</span></label><input id="f-nama" placeholder="Nama aplikasi sumber data"><div class="err" data-err="system_name"></div></div>
         <div class="dg-field"><label for="f-desc">Deskripsi <span class="dg-ch manual">Manual</span></label><textarea id="f-desc" rows="3" maxlength="1000" placeholder="Opsional"></textarea></div>
         <div class="dg-field"><label for="f-alasan">Alasan perubahan</label><textarea id="f-alasan" rows="2" maxlength="500" placeholder="Opsional"></textarea></div>
@@ -204,7 +204,7 @@
   $('f-save').addEventListener('click', function () {
     var body = { aksi: editing ? 'ubah' : 'tambah', system_id: editing || $('f-id').value.trim(), system_name: $('f-nama').value.trim(), description: $('f-desc').value.trim(), alasan: $('f-alasan').value.trim() };
     var local = {};
-    if (!editing && !/^SYS\d{3}$/i.test(body.system_id)) local.system_id = 'Format SYSTEM_ID seperti SYS002.';
+    
     if (!body.system_name) local.system_name = 'Nama sistem wajib diisi.';
     document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = local[e.getAttribute('data-err')] || ''; });
     if (Object.keys(local).length) return;
