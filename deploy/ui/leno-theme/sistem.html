@@ -29,6 +29,23 @@
   .dg-chip.mn { background: #FCE8E9; color: #8E1418; }
   .dg-empty { padding: 32px; text-align: center; color: var(--uix-text-secondary); }
   .dg-note { margin-top: 12px; font-size: 12px; color: var(--uix-text-muted); }
+  .dg-head { display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; align-items:flex-start; }
+  .dg-btn { display:inline-flex; align-items:center; height:var(--uix-control-md); padding:0 14px; border-radius:var(--uix-radius); background:var(--uix-primary); color:var(--uix-on-primary); border:0; font:inherit; font-size:14px; font-weight:500; cursor:pointer; }
+  .dg-btn.ghost { background:var(--uix-surface); color:var(--uix-text-body); border:1px solid var(--uix-border-strong); }
+  .dg-modal { position:fixed; inset:0; background:rgba(16,24,40,.45); display:flex; align-items:center; justify-content:center; padding:16px; z-index:50; }
+  .dg-modal[hidden] { display:none; }
+  .dg-dialog { background:var(--uix-surface); border-radius:var(--uix-radius-md); box-shadow:var(--uix-shadow-md); width:100%; max-width:560px; max-height:90vh; overflow:auto; }
+  .dg-dialog header { padding:16px 20px; border-bottom:1px solid var(--uix-border); }
+  .dg-dialog header h2 { margin:0; font-size:16px; color:var(--uix-text-head); font-weight:600; }
+  .dg-dialog .body { padding:16px 20px; }
+  .dg-dialog footer { padding:12px 20px; border-top:1px solid var(--uix-border); display:flex; justify-content:flex-end; gap:8px; }
+  .dg-field { margin-bottom:14px; }
+  .dg-field label { display:block; font-size:13px; color:var(--uix-text-head); font-weight:500; margin-bottom:6px; }
+  .dg-field input, .dg-field textarea { width:100%; box-sizing:border-box; border:1px solid var(--uix-field-border); border-radius:var(--uix-radius); padding:8px 10px; font:inherit; font-size:14px; background:var(--uix-surface); color:var(--uix-text-body); }
+  .dg-field input { height:var(--uix-control-md); }
+  .dg-field .err { color:#8E1418; font-size:12px; margin-top:4px; }
+  .dg-banner { margin-top:12px; padding:10px 14px; border-radius:var(--uix-radius); background:#E7F6EC; color:#0E6B33; font-size:13px; }
+  .dg-banner[hidden] { display:none; }
   @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
 </style>
 </head>
@@ -36,8 +53,11 @@
 <main class="dg-wrap">
   <div class="dg-crumb"><a href="/">Beranda</a> › Master data › Sistem</div>
   <section class="dg-head">
+    <div>
     <h1>Master Sistem</h1>
     <p>Daftar aplikasi sumber data beserta deskripsinya. Kolom yang belum ada di sumber ditandai "Perlu input manual".</p>
+    </div>
+    <button class="dg-btn" id="btn-tambah" type="button" hidden>Tambah Sistem</button>
   </section>
 
   <section class="dg-card">
@@ -47,12 +67,26 @@
     </div>
     <div class="dg-table-wrap">
       <table>
-        <thead><tr><th>SYSTEM_ID</th><th>Nama sistem</th><th>Deskripsi</th><th>Pemilik bisnis</th><th>Data owner</th><th>Platform database</th><th>Status</th></tr></thead>
+        <thead><tr><th>SYSTEM_ID</th><th>Nama sistem</th><th>Deskripsi</th><th>Pemilik bisnis</th><th>Data owner</th><th>Platform database</th><th>Status</th><th>Sumber</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
       <div class="dg-empty" id="empty" hidden>Tidak ada sistem yang cocok.</div>
     </div>
   </section>
+  <div class="dg-banner" id="banner" hidden></div>
+  <div class="dg-modal" id="m-form" hidden role="dialog" aria-modal="true">
+    <div class="dg-dialog">
+      <header><h2>Tambah Sistem</h2></header>
+      <form class="body" id="f" novalidate>
+        <div class="dg-field"><label for="f-id">SYSTEM_ID *</label><input id="f-id" placeholder="contoh SYS002"><small style="font-size:12px;color:#99a1af">Format SYS diikuti tiga angka. Tidak bisa diubah setelah disimpan.</small><div class="err" data-err="system_id"></div></div>
+        <div class="dg-field"><label for="f-nama">Nama sistem *</label><input id="f-nama" placeholder="Nama aplikasi sumber data"><div class="err" data-err="system_name"></div></div>
+        <div class="dg-field"><label for="f-desc">Deskripsi</label><textarea id="f-desc" rows="3" maxlength="1000" placeholder="Opsional"></textarea></div>
+        <div class="dg-field"><label for="f-alasan">Alasan perubahan</label><textarea id="f-alasan" rows="2" maxlength="500" placeholder="Opsional"></textarea></div>
+        <div class="err" id="f-err" hidden></div>
+      </form>
+      <footer><button class="dg-btn ghost" type="button" data-close>Batal</button><button class="dg-btn" type="button" id="f-save">Simpan</button></footer>
+    </div>
+  </div>
   <p class="dg-note">Data hanya dibaca dari Trino (silver_dim_meta_system, sumber Excel ERM). Penambahan dan perubahan sistem belum tersedia di halaman ini.</p>
 </main>
 <script src="/_leno/shell.js"></script>
@@ -70,7 +104,7 @@
     rowsEl.innerHTML = list.map(function (r, i) {
       return '<tr class="row" data-i="' + i + '"><td class="id">' + esc(r.system_id) + '</td><td>' + val(r.system_name) + '</td>' +
         '<td>' + val(r.description) + '</td><td>' + val(r.business_owner) + '</td><td>' + val(r.data_owner) + '</td>' +
-        '<td>' + val(r.database_platform) + '</td><td>' + val(r.dm_assessment_status) + '</td></tr>';
+        '<td>' + val(r.database_platform) + '</td><td>' + val(r.dm_assessment_status) + '</td><td><span class="dg-chip">' + (r.sumber === 'Aplikasi' ? 'Aplikasi' : 'Database') + '</span></td></tr>';
     }).join('');
     empty.hidden = list.length > 0;
     count.textContent = list.length + ' dari ' + all.length + ' sistem';
@@ -86,10 +120,37 @@
     d.innerHTML = '<td colspan="7">' + labels.map(function (l) { return '<b>' + l[1] + '</b>: ' + (r[l[0]] ? esc(r[l[0]]) : '<span class="dg-chip mn">Perlu input manual</span>'); }).join('<br>') + '</td>';
     tr.after(d);
   });
-  fetch('/_export/sistem', { credentials: 'same-origin' })
-    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (j) { all = j.rows || []; render(); })
-    .catch(function () { count.textContent = ''; empty.hidden = false; empty.textContent = 'Data belum dapat dimuat. Coba lagi sebentar.'; });
+  function load() {
+    return fetch('/_export/sistem', { credentials: 'same-origin' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (j) { all = j.rows || []; render(); })
+      .catch(function () { count.textContent = ''; empty.hidden = false; empty.textContent = 'Data belum dapat dimuat. Coba lagi sebentar.'; });
+  }
+  load();
+
+  var canEdit = false, banner = $('banner');
+  function note(m) { banner.textContent = m; banner.hidden = !m; }
+  function openForm() { ['f-id','f-nama','f-desc','f-alasan'].forEach(function (i) { $(i).value = ''; }); $('f-err').hidden = true; document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; }); $('m-form').hidden = false; $('f-id').focus(); }
+  $('btn-tambah').addEventListener('click', openForm);
+  document.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', function () { $('m-form').hidden = true; }); });
+  $('f-save').addEventListener('click', function () {
+    var body = { aksi: 'tambah', system_id: $('f-id').value.trim(), system_name: $('f-nama').value.trim(), description: $('f-desc').value.trim(), alasan: $('f-alasan').value.trim() };
+    var local = {};
+    if (!/^SYS\d{3}$/i.test(body.system_id)) local.system_id = 'Format SYSTEM_ID seperti SYS002.';
+    if (!body.system_name) local.system_name = 'Nama sistem wajib diisi.';
+    document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = local[e.getAttribute('data-err')] || ''; });
+    if (Object.keys(local).length) return;
+    var btn = $('f-save'); btn.disabled = true;
+    fetch('/_export/sistem', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, body: j }; }); })
+      .then(function (res) {
+        btn.disabled = false;
+        if (!res.ok) { $('f-err').textContent = res.body.error || 'Perubahan belum dapat disimpan.'; $('f-err').hidden = false; return; }
+        $('m-form').hidden = true; note('Sistem ' + res.body.system_id + ' tersimpan.'); load();
+      })
+      .catch(function () { btn.disabled = false; $('f-err').textContent = 'Jaringan terputus. Coba lagi.'; $('f-err').hidden = false; });
+  });
+  fetch('/_export/whoami', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) { canEdit = !!j.bisa_ubah; $('btn-tambah').hidden = !canEdit; });
   q.addEventListener('input', render);
 })();
 </script>

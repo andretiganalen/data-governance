@@ -104,14 +104,9 @@ def glosarium() -> dict:
 
 
 def sistem() -> dict:
-    """Master Sistem (silver_dim_meta_system, dari Excel ERM). Nilai kosong tetap kosong. Hanya dibaca dari Trino."""
-    tq = X.Trino()
-    cols = ["system_id", "system_name", "description", "application_type", "lifecycle_status", "criticality",
-            "business_owner", "data_owner", "data_steward", "technical_owner", "database_platform", "data_classification",
-            "dm_assessment_status", "last_review_date"]
-    rows = [dict(zip(cols, [None if v is None else str(v) for v in r]))
-            for r in tq.q(f"SELECT {', '.join(cols)} FROM {tq.fq('silver_dim_meta_system')} ORDER BY system_id")]
-    return {"rows": rows}
+    """Master Sistem: silver_dim_meta_system + perubahan aplikasi (app_sistem). Nilai kosong tetap kosong."""
+    import app_sistem as AS
+    return {"rows": AS.merged(X.Trino())}
 
 
 def dataset() -> dict:
@@ -221,6 +216,25 @@ class H(BaseHTTPRequestHandler):
         except ValueError:
             return {}
 
+    def _sistem_write(self, user: dict):
+        import app_sistem as AS
+        if not can_edit(user):
+            return self._json(403, {"error": "Hanya Admin Data Governance yang dapat mengubah Master Sistem."})
+        body = self._body()
+        aksi = str(body.get("aksi") or "")
+        try:
+            tq = X.Trino()
+            current = {r["system_id"]: r for r in AS.merged(tq)}
+            sid, galat = AS.validate(aksi, body.get("system_id"), body, current)
+            if galat:
+                return self._json(400, {"error": galat})
+            row = AS.append(tq, aksi, sid, body, user.get("name") or "pengguna", body.get("alasan"))
+            log("master-sistem", aksi, sid, "oleh", user.get("name"))
+            self._json(200, {"ok": True, "system_id": sid, "aksi": aksi, "diubah_pada": row["diubah_pada"]})
+        except Exception as e:  # noqa: BLE001
+            log("galat master-sistem", repr(e)[:200])
+            self._json(500, {"error": "Perubahan belum dapat disimpan. Coba lagi sebentar."})
+
     def _master_write(self, user: dict):
         import app_organisasi as AO
         if not can_edit(user):
@@ -242,7 +256,7 @@ class H(BaseHTTPRequestHandler):
 
     def do_POST(self):  # noqa: N802
         path = self.path.split("?")[0]
-        if path not in ("/_export/fungsi-pdf", "/_export/master-organisasi"):
+        if path not in ("/_export/fungsi-pdf", "/_export/master-organisasi", "/_export/sistem"):
             return self._json(404, {"error": "tidak ditemukan"})
         auth = self.headers.get("Authorization", "")
         if not auth.startswith("Bearer "):
@@ -253,6 +267,8 @@ class H(BaseHTTPRequestHandler):
             return self._json(401, {"error": "Silakan masuk terlebih dahulu."})
         if path == "/_export/master-organisasi":
             return self._master_write(user)
+        if path == "/_export/sistem":
+            return self._sistem_write(user)
         try:
             a = access(user)
             if not (a["allowed"] and a["orgs"] is None):
