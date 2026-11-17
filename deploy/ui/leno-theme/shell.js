@@ -10,13 +10,13 @@
     { title: 'Katalog data', items: [
       { label: 'Business Dataset', href: '/dataset/' },
       { label: 'Database Object', href: '/objek/' },
-      { label: 'Data Element' },
+      { label: 'Data Element', href: '/elemen/' },
       { label: 'Business Glossary', href: '/glosarium/' }] },
     { title: 'Tata kelola', items: [
-      { label: 'Governance Assignment' },
-      { label: 'Data Quality Rules' },
-      { label: 'Data Flow Lineage' },
-      { label: 'Security Access' }] }
+      { label: 'Governance Assignment', href: '/assignment/' },
+      { label: 'Data Quality Rules', href: '/kualitas/' },
+      { label: 'Data Flow Lineage', href: '/lineage/' },
+      { label: 'Security Access', href: '/akses/' }] }
   ];
   /* Menu aplikasi lama (sidebar bawah) tetap dilampirkan: item yang tidak ada di desain. */
   var NAV_BAWAH = { title: 'Lainnya', items: [

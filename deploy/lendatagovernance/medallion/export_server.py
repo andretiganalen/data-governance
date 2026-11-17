@@ -129,6 +129,23 @@ def objek() -> dict:
     return {"rows": tables, "fields": fields}
 
 
+DAFTAR = {   # kunci → (sumber Trino, kolom)  — baca saja
+    "elemen": ("silver_dim_meta_field", ["field_id", "table_name", "column_name", "business_term", "data_type", "pk_flag", "sensitive_flag", "metadata_status"]),
+    "assignment": ("silver_dim_meta_governance_assignment", ["field_id", "field_name", "business_term", "role", "org_id", "unit_kerja", "role_status"]),
+    "kualitas": ("silver_dim_meta_dq_rule", ["dq_rule_id", "field_id", "business_term", "rule", "validation", "dq_dimension", "pass_fail", "check_date"]),
+    "lineage": ("gold_meta_lineage", ["lineage_id", "system_name", "dataset_name", "table_name", "column_name", "field_id", "business_term", "target_label", "asset_type"]),
+    "akses": ("gold_meta_access_matrix", ["access_id", "screen_label", "column_name", "field_id", "org_id", "unit_kerja", "classification", "permission_category", "permission_type"]),
+}
+
+
+def daftar(key: str) -> dict:
+    """Daftar baca saja untuk layar Katalog/Tata kelola. Nilai kosong tetap kosong. Hanya dibaca dari Trino."""
+    tbl, cols = DAFTAR[key]
+    tq = X.Trino()
+    rows = [dict(zip(cols, [None if v is None else str(v) for v in r])) for r in tq.q(f"SELECT {', '.join(cols)} FROM {tq.fq(tbl)}")]
+    return {"rows": rows, "kolom": cols}
+
+
 def can_edit(user: dict) -> bool:
     """Tulis Master Organisasi: isAdmin atau tim UV-1 (Admin Data Governance)."""
     return bool(user.get("isAdmin")) or any(t.get("name") == STAFF for t in (user.get("teams") or []))
@@ -176,6 +193,11 @@ class H(BaseHTTPRequestHandler):
             if path == "/_export/whoami":   # nama untuk kerangka halaman (tanpa data lain)
                 nama = user.get("displayName") or user.get("name") or ""
                 return self._json(200, {"nama": nama, "bisa_ubah": can_edit(user)})
+            if path.startswith("/_export/daftar/"):   # baca saja
+                key = path.rsplit("/", 1)[-1]
+                if key not in DAFTAR:
+                    return self._json(404, {"error": "tidak ditemukan"})
+                return self._json(200, daftar(key))
             if path == "/_export/objek":   # baca saja
                 return self._json(200, objek())
             if path == "/_export/dataset":   # baca saja
