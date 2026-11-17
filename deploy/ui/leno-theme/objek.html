@@ -62,6 +62,9 @@
   .dg-inline form.body .dg-field { margin-bottom: 12px; }
   .dg-inline form.body .dg-field:has(textarea), .dg-inline form.body > .err, .dg-inline form.body > .dg-tips { grid-column: 1 / -1; }
   .dg-inline .dg-dialog footer { justify-content: flex-end; }
+  .dg-inline form.body { grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
+  .dg-inline form.body textarea { height: 72px; min-height: 72px; resize: vertical; }
+  .dg-inline form.body > footer { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; }
   .dg-ch { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #EDF0F4; color: #3A4658; white-space: nowrap; margin-left: 6px; font-weight: 500; }
   .dg-ch.manual { background: #FCE8E9; color: #8E1418; }
 .dg-legend-in { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--uix-text-secondary); padding: 12px 20px; border-bottom: 1px solid var(--uix-border); background: var(--uix-surface-subtle); }
@@ -99,10 +102,10 @@
       <div class="dg-field"><label for="f-nama">Nama tabel * <span class="dg-ch">Otomatis dari DB</span></label><input id="f-nama" placeholder="contoh erm_riskregister"><div class="err" data-err="table_name"></div></div>
       <div class="dg-field"><label for="f-jenis">Jenis objek <span class="dg-ch manual">Manual</span></label><select id="f-jenis"><option>Table</option><option>View</option></select></div>
       <div class="dg-field"><label for="f-db">Database <span class="dg-ch">Otomatis dari DB</span></label><input id="f-db" placeholder="contoh ERM (opsional)"></div>
-      <div class="dg-field"><label for="f-alasan">Alasan perubahan</label><input id="f-alasan" placeholder="Opsional"></div>
+      <div class="dg-field dg-half"><label for="f-alasan">Alasan perubahan</label><input id="f-alasan" placeholder="Opsional"></div>
       <div class="err" id="f-err" hidden></div>
     </form>
-    <footer><button class="ant-btn ant-btn-default" type="button" data-close>Batal</button><button class="ant-btn ant-btn-primary" type="button" id="f-save">Simpan</button></footer>
+    <footer><button class="ant-btn ant-btn-default" type="button" data-close>Batal</button><button class="ant-btn ant-btn-default" type="button" id="f-save-new">Simpan &amp; tambah lagi</button><button class="ant-btn ant-btn-primary" type="button" id="f-save">Simpan</button></footer>
   </div></div>
   <section class="ant-card" style="margin-top:20px"><div class="ant-card-body" style="padding:0">
     
@@ -210,6 +213,7 @@
       B('m-hapus').hidden = true; note('Tabel ' + hapusId + ' dihapus dari daftar.'); load();
     }).catch(function () { btn.disabled = false; B('h-err').textContent = 'Jaringan terputus. Coba lagi.'; B('h-err').hidden = false; });
   });
+  B('f-save-new').addEventListener('click', function () { window.__dgAgain = true; B('f-save').click(); });
   B('f-save').addEventListener('click', function () {
     var body = { aksi: editing ? 'ubah' : 'tambah', table_id: editing || B('f-id').value.trim(), dataset_id: B('f-ds').value, table_name: B('f-nama').value.trim(), object_type: B('f-jenis').value, database_name: B('f-db').value.trim(), alasan: B('f-alasan').value.trim() };
     var local = {};
@@ -222,7 +226,7 @@
     post(body).then(function (res) {
       btn.disabled = false;
       if (!res.ok) { B('f-err').textContent = res.body.error || 'Perubahan belum dapat disimpan.'; B('f-err').hidden = false; return; }
-      B('m-form').hidden = true; note('Tabel ' + res.body.table_id + ' tersimpan.'); load();
+      if (window.__dgAgain) { window.__dgAgain = false; ['f-nama','f-db','f-alasan'].forEach(function (i) { document.getElementById(i).value = ''; }); document.getElementById('f-err').hidden = true; } else { B('m-form').hidden = true; note('Tabel ' + res.body.table_id + ' tersimpan.'); load(); }
     }).catch(function () { btn.disabled = false; B('f-err').textContent = 'Jaringan terputus. Coba lagi.'; B('f-err').hidden = false; });
   });
   fetch('/_export/dataset', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : { rows: [] }; }).then(function (j) { dsList = j.rows || []; });

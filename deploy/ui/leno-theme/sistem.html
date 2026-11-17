@@ -56,9 +56,17 @@
   .dg-inline { margin-top: 20px; background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-xs); }
   .dg-inline .dg-dialog { max-width: none; box-shadow: none; border-radius: var(--uix-radius-md); max-height: none; overflow: visible; }
   .dg-inline[hidden] { display: none; }
-  .dg-inline form.body { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0 16px; align-items: start; }
+  .dg-inline form.body { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0 16px; align-items: start; width: 100%; box-sizing: border-box; padding: 16px 20px; }
+  .dg-inline .dg-dialog, .dg-inline { width: 100%; max-width: none; }
+  .dg-inline form.body { grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
+  .dg-inline form.body .dg-half { grid-column: auto; }
+  .dg-inline form.body textarea { height: 72px; min-height: 72px; resize: vertical; }
+  .dg-inline form.body > footer { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; }
+
   .dg-inline form.body .dg-field { margin-bottom: 12px; }
-  .dg-inline form.body .dg-field:has(textarea), .dg-inline form.body > .err, .dg-inline form.body > .dg-tips { grid-column: 1 / -1; }
+  .dg-inline .dg-field input, .dg-inline .dg-field select, .dg-inline .dg-field textarea { width: 100%; box-sizing: border-box; }
+  .dg-inline input:disabled { background: #f3f4f6 !important; color: #6a7282 !important; cursor: not-allowed; }
+  .dg-inline form.body > .err, .dg-inline form.body > .dg-tips { grid-column: 1 / -1; }
   .dg-inline .dg-dialog footer { justify-content: flex-end; }
   .dg-ch { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #EDF0F4; color: #3A4658; white-space: nowrap; margin-left: 6px; font-weight: 500; }
   .dg-ch.manual { background: #FCE8E9; color: #8E1418; }
@@ -94,11 +102,11 @@
       <form class="body" id="f" novalidate>
         <div class="dg-field"><label for="f-id">SYSTEM_ID <span class="dg-ch">Otomatis</span></label><input id="f-id" placeholder="Otomatis (SYS berikutnya)" disabled><small style="font-size:12px;color:#99a1af">Format SYS diikuti tiga angka. Tidak bisa diubah setelah disimpan.</small><div class="err" data-err="system_id"></div></div>
         <div class="dg-field"><label for="f-nama">Nama sistem * <span class="dg-ch manual">Manual</span></label><input id="f-nama" placeholder="Nama aplikasi sumber data"><div class="err" data-err="system_name"></div></div>
-        <div class="dg-field"><label for="f-desc">Deskripsi <span class="dg-ch manual">Manual</span></label><textarea id="f-desc" rows="3" maxlength="1000" placeholder="Opsional"></textarea></div>
-        <div class="dg-field"><label for="f-alasan">Alasan perubahan</label><textarea id="f-alasan" rows="2" maxlength="500" placeholder="Opsional"></textarea></div>
+        <div class="dg-field dg-half"><label for="f-desc">Deskripsi <span class="dg-ch manual">Manual</span></label><textarea id="f-desc" rows="3" maxlength="1000" placeholder="Opsional"></textarea></div>
+        <div class="dg-field dg-half"><label for="f-alasan">Alasan perubahan</label><textarea id="f-alasan" rows="2" maxlength="500" placeholder="Opsional"></textarea></div>
         <div class="err" id="f-err" hidden></div>
       </form>
-      <footer><button class="ant-btn ant-btn-default" type="button" data-close>Batal</button><button class="ant-btn ant-btn-primary" type="button" id="f-save">Simpan</button></footer>
+      <footer><button class="ant-btn ant-btn-default" type="button" data-close>Batal</button><button class="ant-btn ant-btn-default" type="button" id="f-save-new">Simpan &amp; tambah lagi</button><button class="ant-btn ant-btn-primary" type="button" id="f-save">Simpan</button></footer>
     </div>
   </div>
   <section class="ant-card" style="margin-top:20px"><div class="ant-card-body" style="padding:0">
@@ -166,7 +174,7 @@
   var canEdit = false, banner = $('banner'), editing = null, hapusId = null;
   function note(m) { banner.textContent = m; banner.hidden = !m; }
   function openForm() {
-    editing = null; $('f-title').textContent = 'Tambah Sistem'; $('f-id').disabled = false;
+    editing = null; $('f-title').textContent = 'Tambah Sistem'; $('f-id').value = ''; $('f-id').placeholder = 'Otomatis (SYS berikutnya)'; $('f-id').disabled = true;
     ['f-id','f-nama','f-desc','f-alasan'].forEach(function (i) { $(i).value = ''; });
     $('f-err').hidden = true; document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; });
     $('m-form').hidden = false; document.getElementById('m-form') && document.getElementById('m-form').scrollIntoView({block:'start', behavior:'smooth'}); document.getElementById('m-def') && document.getElementById('m-def').scrollIntoView({block:'start', behavior:'smooth'}); $('f-id').focus();
@@ -214,13 +222,14 @@
       .then(function (res) {
         btn.disabled = false;
         if (!res.ok) { $('f-err').textContent = res.body.error || 'Perubahan belum dapat disimpan.'; $('f-err').hidden = false; return; }
-        $('m-form').hidden = true; note('Sistem ' + res.body.system_id + ' tersimpan.'); load();
+        if (window.__dgAgain) { window.__dgAgain = false; ['f-nama','f-desc','f-alasan'].forEach(function (i) { document.getElementById(i).value = ''; }); document.getElementById('f-err').hidden = true; } else { $('m-form').hidden = true; note('Sistem ' + res.body.system_id + ' tersimpan.'); load(); }
       })
       .catch(function () { btn.disabled = false; $('f-err').textContent = 'Jaringan terputus. Coba lagi.'; $('f-err').hidden = false; });
   });
   fetch('/_export/whoami', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) {
     canEdit = !!j.bisa_ubah; $('btn-tambah').hidden = !canEdit; $('th-aksi').hidden = !canEdit; render();
   });
+  $('f-save-new').addEventListener('click', function () { window.__dgAgain = true; $('f-save').click(); });
   q.addEventListener('input', render);
 })();
 </script>
