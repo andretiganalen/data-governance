@@ -46,6 +46,13 @@
   .dg-field .err { color:#8E1418; font-size:12px; margin-top:4px; }
   .dg-banner { margin-top:12px; padding:10px 14px; border-radius:var(--uix-radius); background:#E7F6EC; color:#0E6B33; font-size:13px; }
   .dg-banner[hidden] { display:none; }
+.dg-menu { position:relative; display:inline-block; }
+  .dg-menu-list { position:absolute; right:0; top:32px; min-width:140px; background:var(--uix-surface); border:1px solid var(--uix-border); border-radius:var(--uix-radius); box-shadow:var(--uix-shadow-md); padding:4px; z-index:20; }
+  .dg-menu-list[hidden] { display:none; }
+  .dg-menu-list button { display:block; width:100%; text-align:left; background:none; border:0; padding:8px 10px; font:inherit; font-size:13px; color:var(--uix-text-body); border-radius:var(--uix-radius-sm); cursor:pointer; }
+  .dg-menu-list button:hover { background:var(--uix-surface-muted); }
+  .dg-menu-list button.danger { color:#8E1418; }
+  td.act { text-align:right; white-space:nowrap; }
   @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
 </style>
 </head>
@@ -67,16 +74,25 @@
     </div>
     <div class="dg-table-wrap">
       <table>
-        <thead><tr><th>SYSTEM_ID</th><th>Nama sistem</th><th>Deskripsi</th><th>Pemilik bisnis</th><th>Data owner</th><th>Platform database</th><th>Status</th><th>Sumber</th></tr></thead>
+        <thead><tr><th>SYSTEM_ID</th><th>Nama sistem</th><th>Deskripsi</th><th>Pemilik bisnis</th><th>Data owner</th><th>Platform database</th><th>Status</th><th>Sumber</th><th id="th-aksi" hidden>Aksi</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
       <div class="dg-empty" id="empty" hidden>Tidak ada sistem yang cocok.</div>
     </div>
   </section>
   <div class="dg-banner" id="banner" hidden></div>
+  <div class="dg-modal" id="m-hapus" hidden role="dialog" aria-modal="true">
+    <div class="dg-dialog">
+      <header><h2>Hapus sistem dari daftar?</h2><p id="h-sub" style="font-size:13px;color:#6a7282;margin:4px 0 0"></p></header>
+      <div class="body" style="font-size:13px;line-height:1.6">Sistem ini tidak akan tampil di daftar. Riwayat tetap tersimpan, dan sistem dapat ditambahkan kembali dengan SYSTEM_ID yang sama.
+        <div class="dg-field" style="margin-top:14px"><label for="h-alasan">Alasan (opsional)</label><textarea id="h-alasan" rows="2" maxlength="500"></textarea></div>
+        <div class="err" id="h-err" hidden style="color:#8E1418;font-size:12px"></div></div>
+      <footer><button class="dg-btn ghost" type="button" data-close-h>Batal</button><button class="dg-btn" type="button" id="h-ok" style="background:#FCE8E9;color:#8E1418;border:1px solid #E7B3B5">Ya, hapus</button></footer>
+    </div>
+  </div>
   <div class="dg-modal" id="m-form" hidden role="dialog" aria-modal="true">
     <div class="dg-dialog">
-      <header><h2>Tambah Sistem</h2></header>
+      <header><h2 id="f-title">Tambah Sistem</h2></header>
       <form class="body" id="f" novalidate>
         <div class="dg-field"><label for="f-id">SYSTEM_ID *</label><input id="f-id" placeholder="contoh SYS002"><small style="font-size:12px;color:#99a1af">Format SYS diikuti tiga angka. Tidak bisa diubah setelah disimpan.</small><div class="err" data-err="system_id"></div></div>
         <div class="dg-field"><label for="f-nama">Nama sistem *</label><input id="f-nama" placeholder="Nama aplikasi sumber data"><div class="err" data-err="system_name"></div></div>
@@ -104,7 +120,7 @@
     rowsEl.innerHTML = list.map(function (r, i) {
       return '<tr class="row" data-i="' + i + '"><td class="id">' + esc(r.system_id) + '</td><td>' + val(r.system_name) + '</td>' +
         '<td>' + val(r.description) + '</td><td>' + val(r.business_owner) + '</td><td>' + val(r.data_owner) + '</td>' +
-        '<td>' + val(r.database_platform) + '</td><td>' + val(r.dm_assessment_status) + '</td><td><span class="dg-chip">' + (r.sumber === 'Aplikasi' ? 'Aplikasi' : 'Database') + '</span></td></tr>';
+        '<td>' + val(r.database_platform) + '</td><td>' + val(r.dm_assessment_status) + '</td><td><span class="dg-chip">' + (r.sumber === 'Aplikasi' ? 'Aplikasi' : 'Database') + '</span></td>' + (canEdit ? '<td class="act"><div class="dg-menu"><button class="dg-btn ghost" type="button" data-menu="1">Aksi ▾</button><div class="dg-menu-list" hidden><button type="button" data-ubah="' + esc(r.system_id) + '">Ubah</button><button type="button" class="danger" data-hapus="' + esc(r.system_id) + '">Hapus</button></div></div></td>' : '') + '</tr>';
     }).join('');
     empty.hidden = list.length > 0;
     count.textContent = list.length + ' dari ' + all.length + ' sistem';
@@ -128,15 +144,48 @@
   }
   load();
 
-  var canEdit = false, banner = $('banner');
+  var canEdit = false, banner = $('banner'), editing = null, hapusId = null;
   function note(m) { banner.textContent = m; banner.hidden = !m; }
-  function openForm() { ['f-id','f-nama','f-desc','f-alasan'].forEach(function (i) { $(i).value = ''; }); $('f-err').hidden = true; document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; }); $('m-form').hidden = false; $('f-id').focus(); }
+  function openForm() {
+    editing = null; $('f-title').textContent = 'Tambah Sistem'; $('f-id').disabled = false;
+    ['f-id','f-nama','f-desc','f-alasan'].forEach(function (i) { $(i).value = ''; });
+    $('f-err').hidden = true; document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; });
+    $('m-form').hidden = false; $('f-id').focus();
+  }
+  function openEdit(r) {
+    editing = r.system_id; $('f-title').textContent = 'Ubah Sistem'; $('f-id').value = r.system_id; $('f-id').disabled = true;
+    $('f-nama').value = r.system_name || ''; $('f-desc').value = r.description || ''; $('f-alasan').value = '';
+    $('f-err').hidden = true; document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; });
+    $('m-form').hidden = false; $('f-nama').focus();
+  }
   $('btn-tambah').addEventListener('click', openForm);
   document.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', function () { $('m-form').hidden = true; }); });
+  document.querySelectorAll('[data-close-h]').forEach(function (b) { b.addEventListener('click', function () { $('m-hapus').hidden = true; }); });
+  function closeMenus() { document.querySelectorAll('.dg-menu-list').forEach(function (m) { m.hidden = true; }); }
+  document.addEventListener('click', function (e) { if (!e.target.closest('.dg-menu')) closeMenus(); });
+  rowsEl.addEventListener('click', function (e) {
+    var mb = e.target.closest('[data-menu]');
+    if (mb) { var list = mb.parentNode.querySelector('.dg-menu-list'); var open = list.hidden; closeMenus(); list.hidden = !open; return; }
+    closeMenus();
+    var u = e.target.closest('[data-ubah]'), h = e.target.closest('[data-hapus]');
+    if (u) { var r = (rowsEl._list || []).find(function (x) { return x.system_id === u.getAttribute('data-ubah'); }); if (r) openEdit(r); }
+    if (h) { hapusId = h.getAttribute('data-hapus'); $('h-sub').textContent = 'SYSTEM_ID ' + hapusId; $('h-alasan').value = ''; $('h-err').hidden = true; $('m-hapus').hidden = false; }
+  });
+  $('h-ok').addEventListener('click', function () {
+    var btn = this; btn.disabled = true;
+    fetch('/_export/sistem', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ aksi: 'hapus', system_id: hapusId, alasan: $('h-alasan').value.trim() }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, body: j }; }); })
+      .then(function (res) {
+        btn.disabled = false;
+        if (!res.ok) { $('h-err').textContent = res.body.error || 'Belum dapat dihapus.'; $('h-err').hidden = false; return; }
+        $('m-hapus').hidden = true; note('Sistem ' + hapusId + ' dihapus dari daftar.'); load();
+      })
+      .catch(function () { btn.disabled = false; $('h-err').textContent = 'Jaringan terputus. Coba lagi.'; $('h-err').hidden = false; });
+  });
   $('f-save').addEventListener('click', function () {
-    var body = { aksi: 'tambah', system_id: $('f-id').value.trim(), system_name: $('f-nama').value.trim(), description: $('f-desc').value.trim(), alasan: $('f-alasan').value.trim() };
+    var body = { aksi: editing ? 'ubah' : 'tambah', system_id: editing || $('f-id').value.trim(), system_name: $('f-nama').value.trim(), description: $('f-desc').value.trim(), alasan: $('f-alasan').value.trim() };
     var local = {};
-    if (!/^SYS\d{3}$/i.test(body.system_id)) local.system_id = 'Format SYSTEM_ID seperti SYS002.';
+    if (!editing && !/^SYS\d{3}$/i.test(body.system_id)) local.system_id = 'Format SYSTEM_ID seperti SYS002.';
     if (!body.system_name) local.system_name = 'Nama sistem wajib diisi.';
     document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = local[e.getAttribute('data-err')] || ''; });
     if (Object.keys(local).length) return;
@@ -150,7 +199,9 @@
       })
       .catch(function () { btn.disabled = false; $('f-err').textContent = 'Jaringan terputus. Coba lagi.'; $('f-err').hidden = false; });
   });
-  fetch('/_export/whoami', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) { canEdit = !!j.bisa_ubah; $('btn-tambah').hidden = !canEdit; });
+  fetch('/_export/whoami', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) {
+    canEdit = !!j.bisa_ubah; $('btn-tambah').hidden = !canEdit; $('th-aksi').hidden = !canEdit; render();
+  });
   q.addEventListener('input', render);
 })();
 </script>

@@ -11,7 +11,7 @@ TABLE = "app_sistem"
 FIELDS = ["system_name", "description"]
 BASE_COLS = ["system_id", "system_name", "description", "data_owner", "business_owner", "database_platform", "dm_assessment_status"]
 ID_RE = re.compile(r"^SYS\d{3}$")
-AKSI = ("tambah", "ubah")
+AKSI = ("tambah", "ubah", "hapus")
 _ready = False
 
 
@@ -50,6 +50,9 @@ def base(tq) -> dict[str, dict]:
 def merged(tq) -> list[dict]:
     out = {k: {**r, "sumber": "Database"} for k, r in base(tq).items()}
     for k, a in latest_app(tq).items():
+        if a["aksi"] == "hapus":          # soft delete: tidak tampil, riwayat tetap ada
+            out.pop(k, None)
+            continue
         cur = out.get(k, {c: None for c in BASE_COLS})
         out[k] = {**cur, "system_id": k, **{f: a[f] for f in FIELDS}, "sumber": "Aplikasi",
                   "diubah_oleh": a["oleh"], "diubah_pada": a["diubah_pada"]}
@@ -64,8 +67,10 @@ def validate(aksi: str, system_id: str | None, data: dict, current: dict[str, di
         return sid, "SYSTEM_ID harus berbentuk seperti SYS002."
     if aksi == "tambah" and sid in current:
         return sid, f"SYSTEM_ID {sid} sudah ada."
-    if aksi == "ubah" and sid not in current:
+    if aksi in ("ubah", "hapus") and sid not in current:
         return sid, f"SYSTEM_ID {sid} tidak ditemukan."
+    if aksi == "hapus":
+        return sid, ""
     name = (data.get("system_name") or "").strip()
     if not name:
         return sid, "Nama sistem wajib diisi."
@@ -76,7 +81,13 @@ def validate(aksi: str, system_id: str | None, data: dict, current: dict[str, di
 
 def append(tq, aksi: str, system_id: str, data: dict, oleh: str, alasan: str | None) -> dict:
     ensure(tq)
-    row = {"_id": uuid.uuid4().hex, "system_id": system_id, "system_name": (data.get("system_name") or "").strip(),
+    if aksi == "hapus":
+        cur = latest_app(tq).get(system_id) or {}
+        base_row = {c: None for c in FIELDS}
+        if not cur:
+            base_row = {"system_name": (base(tq).get(system_id) or {}).get("system_name"), "description": (base(tq).get(system_id) or {}).get("description")}
+        data = {**base_row, **{f: cur.get(f) for f in FIELDS if cur.get(f)}}
+    row = {"_id": uuid.uuid4().hex, "system_id": system_id, "system_name": (data.get("system_name") or "").strip() or None,
            "description": (data.get("description") or "").strip() or None, "aksi": aksi, "oleh": oleh,
            "diubah_pada": _now(), "alasan": (alasan or "").strip()[:500] or None}
     cols = ["_id", "system_id", "system_name", "description", "aksi", "oleh", "diubah_pada", "alasan"]
