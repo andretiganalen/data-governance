@@ -87,6 +87,22 @@ def master_organisasi() -> list[dict]:
     return AO.merged(X.Trino())
 
 
+def glosarium() -> dict:
+    """Istilah Glosarium (gold_meta_glossary_app) + status kelengkapan (gold_meta_glossary_status). Hanya dibaca dari Trino."""
+    tq = X.Trino()
+    cols = ["a.field_id", "a.business_term", "a.definisi", "a.glosarium", "a.data_owner", "a.data_steward", "a.diubah_pada",
+            "a.sumber_perubahan", "s.status", "s.kolom_tertaut", "s.kekurangan"]
+    sql = (f"SELECT {', '.join(cols)} FROM {tq.fq('gold_meta_glossary_app')} a "
+           f"LEFT JOIN {tq.fq('gold_meta_glossary_status')} s ON a.field_id = s.field_id ORDER BY a.glosarium, a.business_term")
+    keys = [c.split(".")[1] for c in cols]
+    rows = []
+    for r in tq.q(sql):
+        d = dict(zip(keys, [None if v is None else str(v) for v in r]))
+        d["kolom_tertaut"] = int(float(d["kolom_tertaut"])) if d["kolom_tertaut"] not in (None, "") else None
+        rows.append(d)
+    return {"rows": rows}
+
+
 def can_edit(user: dict) -> bool:
     """Tulis Master Organisasi: isAdmin atau tim UV-1 (Admin Data Governance)."""
     return bool(user.get("isAdmin")) or any(t.get("name") == STAFF for t in (user.get("teams") or []))
@@ -114,6 +130,8 @@ class H(BaseHTTPRequestHandler):
         if not user:
             return self._json(401, {"error": "Silakan masuk terlebih dahulu."})
         try:
+            if path == "/_export/glosarium":   # baca saja
+                return self._json(200, glosarium())
             if path == "/_export/master-organisasi":   # baca saja: versi berlaku dari Gold gold_meta_master_organisasi
                 return self._json(200, {"rows": master_organisasi(), "bisa_ubah": can_edit(user)})
             a = access(user)
