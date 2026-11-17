@@ -117,6 +117,7 @@
     </form>
     <footer>
       <button class="ant-btn ant-btn-default" type="button" data-close>Batal</button>
+      <button class="ant-btn ant-btn-default" type="button" id="f-save-new">Simpan &amp; tambah baru</button>
       <button class="ant-btn ant-btn-primary" type="button" id="f-save">Simpan</button>
     </footer>
   </div>
@@ -225,6 +226,7 @@
 
   function openForm(org) {
     editing = org || null;
+    $('f-save-new').hidden = !!editing;
     $('f-err').hidden = true; $('f-err').textContent = '';
     document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; });
     $('f-title').textContent = editing ? 'Ubah Master Organisasi' : 'Tambah Master Organisasi';
@@ -261,7 +263,7 @@
     if (!b.hidden) b.focus();
   });
 
-  $('f-save').addEventListener('click', function () {
+  function saveForm(keepOpen) {
     var fungsi = $('f-fungsi').value === FUNGSI_BARU ? $('f-fungsi-baru').value.trim() : $('f-fungsi').value;
     var body = {
       aksi: editing ? 'ubah' : 'tambah',
@@ -277,15 +279,25 @@
     if (!body.fungsi) local.fungsi = 'Fungsi wajib dipilih.';
     fieldErr(local);
     if (Object.keys(local).length) return;
-    var btn = $('f-save'); btn.disabled = true;
+    var btns = [$('f-save'), $('f-save-new')];
+    btns.forEach(function (b) { b.disabled = true; });
     post(body).then(function (res) {
-      btn.disabled = false;
+      btns.forEach(function (b) { b.disabled = false; });
       if (!res.ok) { $('f-err').textContent = res.body.error || 'Perubahan belum dapat disimpan.'; $('f-err').hidden = false; return; }
-      $('m-form').hidden = true;
       notice('Perubahan untuk ' + res.body.org_id + ' tersimpan.');
+      if (keepOpen) {
+        // tetap terbuka: Direktorat, Divisi, dan Fungsi dibawa ke isian berikutnya
+        $('f-id').value = ''; $('f-unit').value = ''; $('f-alasan').value = ''; $('f-err').hidden = true;
+        document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; });
+        $('f-id').focus();
+      } else {
+        $('m-form').hidden = true;
+      }
       load();
-    }).catch(function () { btn.disabled = false; $('f-err').textContent = 'Jaringan terputus. Coba lagi.'; $('f-err').hidden = false; });
-  });
+    }).catch(function () { btns.forEach(function (b) { b.disabled = false; }); $('f-err').textContent = 'Jaringan terputus. Coba lagi.'; $('f-err').hidden = false; });
+  }
+  $('f-save').addEventListener('click', function () { saveForm(false); });
+  $('f-save-new').addEventListener('click', function () { saveForm(true); });
 
   function closeMenus(except) {
     document.querySelectorAll('.dg-menu-list').forEach(function (m) { if (m !== except) m.hidden = true; });
@@ -341,7 +353,7 @@
   });
 
   document.querySelectorAll('[data-close]').forEach(function (b) {
-    b.addEventListener('click', function () { this.closest('.dg-modal').hidden = true; });
+    b.addEventListener('click', function () { var m = this.closest('.dg-modal, .dg-inline'); if (m) m.hidden = true; });
   });
   document.querySelectorAll('.dg-modal').forEach(function (m) {
     m.addEventListener('click', function (e) { if (e.target === m) m.hidden = true; });
