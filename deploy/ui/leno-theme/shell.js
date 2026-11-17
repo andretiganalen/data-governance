@@ -18,6 +18,13 @@
       { label: 'Organisasi', href: '/organisasi/' },
       { label: 'Sistem', href: '/sistem/' }] }
   ];
+  /* Menu aplikasi lama (sidebar bawah) tetap dilampirkan: item yang tidak ada di desain. */
+  var NAV_BAWAH = { title: 'Lainnya', items: [
+    { label: 'Explore', href: '/explore' },
+    { label: 'Visualisasi', href: '/visualisasi/' },
+    { label: 'Glosarium (aplikasi lama)', href: '/glossary' },
+    { label: 'Documents', href: '/docs' },
+    { label: 'Pengaturan', href: '/settings' }] };
   var CSS = [
     'body{display:flex;min-height:100vh;}',
     '.dg-side{width:248px;flex:0 0 248px;background:var(--uix-surface);border-right:1px solid var(--uix-border);padding:16px 12px;box-sizing:border-box;position:sticky;top:0;height:100vh;overflow:auto;font-family:var(--uix-font);}',
@@ -44,7 +51,7 @@
   var path = location.pathname.replace(/index\.html$/, '');
   var side = document.createElement('aside'); side.className = 'dg-side'; side.setAttribute('aria-label', 'Navigasi');
   var html = '<div class="dg-brand"><img src="/brand/len-logo.png" alt="" onerror="this.remove()">Data Governance</div>';
-  NAV.forEach(function (g) {
+  NAV.concat([NAV_BAWAH]).forEach(function (g) {
     if (g.title) html += '<h4>' + esc(g.title) + '</h4>';
     g.items.forEach(function (it) {
       if (!it.href) { html += '<span class="dg-off" title="Belum tersedia">' + esc(it.label) + '</span>'; return; }
