@@ -11,7 +11,7 @@ TABLE = "app_dataset"
 FIELDS = ["dataset_name", "business_domain", "system_id"]
 BASE_COLS = ["dataset_id", "dataset_name", "business_domain", "system_id", "system_name", "data_owner", "data_asset_status"]
 ID_RE = re.compile(r"^DS\d{3}$")
-AKSI = ("tambah", "ubah")
+AKSI = ("tambah", "ubah", "hapus")
 _ready = False
 
 
@@ -51,6 +51,9 @@ def base(tq) -> dict[str, dict]:
 def merged(tq) -> list[dict]:
     out = {k: {**r, "sumber": "Database"} for k, r in base(tq).items()}
     for k, a in latest_app(tq).items():
+        if a["aksi"] == "hapus":          # soft delete: tidak tampil, riwayat tetap ada
+            out.pop(k, None)
+            continue
         cur = out.get(k, {c: None for c in BASE_COLS})
         out[k] = {**cur, "dataset_id": k, **{f: a[f] for f in FIELDS}, "sumber": "Aplikasi",
                   "diubah_oleh": a["oleh"], "diubah_pada": a["diubah_pada"]}
@@ -65,8 +68,10 @@ def validate(aksi: str, dataset_id: str | None, data: dict, current: dict[str, d
         return did, "DATASET_ID harus berbentuk seperti DS006."
     if aksi == "tambah" and did in current:
         return did, f"DATASET_ID {did} sudah ada."
-    if aksi == "ubah" and did not in current:
+    if aksi in ("ubah", "hapus") and did not in current:
         return did, f"DATASET_ID {did} tidak ditemukan."
+    if aksi == "hapus":
+        return did, ""
     if not (data.get("dataset_name") or "").strip():
         return did, "Nama dataset wajib diisi."
     if len((data.get("dataset_name") or "")) > 200 or len((data.get("business_domain") or "")) > 200:
@@ -76,7 +81,13 @@ def validate(aksi: str, dataset_id: str | None, data: dict, current: dict[str, d
 
 def append(tq, aksi: str, dataset_id: str, data: dict, oleh: str, alasan: str | None) -> dict:
     ensure(tq)
-    row = {"_id": uuid.uuid4().hex, "dataset_id": dataset_id, "dataset_name": (data.get("dataset_name") or "").strip(),
+    if aksi == "hapus":   # hapus = baris penanda; isi terakhir disalin agar riwayat tetap lengkap
+        cur = latest_app(tq).get(dataset_id) or {}
+        data = {"dataset_name": cur.get("dataset_name"), "business_domain": cur.get("business_domain"), "system_id": cur.get("system_id")}
+        if not cur:
+            b = base(tq).get(dataset_id) or {}
+            data = {"dataset_name": b.get("dataset_name"), "business_domain": b.get("business_domain"), "system_id": b.get("system_id")}
+    row = {"_id": uuid.uuid4().hex, "dataset_id": dataset_id, "dataset_name": (data.get("dataset_name") or "").strip() or None,
            "business_domain": (data.get("business_domain") or "").strip() or None,
            "system_id": (data.get("system_id") or "").strip().upper() or None,
            "aksi": aksi, "oleh": oleh, "diubah_pada": _now(), "alasan": (alasan or "").strip()[:500] or None}
