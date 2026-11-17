@@ -31,11 +31,12 @@
   .dg-toolbar-top select { flex: 0 1 auto; width: auto; min-width: 150px; height: var(--uix-control-md); }
   .dg-toolbar-top .dg-count { margin-left: auto; white-space: nowrap; }
   .dg-add { margin: 0 0 12px; padding: 16px 20px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; }
-  .dg-add form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0 16px; }
+  .dg-add form { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0 16px; }
   .dg-add label { display: block; font-size: 13px; font-weight: 500; color: #101828; margin-bottom: 4px; }
   .dg-add .f { margin-bottom: 12px; }
   .dg-add input, .dg-add select { width: 100%; box-sizing: border-box; height: 34px; border: 1px solid #99a1af; border-radius: 8px; padding: 0 10px; font: inherit; font-size: 14px; }
   .dg-add .wide { grid-column: 1 / -1; }
+  .dg-add footer { grid-column: 1 / -1; }
   .dg-add .err { color: #8E1418; font-size: 12px; min-height: 14px; }
   .dg-add footer { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; }
   .dg-add[hidden] { display: none; }
@@ -50,7 +51,7 @@
       <span class="dg-count" id="count"></span>
     </div>
   <section class="dg-head"><h1 id="judul"></h1><p id="ket"></p></section>
-  <div class="dg-add" id="add" hidden><form id="af" novalidate><div class="f"><label for="a-tbl">TABLE_ID (Objek) <span class="dg-chip">Otomatis dari DB</span></label><select id="a-tbl"></select><div class="err" id="e-tbl"></div></div><div class="f"><label for="a-col">Nama kolom <span class="dg-chip manual">Manual</span></label><input id="a-col" maxlength="200"><div class="err" id="e-col"></div></div><div class="f"><label for="a-bt">Business term <span class="dg-chip">Otomatis dari master</span></label><select id="a-bt"></select></div><div class="f"><label for="a-dt">Tipe data <span class="dg-chip manual">Manual</span></label><input id="a-dt" maxlength="200" placeholder="contoh Text, Enum, Number"><div class="err" id="e-dt"></div></div><div class="f wide"><label for="a-al">Alasan perubahan</label><input id="a-al" maxlength="500"></div><footer><button class="ant-btn ant-btn-default" type="button" id="a-cancel"><span>Batal</span></button><button class="ant-btn ant-btn-primary" type="button" id="a-save"><span>Simpan</span></button></footer><div class="err wide" id="e-srv"></div></form></div>
+  <div class="dg-add" id="add" hidden><form id="af" novalidate><div class="f"><label for="a-tbl">TABLE_ID (Objek) <span class="dg-chip">Otomatis dari DB</span></label><select id="a-tbl"></select><div class="err" id="e-tbl"></div></div><div class="f"><label for="a-col">Nama kolom <span class="dg-chip manual">Manual</span></label><input id="a-col" maxlength="200"><div class="err" id="e-col"></div></div><div class="f"><label for="a-bt">Business term <span class="dg-chip">Otomatis dari master</span></label><select id="a-bt"></select></div><div class="f"><label for="a-dt">Tipe data <span class="dg-chip manual">Manual</span></label><input id="a-dt" maxlength="200" placeholder="contoh Text, Enum, Number"><div class="err" id="e-dt"></div></div><div class="f"><label for="a-al">Alasan perubahan</label><input id="a-al" maxlength="500"></div><footer><button class="ant-btn ant-btn-default" type="button" id="a-cancel"><span>Batal</span></button><button class="ant-btn ant-btn-default" type="button" id="a-again"><span>Simpan &amp; tambah lagi</span></button><button class="ant-btn ant-btn-primary" type="button" id="a-save"><span>Simpan</span></button></footer><div class="err wide" id="e-srv"></div></form></div>
   <section class="dg-card">
     
     <div class="dg-table-wrap">
@@ -108,6 +109,8 @@
     var A = function (id) { return document.getElementById(id); };
     addBtn.addEventListener('click', function () { A('add').hidden = false; A('af').reset(); A('e-srv').textContent = ''; A('a-col').focus(); });
     A('a-cancel').addEventListener('click', function () { A('add').hidden = true; });
+    A('a-again').addEventListener('click', function () { sessionStorage.setItem('dg-again', 'elemen'); A('a-save').click(); });
+    if (sessionStorage.getItem('dg-reopen') === 'elemen') { sessionStorage.removeItem('dg-reopen'); sessionStorage.removeItem('dg-again'); setTimeout(function () { A('add').hidden = false; }, 400); }
     fetch('/_export/whoami', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) { addBtn.hidden = !j.bisa_ubah; });
     Promise.all([fetch('/_export/objek', { credentials: 'same-origin' }).then(function (r) { return r.json(); }),
                  fetch('/_export/glosarium', { credentials: 'same-origin' }).then(function (r) { return r.json(); })]).then(function (x) {
@@ -125,6 +128,7 @@
         .then(function (res) {
           if (!res.ok) { A('e-srv').textContent = res.j.error || 'Belum dapat disimpan.'; return; }
           A('add').hidden = true; A('e-srv').textContent = '';
+          if (sessionStorage.getItem('dg-again') === 'elemen') sessionStorage.setItem('dg-reopen', 'elemen');
           location.reload();
         });
     });
@@ -147,7 +151,7 @@
     }).join('');
     box.innerHTML = '<form id="af" novalidate>' + fieldsHtml +
       '<div class="f wide"><label for="x-alasan">Alasan perubahan</label><input id="x-alasan" maxlength="500"></div>' +
-      '<footer><button class="ant-btn ant-btn-default" type="button" id="a-cancel"><span>Batal</span></button><button class="ant-btn ant-btn-primary" type="button" id="a-save"><span>Simpan</span></button></footer>' +
+      '<footer><button class="ant-btn ant-btn-default" type="button" id="a-cancel"><span>Batal</span></button><button class="ant-btn ant-btn-default" type="button" id="a-again"><span>Simpan &amp; tambah lagi</span></button><button class="ant-btn ant-btn-primary" type="button" id="a-save"><span>Simpan</span></button></footer>' +
       '<div class="err wide" id="e-srv"></div></form>';
     var anchor = document.querySelector('.dg-toolbar-top') || document.querySelector('.dg-card');
     anchor.parentNode.insertBefore(box, anchor.nextSibling);
