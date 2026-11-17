@@ -81,6 +81,17 @@ def access(user: dict) -> dict:
             "scope": "Fungsi/unit Anda" if orgs else "Belum ada unit atau Fungsi yang terpetakan"}
 
 
+def master_organisasi() -> list[dict]:
+    """Unit kerja berlaku: silver_dim_organization + perubahan aplikasi (app_organisasi). Hanya dibaca dari Trino."""
+    import app_organisasi as AO
+    return AO.merged(X.Trino())
+
+
+def can_edit(user: dict) -> bool:
+    """Tulis Master Organisasi: isAdmin atau tim UV-1 (Admin Data Governance)."""
+    return bool(user.get("isAdmin")) or any(t.get("name") == STAFF for t in (user.get("teams") or []))
+
+
 class H(BaseHTTPRequestHandler):
     def _json(self, code: int, obj: dict):
         b = json.dumps(obj, ensure_ascii=False).encode()
@@ -96,10 +107,15 @@ class H(BaseHTTPRequestHandler):
         if path == "/healthz":
             return self._json(200, {"ok": True})
         auth = self.headers.get("Authorization", "")
+        if not auth.startswith("Bearer "):   # halaman HTML (Beranda, Organisasi) hanya membawa cookie sesi
+            tok = next((c.split("=", 1)[1] for c in (self.headers.get("Cookie") or "").split(";") if c.strip().startswith("dg_token=")), "")
+            auth = f"Bearer {tok}" if tok else ""
         user = whoami(auth) if auth.startswith("Bearer ") else None
         if not user:
             return self._json(401, {"error": "Silakan masuk terlebih dahulu."})
         try:
+            if path == "/_export/master-organisasi":   # baca saja: versi berlaku dari Gold gold_meta_master_organisasi
+                return self._json(200, {"rows": master_organisasi(), "bisa_ubah": can_edit(user)})
             a = access(user)
             if path == "/_export/me":
                 return self._json(200, {"allowed": a["allowed"], "level": a["level"], "scope": a["scope"], "pdf": a["orgs"] is None and a["allowed"],
@@ -134,13 +150,47 @@ class H(BaseHTTPRequestHandler):
             log("galat", repr(e)[:200])
             self._json(500, {"error": "Berkas belum dapat dibuat. Coba lagi sebentar."})
 
+    def _body(self) -> dict:
+        n = int(self.headers.get("Content-Length") or 0)
+        if n <= 0 or n > 65536:
+            return {}
+        try:
+            return json.loads(self.rfile.read(n).decode("utf-8") or "{}")
+        except ValueError:
+            return {}
+
+    def _master_write(self, user: dict):
+        import app_organisasi as AO
+        if not can_edit(user):
+            return self._json(403, {"error": "Hanya Admin Data Governance yang dapat mengubah Master Organisasi."})
+        body = self._body()
+        aksi = str(body.get("aksi") or "")
+        try:
+            tq = X.Trino()
+            current = {r["org_id"]: r for r in AO.merged(tq)}
+            oid, galat = AO.validate(aksi, body.get("org_id"), body, current)
+            if galat:
+                return self._json(400, {"error": galat})
+            row = AO.append(tq, aksi, oid, body, user.get("name") or user.get("displayName") or "pengguna", body.get("alasan"), current)
+            log("master-organisasi", aksi, oid, "oleh", user.get("name"))
+            self._json(200, {"ok": True, "org_id": oid, "aksi": aksi, "diubah_pada": row["diubah_pada"]})
+        except Exception as e:  # noqa: BLE001
+            log("galat master-organisasi", repr(e)[:200])
+            self._json(500, {"error": "Perubahan belum dapat disimpan. Coba lagi sebentar."})
+
     def do_POST(self):  # noqa: N802
-        if self.path.split("?")[0] != "/_export/fungsi-pdf":
+        path = self.path.split("?")[0]
+        if path not in ("/_export/fungsi-pdf", "/_export/master-organisasi"):
             return self._json(404, {"error": "tidak ditemukan"})
         auth = self.headers.get("Authorization", "")
+        if not auth.startswith("Bearer "):
+            tok = next((c.split("=", 1)[1] for c in (self.headers.get("Cookie") or "").split(";") if c.strip().startswith("dg_token=")), "")
+            auth = f"Bearer {tok}" if tok else ""
         user = whoami(auth) if auth.startswith("Bearer ") else None
         if not user:
             return self._json(401, {"error": "Silakan masuk terlebih dahulu."})
+        if path == "/_export/master-organisasi":
+            return self._master_write(user)
         try:
             a = access(user)
             if not (a["allowed"] and a["orgs"] is None):

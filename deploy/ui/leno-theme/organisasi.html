@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Master Organisasi · Data Governance</title>
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="/_leno/leno.css">
+<style>
+  body { margin: 0; background: var(--uix-surface-page); color: var(--uix-text-body); font-family: var(--uix-font); }
+  .dg-wrap { max-width: 1120px; margin: 0 auto; padding: 24px 16px 48px; }
+  .dg-crumb { font-size: 13px; color: var(--uix-text-secondary); margin-bottom: 12px; }
+  .dg-crumb a { color: inherit; }
+  .dg-head { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  .dg-head h1 { margin: 0 0 4px; font-size: 22px; color: var(--uix-text-head); font-weight: 600; }
+  .dg-head p { margin: 0; font-size: 14px; color: var(--uix-text-secondary); line-height: 1.6; max-width: 720px; }
+  .dg-btn { display: inline-flex; align-items: center; height: var(--uix-control-md); padding: 0 14px; border-radius: var(--uix-radius); background: var(--uix-primary); color: var(--uix-on-primary); border: 0; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none; }
+  .dg-btn:hover { background: var(--uix-primary-strong); }
+  .dg-btn.ghost { background: var(--uix-surface); color: var(--uix-text-body); border: 1px solid var(--uix-border-strong); }
+  .dg-btn.ghost:hover { background: var(--uix-surface-muted); }
+  .dg-btn.danger { background: var(--uix-surface); color: #8E1418; border: 1px solid #E7B3B5; }
+  .dg-btn.danger:hover { background: #FCE8E9; }
+  .dg-btn.small { height: 28px; padding: 0 10px; font-size: 13px; }
+  .dg-card { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-xs); margin-top: 20px; }
+  .dg-toolbar { display: flex; gap: 12px; padding: 16px; flex-wrap: wrap; align-items: center; border-bottom: 1px solid var(--uix-border); }
+  .dg-toolbar input, .dg-toolbar select, .dg-form input, .dg-form select, .dg-form textarea { height: var(--uix-control-md); border: 1px solid var(--uix-field-border); border-radius: var(--uix-radius); padding: 0 10px; font: inherit; font-size: 14px; background: var(--uix-surface); color: var(--uix-text-body); box-sizing: border-box; width: 100%; }
+  .dg-toolbar input { min-width: 240px; flex: 1; }
+  .dg-count { margin-left: auto; font-size: 13px; color: var(--uix-text-secondary); }
+  .dg-table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--uix-border-subtle); vertical-align: middle; }
+  th { color: var(--uix-text-secondary); font-weight: 600; background: var(--uix-surface-subtle); white-space: nowrap; }
+  td { color: var(--uix-text-body); }
+  td.id { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: var(--uix-text-secondary); white-space: nowrap; }
+  td.act { white-space: nowrap; text-align: right; }
+  .dg-chip { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #EDF0F4; color: #3A4658; white-space: nowrap; }
+  .dg-chip.mn { background: #FCE8E9; color: #8E1418; }
+  .dg-empty { padding: 32px; text-align: center; color: var(--uix-text-secondary); }
+  .dg-note { margin-top: 12px; font-size: 12px; color: var(--uix-text-muted); }
+  .dg-modal { position: fixed; inset: 0; background: rgba(16, 24, 40, .45); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+  .dg-modal[hidden] { display: none; }
+  .dg-dialog { background: var(--uix-surface); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-md); width: 100%; max-width: 560px; max-height: 90vh; overflow: auto; }
+  .dg-dialog header { padding: 16px 20px; border-bottom: 1px solid var(--uix-border); }
+  .dg-dialog header h2 { margin: 0; font-size: 16px; color: var(--uix-text-head); font-weight: 600; }
+  .dg-dialog header p { margin: 4px 0 0; font-size: 13px; color: var(--uix-text-secondary); }
+  .dg-dialog .body { padding: 16px 20px; }
+  .dg-dialog footer { padding: 12px 20px; border-top: 1px solid var(--uix-border); display: flex; justify-content: flex-end; gap: 8px; }
+  .dg-field { margin-bottom: 14px; }
+  .dg-field label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--uix-text-head); font-weight: 500; margin-bottom: 6px; }
+  .dg-field small { display: block; margin-top: 4px; font-size: 12px; color: var(--uix-text-muted); }
+  .dg-field .err { color: #8E1418; font-size: 12px; margin-top: 4px; }
+  .dg-form textarea { height: 72px; padding: 8px 10px; resize: vertical; }
+  .dg-banner { margin-top: 12px; padding: 10px 14px; border-radius: var(--uix-radius); background: #FCE8E9; color: #8E1418; font-size: 13px; }
+  .dg-banner[hidden] { display: none; }
+  @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
+</style>
+</head>
+<body>
+<main class="dg-wrap">
+  <div class="dg-crumb"><a href="/">Beranda</a> › Master data › Organisasi</div>
+  <section class="dg-head">
+    <div>
+      <h1>Master Organisasi</h1>
+      <p>Unit kerja dan ORG_ID diambil langsung dari database. BPO memilih unit kerja dan melengkapi fungsinya.</p>
+    </div>
+    <button class="dg-btn" id="btn-tambah" type="button" hidden>Tambah Master Organisasi</button>
+  </section>
+
+  <section class="dg-card">
+    <div class="dg-toolbar">
+      <input id="q" type="search" placeholder="Cari unit kerja, fungsi, divisi…" aria-label="Cari unit kerja">
+      <select id="dir" aria-label="Direktorat"><option value="">Semua direktorat</option></select>
+      <span class="dg-count" id="count"></span>
+    </div>
+    <div class="dg-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ORG_ID</th><th>Fungsi</th><th>Unit kerja</th><th>Divisi</th><th>Direktorat</th><th>Sumber</th><th id="th-aksi" hidden>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="dg-empty" id="empty" hidden>Tidak ada unit kerja yang cocok.</div>
+    </div>
+  </section>
+  <div class="dg-banner" id="banner" hidden></div>
+  <p class="dg-note">Sumber "Database" berasal dari Excel ERM yang dimuat ke Trino. Sumber "Aplikasi" berasal dari perubahan yang disimpan di halaman ini dan mengganti data Database untuk ORG_ID yang sama.</p>
+</main>
+
+<!-- Formulir tambah / ubah -->
+<div class="dg-modal" id="m-form" hidden role="dialog" aria-modal="true" aria-labelledby="f-title">
+  <div class="dg-dialog">
+    <header>
+      <h2 id="f-title">Tambah Master Organisasi</h2>
+      <p id="f-sub">Unit kerja dan ORG_ID diambil langsung dari database. BPO memilih unit kerja dan melengkapi fungsinya.</p>
+    </header>
+    <form class="dg-form body" id="f" novalidate>
+      <div class="dg-field"><label for="f-dir">Direktorat * <span class="dg-chip">Dari DB</span></label>
+        <input id="f-dir" list="dl-dir" autocomplete="off" placeholder="Ketik atau pilih direktorat"><datalist id="dl-dir"></datalist><div class="err" data-err="direktorat"></div></div>
+      <div class="dg-field"><label for="f-div">Divisi * <span class="dg-chip">Dari DB</span></label>
+        <input id="f-div" list="dl-div" autocomplete="off" placeholder="Ketik atau pilih divisi"><datalist id="dl-div"></datalist><div class="err" data-err="divisi"></div></div>
+      <div class="dg-field"><label for="f-unit">Unit kerja * <span class="dg-chip">Dari DB</span></label>
+        <input id="f-unit" autocomplete="off" placeholder="Nama unit kerja"><div class="err" data-err="unit_kerja"></div></div>
+      <div class="dg-field"><label for="f-id">ORG_ID * <span class="dg-chip">Dari DB</span></label>
+        <input id="f-id" autocomplete="off" placeholder="contoh UD-1"><small>Format huruf-angka, misalnya UD-1. Tidak bisa diubah setelah disimpan.</small><div class="err" data-err="org_id"></div></div>
+      <div class="dg-field"><label for="f-fungsi">Fungsi * <span class="dg-chip mn">Manual</span></label>
+        <select id="f-fungsi"></select><input id="f-fungsi-baru" placeholder="Nama fungsi baru" hidden style="margin-top:8px"><div class="err" data-err="fungsi"></div></div>
+      <div class="dg-field"><label for="f-alasan">Alasan perubahan</label>
+        <textarea id="f-alasan" maxlength="500" placeholder="Opsional, misalnya nomor nota atau dokumen dasar"></textarea></div>
+      <div class="err" id="f-err" hidden></div>
+    </form>
+    <footer>
+      <button class="dg-btn ghost" type="button" data-close>Batal</button>
+      <button class="dg-btn" type="button" id="f-save">Simpan</button>
+    </footer>
+  </div>
+</div>
+
+<!-- Konfirmasi hapus -->
+<div class="dg-modal" id="m-hapus" hidden role="dialog" aria-modal="true" aria-labelledby="h-title">
+  <div class="dg-dialog">
+    <header>
+      <h2 id="h-title">Hapus unit kerja dari daftar?</h2>
+      <p id="h-sub"></p>
+    </header>
+    <div class="body" style="font-size:13px;line-height:1.6">
+      Unit kerja ini tidak akan tampil di daftar dan tidak dipakai di Fungsi baru. Riwayat tetap tersimpan, dan unit kerja dapat ditambahkan kembali dengan ORG_ID yang sama.
+      <div class="dg-field" style="margin-top:14px"><label for="h-alasan">Alasan (opsional)</label>
+        <textarea id="h-alasan" maxlength="500" class="dg-form"></textarea></div>
+      <div class="err" id="h-err" hidden style="color:#8E1418;font-size:12px"></div>
+    </div>
+    <footer>
+      <button class="dg-btn ghost" type="button" data-close>Batal</button>
+      <button class="dg-btn danger" type="button" id="h-ok">Ya, hapus</button>
+    </footer>
+  </div>
+</div>
+
+<script>
+(function () {
+  var all = [], canEdit = false, editing = null, hapusId = null, FUNGSI_BARU = '__baru__';
+  var $ = function (id) { return document.getElementById(id); };
+  var rowsEl = $('rows'), q = $('q'), dir = $('dir'), count = $('count'), empty = $('empty'), banner = $('banner');
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function uniq(arr) { return Array.from(new Set(arr.filter(Boolean))).sort(); }
+  function notice(msg) { banner.textContent = msg; banner.hidden = !msg; }
+
+  function render() {
+    var term = q.value.trim().toLowerCase(), d = dir.value;
+    var list = all.filter(function (r) {
+      if (d && r.direktorat !== d) return false;
+      return !term || [r.org_id, r.fungsi, r.unit_kerja, r.divisi, r.direktorat].some(function (v) { return v && String(v).toLowerCase().indexOf(term) >= 0; });
+    });
+    rowsEl.innerHTML = list.map(function (r) {
+      var act = canEdit ? '<td class="act"><button class="dg-btn ghost small" data-ubah="' + esc(r.org_id) + '">Ubah</button> ' +
+        '<button class="dg-btn danger small" data-hapus="' + esc(r.org_id) + '">Hapus</button></td>' : '';
+      return '<tr><td class="id">' + esc(r.org_id) + '</td>' +
+        '<td>' + (r.fungsi ? esc(r.fungsi) : '<span class="dg-chip mn">Perlu input manual</span>') + '</td>' +
+        '<td>' + esc(r.unit_kerja) + '</td><td>' + esc(r.divisi) + '</td><td>' + esc(r.direktorat) + '</td>' +
+        '<td><span class="dg-chip">' + (r.sumber === 'Aplikasi' ? 'Aplikasi' : 'Database') + '</span></td>' + act + '</tr>';
+    }).join('');
+    empty.hidden = list.length > 0;
+    count.textContent = list.length + ' dari ' + all.length + ' unit kerja';
+  }
+
+  function fillLists() {
+    $('dl-dir').innerHTML = uniq(all.map(function (r) { return r.direktorat; })).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
+    $('dl-div').innerHTML = uniq(all.map(function (r) { return r.divisi; })).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
+    var fs = uniq(all.map(function (r) { return r.fungsi; }));
+    $('f-fungsi').innerHTML = '<option value="">Pilih fungsi</option>' + fs.map(function (v) { return '<option>' + esc(v) + '</option>'; }).join('') + '<option value="' + FUNGSI_BARU + '">+ Fungsi baru…</option>';
+    var dirs = uniq(all.map(function (r) { return r.direktorat; }));
+    dir.innerHTML = '<option value="">Semua direktorat</option>' + dirs.map(function (v) { return '<option>' + esc(v) + '</option>'; }).join('');
+  }
+
+  function load() {
+    return fetch('/_export/master-organisasi', { credentials: 'same-origin' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (j) {
+        all = j.rows || [];
+        canEdit = !!j.bisa_ubah;
+        $('btn-tambah').hidden = !canEdit;
+        $('th-aksi').hidden = !canEdit;
+        fillLists(); render();
+      })
+      .catch(function () { count.textContent = ''; empty.hidden = false; empty.textContent = 'Data belum dapat dimuat. Coba lagi sebentar.'; });
+  }
+
+  function openForm(org) {
+    editing = org || null;
+    $('f-err').hidden = true; $('f-err').textContent = '';
+    document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; });
+    $('f-title').textContent = editing ? 'Ubah Master Organisasi' : 'Tambah Master Organisasi';
+    $('f-title').id = 'f-title';
+    $('f-dir').value = editing ? (editing.direktorat || '') : '';
+    $('f-div').value = editing ? (editing.divisi || '') : '';
+    $('f-unit').value = editing ? (editing.unit_kerja || '') : '';
+    $('f-id').value = editing ? editing.org_id : '';
+    $('f-id').disabled = !!editing;
+    $('f-fungsi').value = editing && editing.fungsi ? editing.fungsi : '';
+    $('f-fungsi-baru').hidden = true; $('f-fungsi-baru').value = '';
+    $('f-alasan').value = '';
+    $('m-form').hidden = false;
+    $(editing ? 'f-unit' : 'f-id').focus();
+  }
+
+  function fieldErr(map) {
+    Object.keys(map).forEach(function (k) {
+      var el = document.querySelector('[data-err="' + k + '"]');
+      if (el) el.textContent = map[k];
+    });
+  }
+
+  function post(body) {
+    return fetch('/_export/master-organisasi', {
+      method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, body: j }; }); });
+  }
+
+  $('btn-tambah').addEventListener('click', function () { openForm(null); });
+  $('f-fungsi').addEventListener('change', function () {
+    var b = $('f-fungsi-baru');
+    b.hidden = this.value !== FUNGSI_BARU;
+    if (!b.hidden) b.focus();
+  });
+
+  $('f-save').addEventListener('click', function () {
+    var fungsi = $('f-fungsi').value === FUNGSI_BARU ? $('f-fungsi-baru').value.trim() : $('f-fungsi').value;
+    var body = {
+      aksi: editing ? 'ubah' : 'tambah',
+      org_id: editing ? editing.org_id : $('f-id').value.trim(),
+      direktorat: $('f-dir').value.trim(), divisi: $('f-div').value.trim(), unit_kerja: $('f-unit').value.trim(),
+      fungsi: fungsi, alasan: $('f-alasan').value.trim()
+    };
+    var local = {};
+    if (!body.direktorat) local.direktorat = 'Direktorat wajib diisi.';
+    if (!body.divisi) local.divisi = 'Divisi wajib diisi.';
+    if (!body.unit_kerja) local.unit_kerja = 'Unit kerja wajib diisi.';
+    if (!editing && !/^[A-Za-z]{2}-\d+$/.test(body.org_id)) local.org_id = 'Format ORG_ID seperti UD-1.';
+    if (!body.fungsi) local.fungsi = 'Fungsi wajib dipilih.';
+    fieldErr(local);
+    if (Object.keys(local).length) return;
+    var btn = $('f-save'); btn.disabled = true;
+    post(body).then(function (res) {
+      btn.disabled = false;
+      if (!res.ok) { $('f-err').textContent = res.body.error || 'Perubahan belum dapat disimpan.'; $('f-err').hidden = false; return; }
+      $('m-form').hidden = true;
+      notice('Perubahan untuk ' + res.body.org_id + ' tersimpan.');
+      load();
+    }).catch(function () { btn.disabled = false; $('f-err').textContent = 'Jaringan terputus. Coba lagi.'; $('f-err').hidden = false; });
+  });
+
+  rowsEl.addEventListener('click', function (e) {
+    var u = e.target.closest('[data-ubah]'), h = e.target.closest('[data-hapus]');
+    if (u) { var r = all.find(function (x) { return x.org_id === u.getAttribute('data-ubah'); }); if (r) openForm(r); }
+    if (h) {
+      hapusId = h.getAttribute('data-hapus');
+      $('h-sub').textContent = 'ORG_ID ' + hapusId;
+      $('h-alasan').value = ''; $('h-err').hidden = true;
+      $('m-hapus').hidden = false;
+    }
+  });
+
+  $('h-ok').addEventListener('click', function () {
+    var btn = this; btn.disabled = true;
+    post({ aksi: 'hapus', org_id: hapusId, alasan: $('h-alasan').value.trim() }).then(function (res) {
+      btn.disabled = false;
+      if (!res.ok) { $('h-err').textContent = res.body.error || 'Belum dapat dihapus.'; $('h-err').hidden = false; return; }
+      $('m-hapus').hidden = true;
+      notice('Unit kerja ' + hapusId + ' dihapus dari daftar.');
+      load();
+    }).catch(function () { btn.disabled = false; $('h-err').textContent = 'Jaringan terputus. Coba lagi.'; $('h-err').hidden = false; });
+  });
+
+  document.querySelectorAll('[data-close]').forEach(function (b) {
+    b.addEventListener('click', function () { this.closest('.dg-modal').hidden = true; });
+  });
+  document.querySelectorAll('.dg-modal').forEach(function (m) {
+    m.addEventListener('click', function (e) { if (e.target === m) m.hidden = true; });
+  });
+  q.addEventListener('input', render);
+  dir.addEventListener('change', render);
+  load();
+})();
+</script>
+</body>
+</html>

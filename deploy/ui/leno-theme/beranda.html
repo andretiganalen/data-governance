@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beranda · Data Governance</title>
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="/_leno/leno.css">
+<style>
+  body { margin: 0; background: var(--uix-surface-page); color: var(--uix-text-body); font-family: var(--uix-font); }
+  .dg-wrap { max-width: 1120px; margin: 0 auto; padding: 24px 16px 48px; }
+  .dg-crumb { font-size: 13px; color: var(--uix-text-secondary); margin-bottom: 12px; }
+  .dg-hero { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-xs); padding: 24px; display: flex; gap: 24px; justify-content: space-between; flex-wrap: wrap; }
+  .dg-hero h1 { margin: 0 0 4px; font-size: 22px; color: var(--uix-text-head); font-weight: 600; }
+  .dg-hero p { margin: 0; color: var(--uix-text-secondary); font-size: 14px; max-width: 640px; line-height: 1.6; }
+  .dg-stats { display: flex; gap: 12px; align-items: stretch; }
+  .dg-stat { min-width: 96px; border: 1px solid var(--uix-border); border-radius: var(--uix-radius); padding: 10px 14px; text-align: center; }
+  .dg-stat b { display: block; font-size: 22px; color: var(--uix-primary); }
+  .dg-stat span { font-size: 12px; color: var(--uix-text-secondary); }
+  .dg-btn { display: inline-flex; align-items: center; height: var(--uix-control-md); padding: 0 14px; border-radius: var(--uix-radius); background: var(--uix-primary); color: var(--uix-on-primary); text-decoration: none; font-size: 14px; font-weight: 500; margin-top: 16px; }
+  .dg-btn:hover { background: var(--uix-primary-strong); }
+  .dg-section { margin-top: 24px; }
+  .dg-section h2 { font-size: 16px; color: var(--uix-text-head); margin: 0 0 4px; font-weight: 600; }
+  .dg-section > p { margin: 0 0 12px; font-size: 13px; color: var(--uix-text-secondary); }
+  .dg-phase { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .dg-card { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-xs); padding: 16px; text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 8px; }
+  .dg-card:hover { border-color: var(--uix-border-strong); box-shadow: var(--uix-shadow-md); }
+  .dg-card .no { font-size: 12px; color: var(--uix-primary); font-weight: 600; }
+  .dg-card h3 { margin: 0; font-size: 15px; color: var(--uix-text-head); font-weight: 600; }
+  .dg-card p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--uix-text-secondary); }
+  .dg-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .dg-chip { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #EDF0F4; color: #3A4658; }
+  .dg-chip.mn { background: #FCE8E9; color: #8E1418; }
+  .dg-dep { font-size: 12px; color: var(--uix-text-muted); }
+  .dg-legend, .dg-tips { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .dg-item { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius); padding: 12px 14px; font-size: 13px; line-height: 1.5; }
+  .dg-item b { color: var(--uix-text-head); }
+  @media (max-width: 600px) { .dg-wrap { padding: 16px; } }
+</style>
+</head>
+<body>
+<main class="dg-wrap">
+  <div class="dg-crumb">Data Governance › Beranda</div>
+
+  <section class="dg-hero">
+    <div>
+      <h1 id="dg-greeting">Selamat datang</h1>
+      <p>Satu tempat untuk mengelola katalog dan tata kelola data Len. Sebagian data ditarik otomatis dari database, sisanya dilengkapi BPO. Ikuti 10 langkah di bawah ini secara berurutan supaya setiap isian punya data acuan.</p>
+      <a class="dg-btn" href="/">Mulai dari langkah 1</a>
+    </div>
+    <div class="dg-stats">
+      <div class="dg-stat"><b>10</b><span>langkah</span></div>
+      <div class="dg-stat"><b>3</b><span>tahap</span></div>
+      <div class="dg-stat"><b>4</b><span>jenis label isian</span></div>
+    </div>
+  </section>
+
+  <section class="dg-section">
+    <h2>Alur pengisian data governance</h2>
+    <p>Setiap langkah memakai data dari langkah sebelumnya.</p>
+
+    <h3 style="font-size:14px;margin:16px 0 8px;color:var(--uix-text-head)">1 · Master data — Acuan yang dipakai di semua halaman</h3>
+    <div class="dg-phase">
+      <a class="dg-card" href="/organisasi/">
+        <span class="no">LANGKAH 1</span><h3>Organisasi</h3>
+        <p>Unit kerja dan ORG_ID ditarik dari database, BPO melengkapi fungsinya.</p>
+        <div class="dg-chips"><span class="dg-chip">Dari DB</span><span class="dg-chip mn">Manual</span></div>
+        <span class="dg-dep">Butuh data: –</span>
+      </a>
+      <a class="dg-card" href="/">
+        <span class="no">LANGKAH 2</span><h3>Sistem</h3>
+        <p>Daftar aplikasi sumber data beserta deskripsinya.</p>
+        <div class="dg-chips"><span class="dg-chip">Otomatis</span><span class="dg-chip mn">Manual</span></div>
+        <span class="dg-dep">Butuh data: –</span>
+      </a>
+    </div>
+
+    <h3 style="font-size:14px;margin:16px 0 8px;color:var(--uix-text-head)">2 · Katalog data — Apa saja data yang dimiliki</h3>
+    <div class="dg-phase">
+      <a class="dg-card" href="/">
+        <span class="no">LANGKAH 3</span><h3>Business Dataset</h3>
+        <p>Kelompok data bisnis, domain, sistem, dan database-nya.</p>
+        <div class="dg-chips"><span class="dg-chip">Otomatis</span><span class="dg-chip">Dari master</span><span class="dg-chip">Dari DB</span><span class="dg-chip mn">Manual</span></div>
+        <span class="dg-dep">Butuh data: Sistem</span>
+      </a>
+      <a class="dg-card" href="/">
+        <span class="no">LANGKAH 4</span><h3>Database Object</h3>
+        <p>Pilih tabel dari database milik dataset, tipe objek terisi sendiri.</p>
+        <div class="dg-chips"><span class="dg-chip">Otomatis</span><span class="dg-chip">Dari master</span><span class="dg-chip">Dari DB</span></div>
+        <span class="dg-dep">Butuh data: Business Dataset</span>
+      </a>
+      <a class="dg-card" href="/">
+        <span class="no">LANGKAH 5</span><h3>Data Element</h3>
+        <p>Kolom tabel, tipe data, generic data type, dan business term.</p>
+        <div class="dg-chips"><span class="dg-chip">Otomatis</span><span class="dg-chip">Dari DB</span><span class="dg-chip mn">Manual</span></div>
+        <span class="dg-dep">Butuh data: Database Object</span>
+      </a>
+      <a class="dg-card" href="/">
+        <span class="no">LANGKAH 6</span><h3>Business Glossary</h3>
+        <p>Definisi bisnis untuk setiap FIELD_ID, dibantu konteks dan cek kualitas.</p>
+        <div class="dg-chips"><span class="dg-chip">Dari master</span><span class="dg-chip mn">Manual</span></div>
+        <span class="dg-dep">Butuh data: Data Element</span>
+      </a>
+    </div>
+
+    <h3 style="font-size:14px;margin:16px 0 8px;color:var(--uix-text-head)">3 · Tata kelola — Siapa yang bertanggung jawab dan bagaimana data dipakai</h3>
+    <div class="dg-phase">
+      <a class="dg-card" href="/">
+        <span class="no">LANGKAH 7</span><h3>Governance Assignment</h3>
+        <p>Data Owner, Data Steward, dan Data User untuk setiap FIELD_ID.</p>
+        <div class="dg-chips"><span class="dg-chip">Dari master</span></div>
+        <span class="dg-dep">Butuh data: Data Element, Organisasi</span>
+      </a>
+      <a class="dg-card" href="/">
+        <span class="no">LANGKAH 8</span><h3>Data Quality Rules</h3>
+        <p>Aturan dan validasi kualitas data, dengan aturan siap pakai.</p>
+        <div class="dg-chips"><span class="dg-chip">Dari master</span><span class="dg-chip mn">Manual</span></div>
+        <span class="dg-dep">Butuh data: Data Element</span>
+      </a>
+      <a class="dg-card" href="/">
+        <span class="no">LANGKAH 9</span><h3>Data Flow Lineage</h3>
+        <p>Ke layar, laporan, atau sistem mana data mengalir.</p>
+        <div class="dg-chips"><span class="dg-chip">Otomatis</span><span class="dg-chip">Dari master</span><span class="dg-chip mn">Manual</span></div>
+        <span class="dg-dep">Butuh data: Data Element, Sistem</span>
+      </a>
+      <a class="dg-card" href="/">
+        <span class="no">LANGKAH 10</span><h3>Security Access</h3>
+        <p>Hak akses unit kerja untuk setiap alur data.</p>
+        <div class="dg-chips"><span class="dg-chip">Otomatis</span><span class="dg-chip">Dari master</span></div>
+        <span class="dg-dep">Butuh data: Data Flow Lineage, Organisasi</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="dg-section">
+    <h2>Arti label pada setiap isian</h2>
+    <div class="dg-legend">
+      <div class="dg-item"><b>Otomatis</b><br>Dibuat sistem saat disimpan, tidak bisa diketik.<br><i>Contoh: SYSTEM_ID, FIELD_ID, ACCESS_ID</i></div>
+      <div class="dg-item"><b>Dari DB</b><br>Pilihannya ditarik langsung dari database.<br><i>Contoh: Unit kerja, TABLE_NAME, COLUMN_NAME</i></div>
+      <div class="dg-item"><b>Dari master</b><br>Dipilih dari halaman lain, nilai turunannya terisi sendiri.<br><i>Contoh: DATASET_ID, ORG_ID, LINEAGE_ID</i></div>
+      <div class="dg-item"><b>Manual</b><br>Diketik atau dipilih oleh BPO.<br><i>Contoh: Business term, definisi, aturan kualitas</i></div>
+    </div>
+  </section>
+
+  <section class="dg-section">
+    <h2>Tips pengisian</h2>
+    <div class="dg-tips">
+      <div class="dg-item"><b>1. Isi sesuai urutan langkah</b><br>Halaman berikutnya memakai data dari halaman sebelumnya sebagai pilihan.</div>
+      <div class="dg-item"><b>2. Pakai business term yang sama</b><br>Business term yang sama otomatis memakai satu FIELD_ID di semua tabel.</div>
+      <div class="dg-item"><b>3. Tabel tidak bisa diakses?</b><br>Pilih sumber "Dari database, tanpa akses" di Data Element. Cukup isi business term dan generic data type.</div>
+      <div class="dg-item"><b>4. Butuh bantuan?</b><br>Hubungi Unit IT Governance &amp; Data Management.</div>
+    </div>
+  </section>
+</main>
+<script>
+  (function () {
+    var h = new Date().getHours();
+    var sapa = h < 11 ? 'Selamat Pagi' : (h < 15 ? 'Selamat Siang' : (h < 18 ? 'Selamat Sore' : 'Selamat Malam'));
+    var el = document.getElementById('dg-greeting');
+    if (el) el.textContent = sapa;
+  })();
+</script>
+</body>
+</html>
