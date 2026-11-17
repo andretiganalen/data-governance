@@ -24,7 +24,9 @@
     { label: 'Visualisasi', href: '/explore' },
     { label: 'Glosarium (aplikasi lama)', href: '/glossary' },
     { label: 'Documents', href: '/docs' },
-    { label: 'Pengaturan', href: '/settings' }] };
+    ] };
+  /* Pengaturan berdiri sendiri, di bawah grup Lainnya. */
+  var PENGATURAN = { title: null, items: [{ label: 'Pengaturan', href: '/settings' }] };
   var CSS = [
     'body{display:flex;min-height:100vh;}',
     '.dg-side{width:248px;flex:0 0 248px;background:var(--uix-surface);border-right:1px solid var(--uix-border);padding:16px 12px;box-sizing:border-box;position:sticky;top:0;height:100vh;overflow:auto;font-family:var(--uix-font);}',
@@ -57,7 +59,7 @@
   var path = location.pathname.replace(/index\.html$/, '');
   var side = document.createElement('aside'); side.className = 'dg-side'; side.setAttribute('aria-label', 'Navigasi');
   var html = '<div class="dg-brand"><img src="/brand/len-logo.png" alt="" onerror="this.remove()">Data Governance</div>';
-  NAV.concat([NAV_BAWAH]).forEach(function (g, gi) {
+  NAV.concat([NAV_BAWAH, PENGATURAN]).forEach(function (g, gi) {
     var fold = g === NAV_BAWAH;
     if (fold) html += '<button type="button" class="dg-fold" aria-expanded="false" aria-controls="dg-grp-' + gi + '">' + esc(g.title) + '<span class="dg-car" aria-hidden="true">▾</span></button><div class="dg-grp" id="dg-grp-' + gi + '" hidden>';
     else if (g.title) html += '<h4>' + esc(g.title) + '</h4>';
