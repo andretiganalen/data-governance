@@ -55,6 +55,11 @@
   .dg-inline form.body .dg-field { margin-bottom: 12px; }
   .dg-inline form.body .dg-field:has(textarea), .dg-inline form.body > .err, .dg-inline form.body > .dg-tips { grid-column: 1 / -1; }
   .dg-inline .dg-dialog footer { justify-content: flex-end; }
+  .dg-ch { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #EDF0F4; color: #3A4658; white-space: nowrap; margin-left: 6px; font-weight: 500; }
+  .dg-ch.manual { background: #FCE8E9; color: #8E1418; }
+.dg-legend-in { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--uix-text-secondary); padding: 12px 20px; border-bottom: 1px solid var(--uix-border); background: var(--uix-surface-subtle); }
+  .dg-legend-in b { color: var(--uix-text-head); font-weight: 600; }
+.dg-guide { font-size: 12px; color: var(--uix-text-secondary); padding: 8px 20px 0; }
   @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
 </style>
 </head>
@@ -85,8 +90,9 @@
   <div class="dg-inline" id="m-def" hidden>
     <div class="dg-dialog">
       <header><h2>Isi definisi</h2><p id="d-sub"></p></header>
+      <div class="dg-legend-in"><span><span class="dg-ch">Otomatis</span> Dibuat sistem, tidak bisa diketik</span><span><span class="dg-ch">Dari DB</span> Pilihannya ditarik dari database</span><span><span class="dg-ch">Dari master</span> Dipilih dari halaman lain</span><span><span class="dg-ch manual">Manual</span> Diketik atau dipilih pengguna</span></div><div class="dg-guide"><b>Petunjuk:</b> Tulis definisi bisnis yang jelas. FIELD_ID dan business term berasal dari Data Element.</div>
       <form class="body" id="f" novalidate>
-        <div class="dg-field"><label for="d-text">DEFINISI *</label><textarea id="d-text" maxlength="2000" placeholder="Tulis definisi bisnis istilah ini"></textarea><div class="dg-err" id="d-err" hidden></div></div>
+        <div class="dg-field"><label for="d-text">DEFINISI * <span class="dg-ch manual">Manual</span></label><textarea id="d-text" maxlength="2000" placeholder="Tulis definisi bisnis istilah ini"></textarea><div class="dg-err" id="d-err" hidden></div></div>
         <div class="dg-tips"><b>Tips menulis</b><br>Jelaskan arti data ini bagi bisnis, bukan cara menyimpannya.<br>Mulai dengan kata benda, misalnya "Nilai…", "Tanggal…", "Kategori…".<br>Sebutkan satuan, rentang, atau pilihan nilai jika ada.<br>Pakai istilah yang dipahami unit lain, hindari singkatan internal.</div>
         <div class="dg-field" style="margin-top:14px"><label for="d-alasan">Alasan perubahan</label><input id="d-alasan" maxlength="500" placeholder="Opsional"></div>
         <div class="dg-err" id="d-srv" hidden></div>

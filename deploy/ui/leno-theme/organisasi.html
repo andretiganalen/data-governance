@@ -65,6 +65,11 @@
   .dg-inline form.body .dg-field { margin-bottom: 12px; }
   .dg-inline form.body .dg-field:has(textarea), .dg-inline form.body > .err, .dg-inline form.body > .dg-tips { grid-column: 1 / -1; }
   .dg-inline .dg-dialog footer { justify-content: flex-end; }
+  .dg-ch { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #EDF0F4; color: #3A4658; white-space: nowrap; margin-left: 6px; font-weight: 500; }
+  .dg-ch.manual { background: #FCE8E9; color: #8E1418; }
+.dg-legend-in { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--uix-text-secondary); padding: 12px 20px; border-bottom: 1px solid var(--uix-border); background: var(--uix-surface-subtle); }
+  .dg-legend-in b { color: var(--uix-text-head); font-weight: 600; }
+.dg-guide { font-size: 12px; color: var(--uix-text-secondary); padding: 8px 20px 0; }
   @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
 </style>
 </head>
@@ -85,7 +90,8 @@
       <h2 id="f-title">Tambah Master Organisasi</h2>
       <p id="f-sub">Unit kerja dan ORG_ID diambil langsung dari database. BPO memilih unit kerja dan melengkapi fungsinya.</p>
     </header>
-    <form class="dg-form body" id="f" novalidate>
+    <div class="dg-legend-in"><span><span class="dg-ch">Otomatis</span> Dibuat sistem, tidak bisa diketik</span><span><span class="dg-ch">Dari DB</span> Pilihannya ditarik dari database</span><span><span class="dg-ch">Dari master</span> Dipilih dari halaman lain</span><span><span class="dg-ch manual">Manual</span> Diketik atau dipilih pengguna</span></div><div class="dg-guide"><b>Petunjuk:</b> Isi unit kerja dari database; fungsi dipilih atau dibuat baru. ORG_ID mengikuti format huruf-angka seperti UD-1.</div>
+      <form class="dg-form body" id="f" novalidate>
       <div class="dg-field"><label for="f-dir">Direktorat * <span class="dg-chip">Dari DB</span></label>
         <input id="f-dir" list="dl-dir" autocomplete="off" placeholder="Ketik atau pilih direktorat"><datalist id="dl-dir"></datalist><div class="err" data-err="direktorat"></div></div>
       <div class="dg-field"><label for="f-div">Divisi * <span class="dg-chip">Dari DB</span></label>
