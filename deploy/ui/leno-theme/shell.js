@@ -287,8 +287,7 @@
   var ORDER = ['data-dg-detail', 'data-ubah', 'data-lengkapi', 'data-isi', 'data-hapus'];
   function rank(b) { for (var i = 0; i < ORDER.length; i++) if (b.hasAttribute(ORDER[i])) return i; return 2; }
   function standardize() {
-    var t = document.getElementById('btn-tambah');
-    if (t && !t.querySelector('.dg-plus')) t.insertAdjacentHTML('afterbegin', PLUS);
+    document.querySelectorAll('#btn-tambah,#a-open').forEach(function (t) { if (!t.querySelector('.dg-plus')) t.insertAdjacentHTML('afterbegin', PLUS); });
     document.querySelectorAll('#f-save-new,#a-again').forEach(function (b) { b.classList.remove('ant-btn-default'); b.classList.add('ant-btn', 'dg-btn-sec'); });
     document.querySelectorAll('#h-ok').forEach(function (b) {
       b.classList.remove('ant-btn-primary', 'ant-btn-dangerous'); b.classList.add('ant-btn', 'dg-btn-hapus'); b.style.background = '';
