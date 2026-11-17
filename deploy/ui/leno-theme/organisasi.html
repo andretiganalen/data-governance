@@ -58,6 +58,9 @@
   .dg-menu-list button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 8px 10px; font: inherit; font-size: 13px; color: var(--uix-text-body); border-radius: var(--uix-radius-sm); cursor: pointer; }
   .dg-menu-list button:hover { background: var(--uix-surface-muted); }
   .dg-menu-list button.danger { color: #8E1418; }
+  .dg-inline { margin-top: 20px; background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-xs); }
+  .dg-inline .dg-dialog { max-width: none; box-shadow: none; border-radius: var(--uix-radius-md); max-height: none; overflow: visible; }
+  .dg-inline[hidden] { display: none; }
   @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
 </style>
 </head>
@@ -72,30 +75,7 @@
     <button class="dg-btn" id="btn-tambah" type="button" hidden>Tambah Master Organisasi</button>
   </section>
 
-  <section class="dg-card">
-    <div class="dg-toolbar">
-      <input id="q" type="search" placeholder="Cari unit kerja, fungsi, divisi…" aria-label="Cari unit kerja">
-      <select id="dir" aria-label="Direktorat"><option value="">Semua direktorat</option></select>
-      <span class="dg-count" id="count"></span>
-    </div>
-    <div class="dg-table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>ORG_ID</th><th>Fungsi</th><th>Unit kerja</th><th>Divisi</th><th>Direktorat</th><th>Sumber</th><th id="th-aksi" hidden>Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="rows"></tbody>
-      </table>
-      <div class="dg-empty" id="empty" hidden>Tidak ada unit kerja yang cocok.</div>
-    </div>
-  </section>
-  <div class="dg-banner" id="banner" hidden></div>
-  <p class="dg-note">Sumber "Database" berasal dari Excel ERM yang dimuat ke Trino. Sumber "Aplikasi" berasal dari perubahan yang disimpan di halaman ini dan mengganti data Database untuk ORG_ID yang sama.</p>
-</main>
-
-<!-- Formulir tambah / ubah -->
-<div class="dg-modal" id="m-form" hidden role="dialog" aria-modal="true" aria-labelledby="f-title">
+  <div class="dg-inline" id="m-form" hidden>
   <div class="dg-dialog">
     <header>
       <h2 id="f-title">Tambah Master Organisasi</h2>
@@ -122,6 +102,30 @@
     </footer>
   </div>
 </div>
+  <section class="dg-card">
+    <div class="dg-toolbar">
+      <input id="q" type="search" placeholder="Cari unit kerja, fungsi, divisi…" aria-label="Cari unit kerja">
+      <select id="dir" aria-label="Direktorat"><option value="">Semua direktorat</option></select>
+      <span class="dg-count" id="count"></span>
+    </div>
+    <div class="dg-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ORG_ID</th><th>Fungsi</th><th>Unit kerja</th><th>Divisi</th><th>Direktorat</th><th>Sumber</th><th id="th-aksi" hidden>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="dg-empty" id="empty" hidden>Tidak ada unit kerja yang cocok.</div>
+    </div>
+  </section>
+  <div class="dg-banner" id="banner" hidden></div>
+  <p class="dg-note">Sumber "Database" berasal dari Excel ERM yang dimuat ke Trino. Sumber "Aplikasi" berasal dari perubahan yang disimpan di halaman ini dan mengganti data Database untuk ORG_ID yang sama.</p>
+</main>
+
+<!-- Formulir tambah / ubah -->
+
 
 <!-- Konfirmasi hapus -->
 <div class="dg-modal" id="m-hapus" hidden role="dialog" aria-modal="true" aria-labelledby="h-title">
@@ -209,7 +213,7 @@
     $('f-fungsi').value = editing && editing.fungsi ? editing.fungsi : '';
     $('f-fungsi-baru').hidden = true; $('f-fungsi-baru').value = '';
     $('f-alasan').value = '';
-    $('m-form').hidden = false;
+    $('m-form').hidden = false; document.getElementById('m-form') && document.getElementById('m-form').scrollIntoView({block:'start', behavior:'smooth'}); document.getElementById('m-def') && document.getElementById('m-def').scrollIntoView({block:'start', behavior:'smooth'});
     $(editing ? 'f-unit' : 'f-id').focus();
   }
 

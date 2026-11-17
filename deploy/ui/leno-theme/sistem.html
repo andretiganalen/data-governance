@@ -53,6 +53,9 @@
   .dg-menu-list button:hover { background:var(--uix-surface-muted); }
   .dg-menu-list button.danger { color:#8E1418; }
   td.act { text-align:right; white-space:nowrap; }
+  .dg-inline { margin-top: 20px; background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-xs); }
+  .dg-inline .dg-dialog { max-width: none; box-shadow: none; border-radius: var(--uix-radius-md); max-height: none; overflow: visible; }
+  .dg-inline[hidden] { display: none; }
   @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
 </style>
 </head>
@@ -67,6 +70,19 @@
     <button class="dg-btn" id="btn-tambah" type="button" hidden>Tambah Sistem</button>
   </section>
 
+  <div class="dg-inline" id="m-form" hidden>
+    <div class="dg-dialog">
+      <header><h2 id="f-title">Tambah Sistem</h2></header>
+      <form class="body" id="f" novalidate>
+        <div class="dg-field"><label for="f-id">SYSTEM_ID *</label><input id="f-id" placeholder="contoh SYS002"><small style="font-size:12px;color:#99a1af">Format SYS diikuti tiga angka. Tidak bisa diubah setelah disimpan.</small><div class="err" data-err="system_id"></div></div>
+        <div class="dg-field"><label for="f-nama">Nama sistem *</label><input id="f-nama" placeholder="Nama aplikasi sumber data"><div class="err" data-err="system_name"></div></div>
+        <div class="dg-field"><label for="f-desc">Deskripsi</label><textarea id="f-desc" rows="3" maxlength="1000" placeholder="Opsional"></textarea></div>
+        <div class="dg-field"><label for="f-alasan">Alasan perubahan</label><textarea id="f-alasan" rows="2" maxlength="500" placeholder="Opsional"></textarea></div>
+        <div class="err" id="f-err" hidden></div>
+      </form>
+      <footer><button class="dg-btn ghost" type="button" data-close>Batal</button><button class="dg-btn" type="button" id="f-save">Simpan</button></footer>
+    </div>
+  </div>
   <section class="dg-card">
     <div class="dg-toolbar">
       <input id="q" type="search" placeholder="Cari sistem, deskripsi, atau pemilik…" aria-label="Cari sistem">
@@ -90,19 +106,7 @@
       <footer><button class="dg-btn ghost" type="button" data-close-h>Batal</button><button class="dg-btn" type="button" id="h-ok" style="background:#FCE8E9;color:#8E1418;border:1px solid #E7B3B5">Ya, hapus</button></footer>
     </div>
   </div>
-  <div class="dg-modal" id="m-form" hidden role="dialog" aria-modal="true">
-    <div class="dg-dialog">
-      <header><h2 id="f-title">Tambah Sistem</h2></header>
-      <form class="body" id="f" novalidate>
-        <div class="dg-field"><label for="f-id">SYSTEM_ID *</label><input id="f-id" placeholder="contoh SYS002"><small style="font-size:12px;color:#99a1af">Format SYS diikuti tiga angka. Tidak bisa diubah setelah disimpan.</small><div class="err" data-err="system_id"></div></div>
-        <div class="dg-field"><label for="f-nama">Nama sistem *</label><input id="f-nama" placeholder="Nama aplikasi sumber data"><div class="err" data-err="system_name"></div></div>
-        <div class="dg-field"><label for="f-desc">Deskripsi</label><textarea id="f-desc" rows="3" maxlength="1000" placeholder="Opsional"></textarea></div>
-        <div class="dg-field"><label for="f-alasan">Alasan perubahan</label><textarea id="f-alasan" rows="2" maxlength="500" placeholder="Opsional"></textarea></div>
-        <div class="err" id="f-err" hidden></div>
-      </form>
-      <footer><button class="dg-btn ghost" type="button" data-close>Batal</button><button class="dg-btn" type="button" id="f-save">Simpan</button></footer>
-    </div>
-  </div>
+  
   <p class="dg-note">Data hanya dibaca dari Trino (silver_dim_meta_system, sumber Excel ERM). Penambahan dan perubahan sistem belum tersedia di halaman ini.</p>
 </main>
 <script src="/_leno/shell.js"></script>
@@ -150,13 +154,13 @@
     editing = null; $('f-title').textContent = 'Tambah Sistem'; $('f-id').disabled = false;
     ['f-id','f-nama','f-desc','f-alasan'].forEach(function (i) { $(i).value = ''; });
     $('f-err').hidden = true; document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; });
-    $('m-form').hidden = false; $('f-id').focus();
+    $('m-form').hidden = false; document.getElementById('m-form') && document.getElementById('m-form').scrollIntoView({block:'start', behavior:'smooth'}); document.getElementById('m-def') && document.getElementById('m-def').scrollIntoView({block:'start', behavior:'smooth'}); $('f-id').focus();
   }
   function openEdit(r) {
     editing = r.system_id; $('f-title').textContent = 'Ubah Sistem'; $('f-id').value = r.system_id; $('f-id').disabled = true;
     $('f-nama').value = r.system_name || ''; $('f-desc').value = r.description || ''; $('f-alasan').value = '';
     $('f-err').hidden = true; document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; });
-    $('m-form').hidden = false; $('f-nama').focus();
+    $('m-form').hidden = false; document.getElementById('m-form') && document.getElementById('m-form').scrollIntoView({block:'start', behavior:'smooth'}); document.getElementById('m-def') && document.getElementById('m-def').scrollIntoView({block:'start', behavior:'smooth'}); $('f-nama').focus();
   }
   $('btn-tambah').addEventListener('click', openForm);
   document.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', function () { $('m-form').hidden = true; }); });

@@ -55,6 +55,9 @@
   .dg-field .err { color:#8E1418; font-size:12px; margin-top:4px; }
   .dg-banner { margin-top:12px; padding:10px 14px; border-radius:var(--uix-radius); background:#E7F6EC; color:#0E6B33; font-size:13px; }
   .dg-banner[hidden] { display:none; }
+  .dg-inline { margin-top: 20px; background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-xs); }
+  .dg-inline .dg-dialog { max-width: none; box-shadow: none; border-radius: var(--uix-radius-md); max-height: none; overflow: visible; }
+  .dg-inline[hidden] { display: none; }
   @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
 </style>
 </head>
@@ -69,6 +72,19 @@
     <button class="dg-btn" id="btn-tambah" type="button" hidden>Tambah Database Object</button>
   </section>
 
+  <div class="dg-inline" id="m-form" hidden><div class="dg-dialog">
+    <header><h2 id="f-title">Tambah Database Object</h2></header>
+    <form class="body" id="f" novalidate>
+      <div class="dg-field"><label for="f-id">TABLE_ID *</label><input id="f-id" placeholder="contoh TB019"><div class="err" data-err="table_id"></div></div>
+      <div class="dg-field"><label for="f-ds">Dataset *</label><select id="f-ds"></select><div class="err" data-err="dataset_id"></div></div>
+      <div class="dg-field"><label for="f-nama">Nama tabel *</label><input id="f-nama" placeholder="contoh erm_riskregister"><div class="err" data-err="table_name"></div></div>
+      <div class="dg-field"><label for="f-jenis">Jenis objek</label><select id="f-jenis"><option>Table</option><option>View</option></select></div>
+      <div class="dg-field"><label for="f-db">Database</label><input id="f-db" placeholder="contoh ERM (opsional)"></div>
+      <div class="dg-field"><label for="f-alasan">Alasan perubahan</label><input id="f-alasan" placeholder="Opsional"></div>
+      <div class="err" id="f-err" hidden></div>
+    </form>
+    <footer><button class="dg-btn ghost" type="button" data-close>Batal</button><button class="dg-btn" type="button" id="f-save">Simpan</button></footer>
+  </div></div>
   <section class="dg-card">
     <div class="dg-toolbar">
       <input id="q" type="search" placeholder="Cari tabel, dataset, atau kolom…" aria-label="Cari tabel">
@@ -84,19 +100,7 @@
     </div>
   </section>
   <div class="dg-banner" id="banner" hidden></div>
-  <div class="dg-modal" id="m-form" hidden role="dialog" aria-modal="true"><div class="dg-dialog">
-    <header><h2 id="f-title">Tambah Database Object</h2></header>
-    <form class="body" id="f" novalidate>
-      <div class="dg-field"><label for="f-id">TABLE_ID *</label><input id="f-id" placeholder="contoh TB019"><div class="err" data-err="table_id"></div></div>
-      <div class="dg-field"><label for="f-ds">Dataset *</label><select id="f-ds"></select><div class="err" data-err="dataset_id"></div></div>
-      <div class="dg-field"><label for="f-nama">Nama tabel *</label><input id="f-nama" placeholder="contoh erm_riskregister"><div class="err" data-err="table_name"></div></div>
-      <div class="dg-field"><label for="f-jenis">Jenis objek</label><select id="f-jenis"><option>Table</option><option>View</option></select></div>
-      <div class="dg-field"><label for="f-db">Database</label><input id="f-db" placeholder="contoh ERM (opsional)"></div>
-      <div class="dg-field"><label for="f-alasan">Alasan perubahan</label><input id="f-alasan" placeholder="Opsional"></div>
-      <div class="err" id="f-err" hidden></div>
-    </form>
-    <footer><button class="dg-btn ghost" type="button" data-close>Batal</button><button class="dg-btn" type="button" id="f-save">Simpan</button></footer>
-  </div></div>
+  
   <div class="dg-modal" id="m-hapus" hidden role="dialog" aria-modal="true"><div class="dg-dialog">
     <header><h2>Hapus tabel dari daftar?</h2><p id="h-sub" style="font-size:13px;color:#6a7282;margin:4px 0 0"></p></header>
     <div class="body" style="font-size:13px;line-height:1.6">Tabel ini tidak akan tampil di daftar. Riwayat tetap tersimpan, dan tabel dapat ditambahkan kembali dengan TABLE_ID yang sama.
@@ -167,8 +171,8 @@
   var B = function (id) { return document.getElementById(id); };
   function note(m) { B('banner').textContent = m; B('banner').hidden = !m; }
   function fillDs(sel) { B('f-ds').innerHTML = '<option value="">Pilih dataset</option>' + dsList.map(function (d) { return '<option value="' + esc(d.dataset_id) + '"' + (d.dataset_id === sel ? ' selected' : '') + '>' + esc(d.dataset_id + ' · ' + (d.dataset_name || '')) + '</option>'; }).join(''); }
-  function openForm() { editing = null; B('f-title').textContent = 'Tambah Database Object'; B('f-id').disabled = false; B('f-id').value = ''; B('f-nama').value = ''; B('f-jenis').value = 'Table'; B('f-db').value = ''; B('f-alasan').value = ''; fillDs(''); B('f-err').hidden = true; document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; }); B('m-form').hidden = false; B('f-id').focus(); }
-  function openEdit(t) { editing = t.table_id; B('f-title').textContent = 'Ubah Database Object'; B('f-id').value = t.table_id; B('f-id').disabled = true; B('f-nama').value = t.table_name || ''; B('f-jenis').value = t.object_type || 'Table'; B('f-db').value = t.database_name || ''; B('f-alasan').value = ''; fillDs(t.dataset_id || ''); B('f-err').hidden = true; document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; }); B('m-form').hidden = false; B('f-nama').focus(); }
+  function openForm() { editing = null; B('f-title').textContent = 'Tambah Database Object'; B('f-id').disabled = false; B('f-id').value = ''; B('f-nama').value = ''; B('f-jenis').value = 'Table'; B('f-db').value = ''; B('f-alasan').value = ''; fillDs(''); B('f-err').hidden = true; document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; }); B('m-form').hidden = false; document.getElementById('m-form') && document.getElementById('m-form').scrollIntoView({block:'start', behavior:'smooth'}); document.getElementById('m-def') && document.getElementById('m-def').scrollIntoView({block:'start', behavior:'smooth'}); B('f-id').focus(); }
+  function openEdit(t) { editing = t.table_id; B('f-title').textContent = 'Ubah Database Object'; B('f-id').value = t.table_id; B('f-id').disabled = true; B('f-nama').value = t.table_name || ''; B('f-jenis').value = t.object_type || 'Table'; B('f-db').value = t.database_name || ''; B('f-alasan').value = ''; fillDs(t.dataset_id || ''); B('f-err').hidden = true; document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; }); B('m-form').hidden = false; document.getElementById('m-form') && document.getElementById('m-form').scrollIntoView({block:'start', behavior:'smooth'}); document.getElementById('m-def') && document.getElementById('m-def').scrollIntoView({block:'start', behavior:'smooth'}); B('f-nama').focus(); }
   B('btn-tambah').addEventListener('click', openForm);
   document.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', function () { B('m-form').hidden = true; }); });
   document.querySelectorAll('[data-close-h]').forEach(function (b) { b.addEventListener('click', function () { B('m-hapus').hidden = true; }); });

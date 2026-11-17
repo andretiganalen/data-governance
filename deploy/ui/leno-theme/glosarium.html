@@ -48,6 +48,9 @@
   .dg-banner[hidden] { display: none; }
   .dg-legacy { margin-top: 28px; font-size: 13px; color: var(--uix-text-secondary); }
   .dg-link { display: inline-flex; align-items: center; height: var(--uix-control-md); padding: 0 14px; border-radius: var(--uix-radius); border: 1px solid var(--uix-border-strong); background: var(--uix-surface); color: var(--uix-text-body); text-decoration: none; font-size: 14px; margin-top: 8px; }
+  .dg-inline { margin-top: 20px; background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-xs); }
+  .dg-inline .dg-dialog { max-width: none; box-shadow: none; border-radius: var(--uix-radius-md); max-height: none; overflow: visible; }
+  .dg-inline[hidden] { display: none; }
   @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
 </style>
 </head>
@@ -75,18 +78,7 @@
     </div>
   </section>
 
-  <section class="ant-card" style="margin-top:20px"><div class="ant-card-body" style="padding:0">
-    <div class="ant-table-wrapper"><div class="ant-spin-nested-loading"><div class="ant-spin-container"><div class="ant-table"><div class="ant-table-container"><div class="ant-table-content">
-      <table style="width:100%;table-layout:auto">
-        <thead class="ant-table-thead"><tr><th class="ant-table-cell">FIELD_ID</th><th class="ant-table-cell">BUSINESS_TERM</th><th class="ant-table-cell">DEFINISI</th><th class="ant-table-cell">Dipakai di Data Element</th><th class="ant-table-cell">Status</th><th class="ant-table-cell" id="th-aksi" hidden style="text-align:right">Aksi</th></tr></thead>
-        <tbody id="rows" class="ant-table-tbody"></tbody>
-      </table></div></div></div></div></div></div>
-      <div class="dg-empty" id="empty" hidden>Tidak ada istilah yang cocok.</div>
-    </div>
-  </section>
-  <div class="dg-banner" id="banner" hidden></div>
-
-  <div class="dg-modal" id="m-def" hidden role="dialog" aria-modal="true">
+  <div class="dg-inline" id="m-def" hidden>
     <div class="dg-dialog">
       <header><h2>Isi definisi</h2><p id="d-sub"></p></header>
       <form class="body" id="f" novalidate>
@@ -98,6 +90,18 @@
       <footer><button class="ant-btn ant-btn-default" type="button" data-close><span>Batal</span></button><button class="ant-btn ant-btn-primary" type="button" id="d-save"><span>Simpan</span></button></footer>
     </div>
   </div>
+  <section class="ant-card" style="margin-top:20px"><div class="ant-card-body" style="padding:0">
+    <div class="ant-table-wrapper"><div class="ant-spin-nested-loading"><div class="ant-spin-container"><div class="ant-table"><div class="ant-table-container"><div class="ant-table-content">
+      <table style="width:100%;table-layout:auto">
+        <thead class="ant-table-thead"><tr><th class="ant-table-cell">FIELD_ID</th><th class="ant-table-cell">BUSINESS_TERM</th><th class="ant-table-cell">DEFINISI</th><th class="ant-table-cell">Dipakai di Data Element</th><th class="ant-table-cell">Status</th><th class="ant-table-cell" id="th-aksi" hidden style="text-align:right">Aksi</th></tr></thead>
+        <tbody id="rows" class="ant-table-tbody"></tbody>
+      </table></div></div></div></div></div></div>
+      <div class="dg-empty" id="empty" hidden>Tidak ada istilah yang cocok.</div>
+    </div>
+  </section>
+  <div class="dg-banner" id="banner" hidden></div>
+
+  
 
   <section class="dg-legacy">
     Pengeditan istilah lain (nama, kelompok, pemilik) masih dilakukan di aplikasi Glosarium lama.
@@ -137,7 +141,7 @@
     editing = r;
     $('d-sub').textContent = r.field_id + ' · ' + (r.business_term || '');
     $('d-text').value = r.definisi || ''; $('d-alasan').value = ''; $('d-err').hidden = true; $('d-srv').hidden = true;
-    $('m-def').hidden = false; $('d-text').focus();
+    $('m-def').hidden = false; document.getElementById('m-form') && document.getElementById('m-form').scrollIntoView({block:'start', behavior:'smooth'}); document.getElementById('m-def') && document.getElementById('m-def').scrollIntoView({block:'start', behavior:'smooth'}); $('d-text').focus();
   });
   document.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', function () { $('m-def').hidden = true; }); });
   $('d-save').addEventListener('click', function () {
