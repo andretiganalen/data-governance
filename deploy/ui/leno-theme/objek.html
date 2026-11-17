@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Database Object · Data Governance</title>
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="/_leno/leno.css">
+<style>
+  body { margin: 0; background: var(--uix-surface-page); color: var(--uix-text-body); font-family: var(--uix-font); }
+  .dg-wrap { max-width: 1120px; margin: 0 auto; padding: 24px 16px 48px; }
+  .dg-crumb { font-size: 13px; color: var(--uix-text-secondary); margin-bottom: 12px; }
+  .dg-crumb a { color: inherit; }
+  .dg-head h1 { margin: 0 0 4px; font-size: 22px; color: var(--uix-text-head); font-weight: 600; }
+  .dg-head p { margin: 0; font-size: 14px; color: var(--uix-text-secondary); line-height: 1.6; max-width: 720px; }
+  .dg-card { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-xs); margin-top: 20px; }
+  .dg-toolbar { display: flex; gap: 12px; padding: 16px; flex-wrap: wrap; align-items: center; border-bottom: 1px solid var(--uix-border); }
+  .dg-toolbar input, .dg-toolbar select { height: var(--uix-control-md); border: 1px solid var(--uix-field-border); border-radius: var(--uix-radius); padding: 0 10px; font: inherit; font-size: 14px; background: var(--uix-surface); color: var(--uix-text-body); }
+  .dg-toolbar input { min-width: 240px; flex: 1; }
+  .dg-count { margin-left: auto; font-size: 13px; color: var(--uix-text-secondary); }
+  .dg-table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--uix-border-subtle); vertical-align: top; }
+  th { color: var(--uix-text-secondary); font-weight: 600; background: var(--uix-surface-subtle); white-space: nowrap; }
+  td.id { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: var(--uix-text-secondary); white-space: nowrap; }
+  tr.row { cursor: pointer; }
+  tr.row:hover td { background: var(--uix-surface-subtle); }
+  tr.detail td { background: var(--uix-surface-subtle); padding: 0 12px 12px; }
+  .dg-chip { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #EDF0F4; color: #3A4658; white-space: nowrap; }
+  .dg-chip.mn { background: #FCE8E9; color: #8E1418; }
+  .dg-chip.ok { background: #E7F6EC; color: #0E6B33; }
+  .dg-sub { font-size: 12px; font-weight: 600; color: var(--uix-text-head); margin: 12px 0 6px; }
+  .dg-empty { padding: 32px; text-align: center; color: var(--uix-text-secondary); }
+  .dg-note { margin-top: 12px; font-size: 12px; color: var(--uix-text-muted); }
+  @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
+</style>
+</head>
+<body>
+<main class="dg-wrap">
+  <div class="dg-crumb"><a href="/">Beranda</a> › Katalog data › Database Object</div>
+  <section class="dg-head">
+    <h1>Database Object</h1>
+    <p>Pilih tabel dari database milik dataset. Klik tabel untuk melihat kolomnya.</p>
+  </section>
+
+  <section class="dg-card">
+    <div class="dg-toolbar">
+      <input id="q" type="search" placeholder="Cari tabel, dataset, atau kolom…" aria-label="Cari tabel">
+      <select id="ds" aria-label="Dataset"><option value="">Semua dataset</option></select>
+      <span class="dg-count" id="count"></span>
+    </div>
+    <div class="dg-table-wrap">
+      <table>
+        <thead><tr><th>TABLE_ID</th><th>Nama tabel</th><th>Dataset</th><th>Jenis objek</th><th>Database</th><th>Data sensitif</th><th>Jumlah kolom</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="dg-empty" id="empty" hidden>Tidak ada tabel yang cocok.</div>
+    </div>
+  </section>
+  <p class="dg-note">Data hanya dibaca dari Trino (silver_dim_meta_table dan silver_dim_meta_field, sumber Excel ERM). Perubahan belum tersedia di halaman ini.</p>
+</main>
+<script src="/_leno/shell.js"></script>
+<script>
+(function () {
+  var tables = [], fields = {}, $ = function (id) { return document.getElementById(id); };
+  var rowsEl = $('rows'), q = $('q'), ds = $('ds'), count = $('count'), empty = $('empty');
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function val(v) { return v ? esc(v) : '<span class="dg-chip mn">Perlu input manual</span>'; }
+  function isTrue(v) { return String(v).toLowerCase() === 'true'; }
+  function flag(v) { return isTrue(v) ? '<span class="dg-chip mn">Ya</span>' : '<span class="dg-chip">Tidak</span>'; }
+  function render() {
+    var term = q.value.trim().toLowerCase(), d = ds.value;
+    var list = tables.filter(function (t) {
+      if (d && t.dataset_name !== d) return false;
+      if (!term) return true;
+      if ([t.table_id, t.table_name, t.dataset_name].some(function (v) { return v && v.toLowerCase().indexOf(term) >= 0; })) return true;
+      return (fields[t.table_id] || []).some(function (f) { return (f.column_name || '').toLowerCase().indexOf(term) >= 0; });
+    });
+    rowsEl.innerHTML = list.map(function (t, i) {
+      return '<tr class="row" data-i="' + i + '"><td class="id">' + esc(t.table_id) + '</td><td>' + val(t.table_name) + '</td>' +
+        '<td>' + val(t.dataset_name) + '</td><td>' + val(t.object_type) + '</td><td>' + val(t.database_name) + '</td>' +
+        '<td>' + flag(t.sensitive_data_flag) + '</td><td>' + (fields[t.table_id] || []).length + '</td></tr>';
+    }).join('');
+    empty.hidden = list.length > 0;
+    count.textContent = list.length + ' dari ' + tables.length + ' tabel';
+    rowsEl._list = list;
+  }
+  rowsEl.addEventListener('click', function (e) {
+    var tr = e.target.closest('tr.row'); if (!tr) return;
+    var next = tr.nextElementSibling;
+    if (next && next.classList.contains('detail')) { next.remove(); return; }
+    var t = rowsEl._list[+tr.getAttribute('data-i')];
+    var fs = fields[t.table_id] || [];
+    var body = fs.length ? '<table><thead><tr><th>FIELD_ID</th><th>Kolom</th><th>Business term</th><th>Tipe data</th><th>PK</th><th>Sensitif</th><th>Status metadata</th></tr></thead><tbody>' +
+      fs.map(function (f) {
+        return '<tr><td class="id">' + esc(f.field_id) + '</td><td>' + val(f.column_name) + '</td><td>' + val(f.business_term) + '</td><td>' + val(f.data_type) +
+          '</td><td>' + (isTrue(f.pk_flag) ? 'Ya' : '–') + '</td><td>' + flag(f.sensitive_flag) + '</td><td>' +
+          (f.metadata_status === 'Lengkap' ? '<span class="dg-chip ok">Lengkap</span>' : '<span class="dg-chip mn">' + esc(f.metadata_status || 'Perlu dilengkapi') + '</span>') + '</td></tr>';
+      }).join('') + '</tbody></table>'
+      : '<div class="dg-sub">Belum ada kolom untuk tabel ini.</div>';
+    var d = document.createElement('tr'); d.className = 'detail';
+    d.innerHTML = '<td colspan="7"><div class="dg-sub">Kolom tabel ' + esc(t.table_name) + '</div>' + body + '</td>';
+    tr.after(d);
+  });
+  fetch('/_export/objek', { credentials: 'same-origin' })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (j) {
+      tables = j.rows || [];
+      (j.fields || []).forEach(function (f) { (fields[f.table_id] = fields[f.table_id] || []).push(f); });
+      var names = Array.from(new Set(tables.map(function (t) { return t.dataset_name; }).filter(Boolean))).sort();
+      ds.insertAdjacentHTML('beforeend', names.map(function (v) { return '<option>' + esc(v) + '</option>'; }).join(''));
+      render();
+    })
+    .catch(function () { count.textContent = ''; empty.hidden = false; empty.textContent = 'Data belum dapat dimuat. Coba lagi sebentar.'; });
+  q.addEventListener('input', render); ds.addEventListener('change', render);
+})();
+</script>
+</body>
+</html>

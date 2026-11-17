@@ -124,6 +124,20 @@ def dataset() -> dict:
     return {"rows": rows}
 
 
+def objek() -> dict:
+    """Database Object (silver_dim_meta_table) + kolomnya (silver_dim_meta_field). Nilai kosong tetap kosong. Hanya dibaca dari Trino."""
+    tq = X.Trino()
+    tcols = ["table_id", "dataset_id", "dataset_name", "table_name", "object_type", "database_name", "object_owner", "row_count",
+             "sensitive_data_flag", "critical_data_flag", "source_system"]
+    fcols = ["field_id", "table_id", "column_name", "business_term", "data_type", "pk_flag", "fk_flag", "nullable_flag",
+             "sensitive_flag", "metadata_status"]
+    tables = [dict(zip(tcols, [None if v is None else str(v) for v in r]))
+              for r in tq.q(f"SELECT {', '.join(tcols)} FROM {tq.fq('silver_dim_meta_table')} ORDER BY table_id")]
+    fields = [dict(zip(fcols, [None if v is None else str(v) for v in r]))
+              for r in tq.q(f"SELECT {', '.join(fcols)} FROM {tq.fq('silver_dim_meta_field')} ORDER BY table_id, field_id")]
+    return {"rows": tables, "fields": fields}
+
+
 def can_edit(user: dict) -> bool:
     """Tulis Master Organisasi: isAdmin atau tim UV-1 (Admin Data Governance)."""
     return bool(user.get("isAdmin")) or any(t.get("name") == STAFF for t in (user.get("teams") or []))
@@ -151,6 +165,11 @@ class H(BaseHTTPRequestHandler):
         if not user:
             return self._json(401, {"error": "Silakan masuk terlebih dahulu."})
         try:
+            if path == "/_export/whoami":   # nama untuk kerangka halaman (tanpa data lain)
+                nama = user.get("displayName") or user.get("name") or ""
+                return self._json(200, {"nama": nama, "bisa_ubah": can_edit(user)})
+            if path == "/_export/objek":   # baca saja
+                return self._json(200, objek())
             if path == "/_export/dataset":   # baca saja
                 return self._json(200, dataset())
             if path == "/_export/sistem":   # baca saja

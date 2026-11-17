@@ -1,0 +1,74 @@
+/* Kerangka halaman Data Governance (sidebar + header), sesuai desain "Data Governance Portal – Iterasi 2".
+   Dimuat oleh halaman baca-saja di /beranda/, /organisasi/, /sistem/, /dataset/, /objek/, /glosarium/.
+   Item yang belum dibangun ditampilkan redup dan tidak bisa diklik. */
+(function () {
+  var NAV = [
+    { title: null, items: [{ label: 'Beranda', href: '/' }] },
+    { title: 'Katalog data', items: [
+      { label: 'Business Dataset', href: '/dataset/' },
+      { label: 'Database Object', href: '/objek/' },
+      { label: 'Data Element' },
+      { label: 'Business Glossary', href: '/glosarium/' }] },
+    { title: 'Tata kelola', items: [
+      { label: 'Governance Assignment' },
+      { label: 'Data Quality Rules' },
+      { label: 'Data Flow Lineage' },
+      { label: 'Security Access' }] },
+    { title: 'Master data', items: [
+      { label: 'Organisasi', href: '/organisasi/' },
+      { label: 'Sistem', href: '/sistem/' }] }
+  ];
+  var CSS = [
+    'body{display:flex;min-height:100vh;}',
+    '.dg-side{width:248px;flex:0 0 248px;background:var(--uix-surface);border-right:1px solid var(--uix-border);padding:16px 12px;box-sizing:border-box;position:sticky;top:0;height:100vh;overflow:auto;font-family:var(--uix-font);}',
+    '.dg-side .dg-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 16px;font-weight:600;color:var(--uix-text-head);font-size:15px;}',
+    '.dg-side .dg-brand img{height:28px;}',
+    '.dg-side h4{margin:16px 8px 6px;font-size:12px;font-weight:600;color:var(--uix-text-muted);text-transform:none;}',
+    '.dg-side a,.dg-side span.dg-off{display:block;padding:7px 10px;border-radius:var(--uix-radius);font-size:14px;color:var(--uix-text-body);text-decoration:none;}',
+    '.dg-side a:hover{background:var(--uix-surface-muted);}',
+    '.dg-side a[aria-current="page"]{background:var(--uix-primary-soft);color:var(--uix-primary);font-weight:600;}',
+    '.dg-side span.dg-off{color:var(--uix-text-muted);cursor:default;}',
+    '.dg-main{flex:1;min-width:0;}',
+    '.dg-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 24px;background:var(--uix-surface);border-bottom:1px solid var(--uix-border);font-family:var(--uix-font);font-size:14px;color:var(--uix-text-body);}',
+    '.dg-top .dg-user{display:flex;align-items:center;gap:10px;}',
+    '.dg-top .dg-av{width:32px;height:32px;border-radius:999px;background:var(--uix-primary);color:var(--uix-on-primary);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;}',
+    '.dg-top .dg-name{font-weight:600;color:var(--uix-text-head);}',
+    '@media (max-width:820px){.dg-side{display:none;}}'
+  ].join('');
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function initials(n) { return n.split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0].toUpperCase(); }).join(''); }
+
+  var style = document.createElement('style'); style.textContent = CSS; document.head.appendChild(style);
+
+  var path = location.pathname.replace(/index\.html$/, '');
+  var side = document.createElement('aside'); side.className = 'dg-side'; side.setAttribute('aria-label', 'Navigasi');
+  var html = '<div class="dg-brand"><img src="/brand/len-logo.png" alt="" onerror="this.remove()">Data Governance</div>';
+  NAV.forEach(function (g) {
+    if (g.title) html += '<h4>' + esc(g.title) + '</h4>';
+    g.items.forEach(function (it) {
+      if (!it.href) { html += '<span class="dg-off" title="Belum tersedia">' + esc(it.label) + '</span>'; return; }
+      var cur = it.href === '/' ? path === '/' : path.indexOf(it.href) === 0;
+      html += '<a href="' + it.href + '"' + (cur ? ' aria-current="page"' : '') + '>' + esc(it.label) + '</a>';
+    });
+  });
+  side.innerHTML = html;
+
+  var main = document.createElement('div'); main.className = 'dg-main';
+  var top = document.createElement('header'); top.className = 'dg-top';
+  top.innerHTML = '<span>Data Governance › ' + esc(document.title.split('·')[0].trim()) + '</span><span class="dg-user" id="dg-user"></span>';
+
+  var body = document.body;
+  var kids = Array.prototype.slice.call(body.childNodes);
+  kids.forEach(function (n) { if (n.tagName !== 'SCRIPT' && n.tagName !== 'STYLE') main.appendChild(n); });
+  main.insertBefore(top, main.firstChild);
+  body.appendChild(side); body.appendChild(main);
+
+  fetch('/_export/whoami', { credentials: 'same-origin' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (j) {
+      if (!j || !j.nama) return;
+      document.getElementById('dg-user').innerHTML = '<span class="dg-name">' + esc(j.nama) + '</span><span class="dg-av">' + esc(initials(j.nama)) + '</span>';
+    })
+    .catch(function () {});
+})();
