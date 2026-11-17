@@ -109,15 +109,15 @@
     <div class="dg-legend-in"><span><span class="dg-ch">Otomatis</span> Dibuat sistem, tidak bisa diketik</span><span><span class="dg-ch">Otomatis dari DB</span> Pilihannya ditarik dari database</span><span><span class="dg-ch">Dari master</span> Dipilih dari halaman lain</span><span><span class="dg-ch manual">Manual</span> Diketik atau dipilih pengguna</span></div><div class="dg-guide"><b>Petunjuk:</b> Pilih Fungsi dulu, lalu Direktorat, Divisi, dan Unit kerja. ORG_ID terisi otomatis dari Divisi.</div>
       <form class="dg-form body" id="f" novalidate>
       
-      <div class="dg-field"><label for="f-fungsi">Fungsi * <span class="dg-chip mn">Manual</span></label>
+      <div class="dg-field"><label for="f-fungsi">Fungsi * <span class="dg-chip manual">Manual</span></label>
         <select id="f-fungsi"></select><input id="f-fungsi-baru" placeholder="Nama fungsi baru" hidden style="margin-top:8px"><div class="err" data-err="fungsi"></div></div>
-      <div class="dg-field"><label for="f-dir">Direktorat * <span class="dg-chip">Otomatis dari DB</span></label>
+      <div class="dg-field"><label for="f-dir">Direktorat * <span class="dg-chip manual">Manual</span></label>
         <select id="f-dir"></select><div class="err" data-err="direktorat"></div></div>
-      <div class="dg-field"><label for="f-div">Divisi * <span class="dg-chip">Otomatis dari DB</span></label>
+      <div class="dg-field"><label for="f-div">Divisi * <span class="dg-chip manual">Manual</span></label>
         <select id="f-div"></select><div class="err" data-err="divisi"></div></div>
-      <div class="dg-field"><label for="f-unit">Unit kerja * <span class="dg-chip">Otomatis dari DB</span></label>
+      <div class="dg-field"><label for="f-unit">Unit kerja * <span class="dg-chip manual">Manual</span></label>
         <input id="f-unit" autocomplete="off" placeholder="Nama unit kerja"><div class="err" data-err="unit_kerja"></div></div>
-      <div class="dg-field"><label for="f-id">ORG_ID * <span class="dg-ch">Otomatis dari form isian sebelumnya</span></label>
+      <div class="dg-field"><label for="f-id">ORG_ID * <span class="dg-ch">Otomatis dari Isian Sebelumnya</span></label>
         <input id="f-id" autocomplete="off" readonly placeholder="Otomatis dari Divisi"><small>Format huruf-angka, misalnya UD-1. Tidak bisa diubah setelah disimpan.</small><div class="err" data-err="org_id"></div></div>
       
       
