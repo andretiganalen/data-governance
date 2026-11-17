@@ -114,6 +114,16 @@ def sistem() -> dict:
     return {"rows": rows}
 
 
+def dataset() -> dict:
+    """Business Dataset (silver_dim_meta_dataset, dari Excel ERM). Nilai kosong tetap kosong. Hanya dibaca dari Trino."""
+    tq = X.Trino()
+    cols = ["dataset_id", "dataset_name", "business_dataset", "business_domain", "system_id", "system_name", "data_domain",
+            "subdomain", "data_owner", "data_steward", "criticality", "classification", "record_count", "data_asset_status"]
+    rows = [dict(zip(cols, [None if v is None else str(v) for v in r]))
+            for r in tq.q(f"SELECT {', '.join(cols)} FROM {tq.fq('silver_dim_meta_dataset')} ORDER BY dataset_id")]
+    return {"rows": rows}
+
+
 def can_edit(user: dict) -> bool:
     """Tulis Master Organisasi: isAdmin atau tim UV-1 (Admin Data Governance)."""
     return bool(user.get("isAdmin")) or any(t.get("name") == STAFF for t in (user.get("teams") or []))
@@ -141,6 +151,8 @@ class H(BaseHTTPRequestHandler):
         if not user:
             return self._json(401, {"error": "Silakan masuk terlebih dahulu."})
         try:
+            if path == "/_export/dataset":   # baca saja
+                return self._json(200, dataset())
             if path == "/_export/sistem":   # baca saja
                 return self._json(200, sistem())
             if path == "/_export/glosarium":   # baca saja
