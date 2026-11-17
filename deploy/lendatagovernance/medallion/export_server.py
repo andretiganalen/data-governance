@@ -176,6 +176,14 @@ def daftar(key: str) -> dict:
     tbl, cols = DAFTAR[key]
     tq = X.Trino()
     rows = [dict(zip(cols, [None if v is None else str(v) for v in r])) for r in tq.q(f"SELECT {', '.join(cols)} FROM {tq.fq(tbl)}")]
+    import app_daftar as AD
+    if key in AD.SPEC:   # baris tambahan dari aplikasi
+        for a in AD.added(tq, key):
+            base = {c: None for c in cols}
+            base.update({k: v for k, v in a.items() if k in cols})
+            if "role_status" in cols:
+                base["role_status"] = "Aktif"
+            rows.append(base)
     if key == "elemen":   # tambahan dari aplikasi (app_elemen)
         import app_elemen as AE
         import app_objek as AO
@@ -314,6 +322,32 @@ class H(BaseHTTPRequestHandler):
             log("galat glosarium", repr(e)[:200])
             self._json(500, {"error": "Definisi belum dapat disimpan. Coba lagi sebentar."})
 
+    def _daftar_write(self, user: dict, key: str):
+        import app_daftar as AD
+        import app_elemen as AE
+        if key not in AD.SPEC:
+            return self._json(404, {"error": "tidak ditemukan"})
+        if not can_edit(user):
+            return self._json(403, {"error": "Hanya Admin Data Governance yang dapat menambah data ini."})
+        body = self._body()
+        try:
+            tq = X.Trino()
+            fids = {r[0] for r in tq.q(f"SELECT field_id FROM {tq.fq('silver_dim_meta_field')}")} | {a["field_id"] for a in AE.added(tq)}
+            opts = {}
+            if "field_id" in AD.SPEC[key]["req"]:
+                opts["field_id"] = fids
+            if "org_id" in AD.SPEC[key]["req"]:
+                opts["org_id"] = {r["org_id"] for r in master_organisasi()}
+            galat = AD.validate(key, body, opts)
+            if galat:
+                return self._json(400, {"error": galat})
+            row = AD.append(tq, key, body, user.get("name") or "pengguna", body.get("alasan"))
+            log("daftar-tambah", key, "oleh", user.get("name"))
+            self._json(200, {"ok": True, "id": row.get(AD.SPEC[key]["id"][0]) if AD.SPEC[key]["id"] else None, "diubah_pada": row["diubah_pada"]})
+        except Exception as e:  # noqa: BLE001
+            log("galat daftar-tambah", repr(e)[:200])
+            self._json(500, {"error": "Data belum dapat disimpan. Coba lagi sebentar."})
+
     def _elemen_write(self, user: dict):
         import app_elemen as AE
         if not can_edit(user):
@@ -414,7 +448,7 @@ class H(BaseHTTPRequestHandler):
 
     def do_POST(self):  # noqa: N802
         path = self.path.split("?")[0]
-        if path not in ("/_export/fungsi-pdf", "/_export/master-organisasi", "/_export/sistem", "/_export/dataset", "/_export/objek", "/_export/glosarium", "/_export/elemen"):
+        if path not in ("/_export/fungsi-pdf", "/_export/master-organisasi", "/_export/sistem", "/_export/dataset", "/_export/objek", "/_export/glosarium", "/_export/elemen") and not path.startswith("/_export/daftar/"):
             return self._json(404, {"error": "tidak ditemukan"})
         auth = self.headers.get("Authorization", "")
         if not auth.startswith("Bearer "):
@@ -433,6 +467,8 @@ class H(BaseHTTPRequestHandler):
             return self._objek_write(user)
         if path == "/_export/elemen":
             return self._elemen_write(user)
+        if path.startswith("/_export/daftar/"):
+            return self._daftar_write(user, path.rsplit("/", 1)[-1])
         if path == "/_export/glosarium":
             return self._glosarium_write(user)
         try:

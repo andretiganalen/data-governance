@@ -129,6 +129,63 @@
         });
     });
   }
+
+  /* Tambah seragam untuk layar Tata kelola dan Akses: tombol di baris pencarian, form di atas tabel (gaya sama dengan Data Element). */
+  var SPECF = {
+    assignment: { name: 'Governance Assignment', fields: [['field_id','select','elemen','FIELD_ID','Otomatis dari master'],['role','select','role','Peran','Manual'],['org_id','select','org','ORG_ID','Otomatis dari DB']] },
+    kualitas: { name: 'Data Quality Rule', fields: [['field_id','select','elemen','FIELD_ID','Otomatis dari master'],['rule','text','','Aturan','Manual'],['validation','text','','Validasi','Manual']] },
+    lineage: { name: 'Data Flow Lineage', fields: [['field_id','select','elemen','FIELD_ID','Otomatis dari master'],['target_label','text','','Target (layar/laporan)','Manual'],['asset_type','text','','Jenis aset','Manual']] },
+    akses: { name: 'Security Access', fields: [['field_id','select','elemen','FIELD_ID','Otomatis dari master'],['org_id','select','org','ORG_ID','Otomatis dari DB'],['classification','text','','Klasifikasi','Manual'],['permission_category','text','','Kategori izin','Manual'],['permission_type','text','','Jenis izin','Manual']] }
+  };
+  if (SPECF[c.key]) {
+    var cfg = SPECF[c.key], B = function (id) { return document.getElementById(id); };
+    var box = document.createElement('div'); box.className = 'dg-add'; box.id = 'add'; box.hidden = true;
+    var fieldsHtml = cfg.fields.map(function (f) {
+      var inp = f[1] === 'select' ? '<select id="x-' + f[0] + '"></select>' : '<input id="x-' + f[0] + '" maxlength="200">';
+      var chip = f[4].indexOf('Manual') >= 0 ? 'manual' : '';
+      return '<div class="f"><label for="x-' + f[0] + '">' + f[3] + ' <span class="dg-chip ' + chip + '">' + f[4] + '</span></label>' + inp + '<div class="err" id="e-' + f[0] + '"></div></div>';
+    }).join('');
+    box.innerHTML = '<form id="af" novalidate>' + fieldsHtml +
+      '<div class="f wide"><label for="x-alasan">Alasan perubahan</label><input id="x-alasan" maxlength="500"></div>' +
+      '<footer><button class="ant-btn ant-btn-default" type="button" id="a-cancel"><span>Batal</span></button><button class="ant-btn ant-btn-primary" type="button" id="a-save"><span>Simpan</span></button></footer>' +
+      '<div class="err wide" id="e-srv"></div></form>';
+    var anchor = document.querySelector('.dg-toolbar-top') || document.querySelector('.dg-card');
+    anchor.parentNode.insertBefore(box, anchor.nextSibling);
+    var addBtn = document.createElement('button'); addBtn.id = 'a-open'; addBtn.type = 'button'; addBtn.className = 'ant-btn ant-btn-primary'; addBtn.hidden = true;
+    addBtn.innerHTML = '<span>Tambah ' + cfg.name + '</span>';
+    var bar = document.querySelector('.dg-toolbar-top'); if (bar) bar.appendChild(addBtn);
+    var lists = {};
+    function fill(sel, vals) { var e = B('x-' + sel); e.innerHTML = '<option value="">Pilih</option>' + vals.map(function (v) { return '<option>' + v + '</option>'; }).join(''); }
+    fetch('/_export/daftar/elemen', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
+      lists.fid = (j.rows || []).map(function (r) { return r.field_id; }).filter(Boolean); if (B('x-field_id')) fill('field_id', lists.fid);
+    });
+    fetch('/_export/master-organisasi', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
+      lists.org = Array.from(new Set((j.rows || []).map(function (r) { return r.org_id; }).filter(Boolean))); if (B('x-org_id')) fill('org_id', lists.org);
+    });
+    if (B('x-role')) fill('role', ['Data Owner','Data Steward','Data User']);
+    function loadOpts() {
+      fetch('/_export/daftar/elemen', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
+        if (B('x-field_id')) fill('field_id', (j.rows || []).map(function (r) { return r.field_id; }).filter(Boolean));
+      });
+      fetch('/_export/master-organisasi', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
+        if (B('x-org_id')) fill('org_id', Array.from(new Set((j.rows || []).map(function (r) { return r.org_id; }).filter(Boolean))));
+      });
+    }
+    addBtn.addEventListener('click', function () { box.hidden = false; B('af').reset(); B('e-srv').textContent = ''; loadOpts(); });
+    B('a-cancel').addEventListener('click', function () { box.hidden = true; });
+    fetch('/_export/whoami', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) { addBtn.hidden = !j.bisa_ubah; });
+    B('a-save').addEventListener('click', function () {
+      var body = { alasan: B('x-alasan').value.trim() }, bad = false;
+      cfg.fields.forEach(function (f) {
+        var v = B('x-' + f[0]).value.trim(); body[f[0]] = v;
+        B('e-' + f[0]).textContent = v ? '' : f[3] + ' wajib diisi.'; if (!v) bad = true;
+      });
+      if (bad) return;
+      fetch('/_export/daftar/' + c.key, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, j: j }; }); })
+        .then(function (res) { if (!res.ok) { B('e-srv').textContent = res.j.error || 'Belum dapat disimpan.'; return; } location.reload(); });
+    });
+  }
   q.addEventListener('input', render);
 })();
 </script>
