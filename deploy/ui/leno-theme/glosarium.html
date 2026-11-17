@@ -6,6 +6,9 @@
 <title>Business Glossary · Data Governance</title>
 <link rel="icon" href="/favicon.png">
 <link rel="stylesheet" href="/_leno/leno.css">
+<!-- Sesuai artifact "Data Governance Portal – Iterasi 2", board "Business Glossary · Form & daftar":
+     ringkasan + Mulai isi yang belum, ruang kerja definisi (template awalan, hitungan 0/500, Cek kualitas definisi
+     2 Wajib + 4 Saran, Konteks dari katalog, Sebelumnya/Berikutnya/Pindah, Simpan & lanjut), Ubah/Hapus per baris. -->
 <style>
   body { margin: 0; background: var(--uix-surface-page); color: var(--uix-text-body); font-family: var(--uix-font); }
   .dg-wrap { max-width: none; margin: 0 auto; padding: 24px 16px 48px; }
@@ -14,186 +17,429 @@
   .dg-head { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
   .dg-head h1 { margin: 0 0 4px; font-size: 22px; color: var(--uix-text-head); font-weight: 600; }
   .dg-head p { margin: 0; font-size: 14px; color: var(--uix-text-secondary); line-height: 1.6; max-width: 720px; }
-  .dg-card { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-xs); margin-top: 20px; }
-  .dg-progress { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; padding: 16px; }
-  .dg-stat { border: 1px solid var(--uix-border); border-radius: var(--uix-radius); padding: 12px 14px; }
-  .dg-stat b { display: block; font-size: 22px; color: var(--uix-primary); font-weight: 600; }
-  .dg-stat span { font-size: 12px; color: var(--uix-text-secondary); }
-  .dg-bar { height: 6px; background: var(--uix-surface-muted); border-radius: 999px; margin-top: 8px; overflow: hidden; }
-  .dg-bar i { display: block; height: 100%; background: var(--uix-primary); }
-  .dg-toolbar { display: flex; gap: 12px; padding: 16px; flex-wrap: wrap; align-items: center; border-top: 1px solid var(--uix-border); }
-  .dg-toolbar input, .dg-toolbar select { height: var(--uix-control-md); border: 1px solid var(--uix-field-border); border-radius: var(--uix-radius); padding: 0 10px; font: inherit; font-size: 14px; background: var(--uix-surface); color: var(--uix-text-body); }
+  .dg-legend { display: flex; flex-wrap: wrap; gap: 18px; font-size: 13px; color: #3A4658; margin-top: 12px; }
+  .dg-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+  .dg-sum { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+  .dg-tile { background: #fff; border: 1px solid #E3E6EB; border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .dg-tile .lbl { font-size: 13px; color: #3A4658; font-weight: 500; }
+  .dg-tile .big { font-size: 30px; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .dg-tile .big.ok { color: #ae2524; } .dg-tile .big.todo { color: #9A4A06; }
+  .dg-tile .of { color: #566173; font-size: 14px; margin-left: 6px; }
+  .dg-bar { height: 8px; background: #EDF0F4; border-radius: 999px; overflow: hidden; }
+  .dg-bar i { display: block; height: 100%; background: #ae2524; border-radius: 999px; }
+  .dg-tile .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .dg-btn-todo { background: #fff !important; color: #9A4A06 !important; border: 1px solid #B45309 !important; }
+  .dg-btn-todo:hover { background: #FDF1E3 !important; }
+  .dg-toast { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 6px 8px 6px 16px; border-radius: 8px; background: #FCE8E9; color: #8E1418; font-weight: 500; font-size: 14px; }
+  .dg-toast[hidden] { display: none; }
+  .dg-toast button { height: 36px; padding: 0 12px; border: 0; background: transparent; color: #8E1418; font: inherit; font-weight: 600; cursor: pointer; }
+  /* Ruang kerja definisi */
+  .dg-ws { margin-top: 16px; background: #fff; border: 1px solid #ae2524; border-radius: 12px; box-shadow: 0 4px 16px rgba(18,26,43,.08); overflow: hidden; }
+  .dg-ws[hidden] { display: none; }
+  .dg-ws-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 22px; background: linear-gradient(90deg, #8E1418, #ae2524); color: #fff; }
+  .dg-ws-top .mode { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: rgba(255,255,255,.88); }
+  .dg-ws-top h2, .dg-ws-top h2 * { margin: 2px 0 0; font-size: 19px; font-weight: 500; color: #fff !important; }
+  .dg-ws-top h2 .fid { font-family: ui-monospace, Menlo, monospace; color: rgba(255,255,255,.88); }
+  .dg-ws-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .dg-ws-nav .pos { font-size: 13px; color: rgba(255,255,255,.88); }
+  .dg-ws-nav select { height: 40px; max-width: 260px; padding: 0 10px; border: 1px solid #C9CFDA; border-radius: 8px; background: #fff; color: #16202E; font: inherit; font-size: 14px; }
+  .dg-ws-body { display: flex; flex-wrap: wrap; }
+  .dg-ws-main { flex: 3 1 440px; min-width: 0; box-sizing: border-box; padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+  .dg-ws-main .lblrow { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .dg-ws-main .lblrow label { font-weight: 600; font-size: 14px; color: #16202E; }
+  .dg-tpl { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: #566173; }
+  .dg-tpl[hidden] { display: none; }
+  .dg-tpl button { height: 34px; padding: 0 12px; border: 1px dashed #ae2524; border-radius: 999px; background: #fff; color: #ae2524; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+  .dg-tpl button:hover { background: #FCE8E9; }
+  #ws-def { box-sizing: border-box; width: 100%; min-height: 150px; padding: 12px 14px; border: 2px solid #ae2524; border-radius: 8px; font: inherit; font-size: 15px; line-height: 1.55; color: #16202E; resize: vertical; }
+  #ws-def[aria-invalid="true"] { border-color: #B45309; }
+  .dg-ws-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; font-size: 13px; }
+  .dg-ws-meta .err { color: #9A4A06; }
+  .dg-ws-meta .draft { color: #566173; }
+  .dg-ws-meta .cnt { margin-left: auto; color: #566173; font-variant-numeric: tabular-nums; }
+  .dg-ws-meta .cnt.over { color: #9A4A06; font-weight: 600; }
+  .dg-checks { border: 1px solid #DFE3EA; border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .dg-checks .hd { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .dg-checks .hd b { font-weight: 600; font-size: 13px; color: #16202E; }
+  .dg-checks .hd span { color: #566173; font-size: 12px; }
+  .dg-checks ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .dg-checks li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: #24324A; }
+  .dg-checks li.fail { color: #7A3B05; }
+  .dg-checks li .ic { flex: 0 0 18px; height: 18px; box-sizing: border-box; border-radius: 50%; margin-top: 1px; display: inline-flex; align-items: center; justify-content: center; }
+  .dg-checks li.ok .ic { background: #ae2524; }
+  .dg-checks li.fail .ic { border: 2px solid #B45309; background: #fff; }
+  .dg-checks li.idle .ic { border: 2px solid #C9CFDA; background: #F5F6F8; }
+  .dg-checks li .tx { flex: 1; }
+  .dg-checks li .tag { flex: 0 0 auto; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .dg-checks li .tag.req { background: #FCE8E9; color: #8E1418; }
+  .dg-checks li .tag.adv { background: #EDF0F4; color: #3A4658; }
+  .dg-ws-main .alasan label { display: block; font-weight: 600; font-size: 13px; color: #16202E; margin-bottom: 6px; }
+  .dg-ws-main .alasan input { width: 100%; box-sizing: border-box; height: 40px; border: 1px solid #C9CFDA; border-radius: 8px; padding: 0 12px; font: inherit; font-size: 14px; }
+  .dg-ctx { flex: 2 1 300px; min-width: 0; box-sizing: border-box; padding: 20px 22px; background: #F7F8FA; border-left: 1px solid #EEF0F4; display: flex; flex-direction: column; gap: 18px; font-size: 13px; }
+  .dg-ctx .hd { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; color: #16202E; }
+  .dg-ctx .sec { display: flex; flex-direction: column; gap: 6px; }
+  .dg-ctx .sec > .t { color: #3A4658; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .dg-ctx .none { color: #566173; }
+  .dg-ctx .col { display: flex; justify-content: space-between; gap: 10px; padding: 8px 10px; border-radius: 6px; background: #fff; }
+  .dg-ctx .col .p { font-family: ui-monospace, Menlo, monospace; overflow-wrap: anywhere; }
+  .dg-ctx .col .ty { flex: 0 0 auto; color: #566173; }
+  .dg-ctx .dq { display: flex; flex-wrap: wrap; gap: 6px; }
+  .dg-ctx .dq span { padding: 4px 10px; border-radius: 6px; background: #fff; }
+  .dg-ctx .dq em { font-style: normal; color: #566173; font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+  .dg-ctx .lin { padding: 6px 10px; border-radius: 6px; background: #fff; }
+  .dg-ctx .lin em { font-style: normal; color: #566173; }
+  .dg-ctx .rel { padding: 8px 10px; border-radius: 6px; background: #fff; display: flex; flex-direction: column; gap: 2px; }
+  .dg-ctx .rel b { font-weight: 600; } .dg-ctx .rel b em { font-style: normal; font-weight: 400; color: #566173; font-family: ui-monospace, Menlo, monospace; font-size: 12px; margin-left: 4px; }
+  .dg-ctx .rel span { color: #3A4658; line-height: 1.5; }
+  .dg-ctx ul { margin: 0; padding-left: 18px; line-height: 1.6; color: #3A4658; }
+  .dg-ws footer { display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap; padding: 14px 22px; border-top: 1px solid #EEF0F4; }
+  /* Daftar */
+  .dg-list { margin-top: 16px; }
+  .dg-list-hd { display: flex; align-items: center; gap: 8px; padding: 14px 16px 0; font-weight: 600; color: #16202E; }
+  .dg-toolbar { display: flex; gap: 12px; padding: 14px 16px; flex-wrap: wrap; align-items: center; }
+  .dg-toolbar input, .dg-toolbar select { height: 40px; border: 1px solid var(--uix-field-border); border-radius: 8px; padding: 0 10px; font: inherit; font-size: 14px; background: #fff; color: var(--uix-text-body); }
   .dg-toolbar input { min-width: 240px; flex: 1; }
-  .dg-count { margin-left: auto; font-size: 13px; color: var(--uix-text-secondary); }
+  .dg-count { margin-left: auto; font-size: 13px; color: var(--uix-text-secondary); white-space: nowrap; }
   .dg-table-wrap { overflow-x: auto; }
+  tr.editing td { background: #FCE8E9 !important; }
+  tr.confirm td { background: #FDF1E3 !important; }
+  tr.flash td { background: #FFF3F3 !important; }
   .dg-chip { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #EDF0F4; color: #3A4658; white-space: nowrap; }
-  .dg-chip.ok { background: #E7F6EC; color: #0E6B33; }
   .dg-chip.mn { background: #FCE8E9; color: #8E1418; }
+  .dg-chip.draft { background: #FDF1E3; color: #9A4A06; margin-left: 6px; }
+  .th-chip { display: inline-block; white-space: nowrap; margin-left: 6px; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 999px; background: #EDF0F4; color: #3A4658; }
+  .th-chip.mn { background: #FCE8E9; color: #8E1418; }
+  .dg-confirm { display: inline-flex; align-items: center; gap: 4px; }
+  .dg-confirm .no { height: 32px; padding: 0 8px; border: 0; background: transparent; color: #16202E; font: inherit; font-size: 13px; cursor: pointer; }
   .dg-empty { padding: 32px; text-align: center; color: var(--uix-text-secondary); }
-  .dg-modal { position: fixed; inset: 0; background: rgba(16,24,40,.45); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
-  .dg-modal[hidden] { display: none; }
-  .dg-dialog { background: var(--uix-surface); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-md); width: 100%; max-width: 640px; max-height: 90vh; overflow: auto; }
-  .dg-dialog header { padding: 16px 20px; border-bottom: 1px solid var(--uix-border); }
-  .dg-dialog header h2 { margin: 0; font-size: 16px; color: var(--uix-text-head); font-weight: 600; }
-  .dg-dialog header p { margin: 4px 0 0; font-size: 13px; color: var(--uix-text-secondary); }
-  .dg-dialog .body { padding: 16px 20px; }
-  .dg-dialog footer { padding: 12px 20px; border-top: 1px solid var(--uix-border); display: flex; justify-content: flex-end; gap: 8px; }
-  .dg-field { margin-bottom: 14px; }
-  .dg-field label { display: block; font-size: 13px; color: var(--uix-text-head); font-weight: 500; margin-bottom: 6px; }
-  .dg-field textarea, .dg-field input { width: 100%; box-sizing: border-box; border: 1px solid var(--uix-field-border); border-radius: var(--uix-radius); padding: 8px 10px; font: inherit; font-size: 14px; background: var(--uix-surface); color: var(--uix-text-body); }
-  .dg-field textarea { min-height: 120px; resize: vertical; }
-  .dg-tips { background: var(--uix-surface-subtle); border: 1px solid var(--uix-border); border-radius: var(--uix-radius); padding: 10px 14px; font-size: 13px; line-height: 1.6; }
-  .dg-err { color: #8E1418; font-size: 12px; margin-top: 4px; }
-  .dg-banner { margin-top: 12px; padding: 10px 14px; border-radius: var(--uix-radius); background: #E7F6EC; color: #0E6B33; font-size: 13px; }
-  .dg-banner[hidden] { display: none; }
   .dg-legacy { margin-top: 28px; font-size: 13px; color: var(--uix-text-secondary); }
-  .dg-link { display: inline-flex; align-items: center; height: var(--uix-control-md); padding: 0 14px; border-radius: var(--uix-radius); border: 1px solid var(--uix-border-strong); background: var(--uix-surface); color: var(--uix-text-body); text-decoration: none; font-size: 14px; margin-top: 8px; }
-  .dg-inline { margin-top: 20px; background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-xs); }
-  .dg-inline .dg-dialog { max-width: none; box-shadow: none; border-radius: var(--uix-radius-md); max-height: none; overflow: visible; }
-  .dg-inline[hidden] { display: none; }
-  .dg-inline form.body { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0 16px; align-items: start; }
-  .dg-inline form.body .dg-field { margin-bottom: 12px; }
-  .dg-inline form.body .dg-field:has(textarea), .dg-inline form.body > .err, .dg-inline form.body > .dg-tips { grid-column: 1 / -1; }
-  .dg-inline .dg-dialog footer { justify-content: flex-end; }
-  .dg-ch { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #EDF0F4; color: #3A4658; white-space: nowrap; margin-left: 6px; font-weight: 500; }
-  .dg-ch.manual { background: #FCE8E9; color: #8E1418; }
-.dg-legend-in { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--uix-text-secondary); padding: 12px 20px; border-bottom: 1px solid var(--uix-border); background: var(--uix-surface-subtle); }
-  .dg-legend-in b { color: var(--uix-text-head); font-weight: 600; }
-.dg-guide { font-size: 12px; color: var(--uix-text-secondary); padding: 8px 20px 0; }
-  .dg-toolbar-top { display: flex; flex-wrap: nowrap; align-items: center; gap: 12px; margin: 0 0 16px; padding: 0; border: 0; }
-  .dg-toolbar-top input { flex: 1 1 auto; min-width: 200px; height: var(--uix-control-md); }
-  .dg-toolbar-top select { flex: 0 1 auto; width: auto; min-width: 150px; height: var(--uix-control-md); }
-  .dg-toolbar-top .dg-count { margin-left: auto; white-space: nowrap; }
-  @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
+  @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } .dg-ctx { border-left: 0; border-top: 1px solid #EEF0F4; } }
 </style>
 </head>
 <body>
 <main class="dg-wrap">
   <div class="dg-crumb"><a href="/">Beranda</a> › Katalog data › Business Glossary</div>
-<div class="dg-toolbar dg-toolbar-top">
-      <input class="ant-input" id="q" type="search" placeholder="Cari FIELD_ID, business term, atau definisi…" aria-label="Cari glosarium">
-      <select id="grp" aria-label="Kelompok"><option value="">Semua kelompok</option></select>
-      <select id="st" aria-label="Status"><option value="">Semua status</option><option value="ada">Sudah ada definisi</option><option value="kosong">Belum ada definisi</option></select>
-      <span class="dg-count" id="count"></span>
-    </div>
   <section class="dg-head">
     <div>
       <h1>Business Glossary</h1>
       <p>Definisi bisnis untuk setiap FIELD_ID. Satu FIELD_ID punya satu definisi yang berlaku di semua tabel yang memakainya.</p>
     </div>
+    <button class="ant-btn ant-btn-primary" id="btn-tambah" type="button" hidden>Tambah Business Glossary</button>
   </section>
-
-  <section class="ant-card" style="margin-top:20px"><div class="ant-card-body" style="padding:0">
-    <div class="dg-progress">
-      <div class="dg-stat"><span>Istilah</span><b id="s-total">–</b></div>
-      <div class="dg-stat"><span>Sudah ada definisi</span><b id="s-def">–</b><div class="dg-bar"><i id="s-bar" style="width:0%"></i></div></div>
-      <div class="dg-stat"><span>Belum ada definisi</span><b id="s-todo">–</b></div>
-    </div>
-    
-  </section>
-
-  <div class="dg-inline" id="m-def" hidden>
-    <div class="dg-dialog">
-      <header><h2>Isi definisi</h2><p id="d-sub"></p></header>
-      <div class="dg-legend-in"><span><span class="dg-ch">Otomatis</span> Dibuat sistem, tidak bisa diketik</span><span><span class="dg-ch">Otomatis dari DB</span> Pilihannya ditarik dari database</span><span><span class="dg-ch">Dari master</span> Dipilih dari halaman lain</span><span><span class="dg-ch manual">Manual</span> Diketik atau dipilih pengguna</span></div><div class="dg-guide"><b>Petunjuk:</b> Tulis definisi bisnis yang jelas. FIELD_ID dan business term berasal dari Data Element.</div>
-      <form class="body" id="f" novalidate>
-        <div class="dg-field"><label for="d-text">DEFINISI * <span class="dg-ch manual">Manual</span></label><textarea id="d-text" maxlength="2000" placeholder="Tulis definisi bisnis istilah ini"></textarea><div class="dg-err" id="d-err" hidden></div></div>
-        <div class="dg-tips"><b>Tips menulis</b><br>Jelaskan arti data ini bagi bisnis, bukan cara menyimpannya.<br>Mulai dengan kata benda, misalnya "Nilai…", "Tanggal…", "Kategori…".<br>Sebutkan satuan, rentang, atau pilihan nilai jika ada.<br>Pakai istilah yang dipahami unit lain, hindari singkatan internal.</div>
-        <div class="dg-field" style="margin-top:14px"><label for="d-alasan">Alasan perubahan</label><input id="d-alasan" maxlength="500" placeholder="Opsional"></div>
-        <div class="dg-err" id="d-srv" hidden></div>
-      </form>
-      <footer><button class="ant-btn ant-btn-default" type="button" data-close><span>Batal</span></button><button class="ant-btn ant-btn-primary" type="button" id="d-save"><span>Simpan</span></button></footer>
-    </div>
+  <div class="dg-legend">
+    <span><span class="dg-chip">Dari master</span>dipilih dari Data Element, nilai turunannya terisi sendiri</span>
+    <span><span class="dg-chip mn">Manual</span>diketik oleh pengguna</span>
   </div>
-  <section class="ant-card" style="margin-top:20px"><div class="ant-card-body" style="padding:0">
-    <div class="ant-table-wrapper"><div class="ant-spin-nested-loading"><div class="ant-spin-container"><div class="ant-table"><div class="ant-table-container"><div class="ant-table-content">
-      <table style="width:100%;table-layout:auto">
-        <thead class="ant-table-thead"><tr><th class="ant-table-cell" style="width:120px">FIELD_ID</th><th class="ant-table-cell">BUSINESS_TERM</th><th class="ant-table-cell">DEFINISI</th><th class="ant-table-cell">Dipakai di Data Element</th><th class="ant-table-cell">Status</th><th class="ant-table-cell" id="th-aksi" hidden style="text-align:right">Aksi</th></tr></thead>
-        <tbody id="rows" class="ant-table-tbody"></tbody>
-      </table></div></div></div></div></div></div>
-      <div class="dg-empty" id="empty" hidden>Tidak ada istilah yang cocok.</div>
+
+  <section class="dg-sum" aria-label="Ringkasan">
+    <div class="dg-tile">
+      <span class="lbl">FIELD_ID yang sudah punya definisi</span>
+      <div><span class="big ok" id="s-done">–</span><span class="of" id="s-of"></span></div>
+      <div class="dg-bar" role="img" id="s-barwrap"><i id="s-bar" style="width:0%"></i></div>
+    </div>
+    <div class="dg-tile">
+      <span class="lbl">Belum punya definisi</span>
+      <span class="big todo" id="s-todo">–</span>
+      <span class="btns" id="s-btns" hidden><button class="ant-btn ant-btn-primary" type="button" id="b-start">Mulai isi yang belum</button><button class="ant-btn dg-btn-todo" type="button" id="b-show">Tampilkan saja</button></span>
     </div>
   </section>
-  <div class="dg-banner" id="banner" hidden></div>
 
-  
+  <div class="dg-toast" role="status" id="toast" hidden><span id="toast-t"></span><button type="button" id="toast-x">Tutup</button></div>
+
+  <section class="dg-ws" id="ws" aria-labelledby="ws-title" hidden>
+    <div class="dg-ws-top">
+      <div><span class="mode" id="ws-mode"></span><h2 id="ws-title"></h2></div>
+      <div class="dg-ws-nav">
+        <span class="pos" id="ws-pos"></span>
+        <button class="ant-btn ant-btn-default" type="button" id="ws-prev" aria-label="FIELD_ID sebelumnya">‹ Sebelumnya</button>
+        <button class="ant-btn ant-btn-default" type="button" id="ws-next" aria-label="FIELD_ID berikutnya">Berikutnya ›</button>
+        <label for="ws-jump" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Pindah ke FIELD_ID</label>
+        <select id="ws-jump"></select>
+      </div>
+    </div>
+    <div class="dg-ws-body">
+      <div class="dg-ws-main">
+        <div class="lblrow"><label for="ws-def">DEFINISI *</label><span class="dg-chip mn">Manual</span></div>
+        <div class="dg-tpl" id="ws-tpl"></div>
+        <textarea id="ws-def" rows="6" aria-describedby="ws-count ws-err ws-checks"></textarea>
+        <div class="dg-ws-meta">
+          <span class="err" id="ws-err" role="alert" hidden></span>
+          <span class="draft" id="ws-draft" hidden>Draf tersimpan sementara. Tekan Simpan untuk menetapkan.</span>
+          <span class="cnt" id="ws-count"></span>
+        </div>
+        <div class="dg-checks" id="ws-checks">
+          <div class="hd"><b>Cek kualitas definisi</b><span id="ws-sum"></span></div>
+          <ul id="ws-list"></ul>
+        </div>
+        <div class="alasan"><label for="ws-alasan">Alasan perubahan</label><input id="ws-alasan" maxlength="500" placeholder="Opsional"></div>
+      </div>
+      <aside class="dg-ctx" aria-label="Konteks dari katalog">
+        <div class="hd"><span>Konteks dari katalog</span><span class="dg-chip">Dari master</span></div>
+        <div class="sec"><span class="t">Kolom di database</span><div id="cx-cols"></div></div>
+        <div class="sec"><span class="t">Aturan kualitas data</span><div class="dq" id="cx-dq"></div></div>
+        <div class="sec"><span class="t">Ditampilkan di aplikasi</span><div id="cx-lin"></div></div>
+        <div class="sec"><span class="t">Contoh definisi di tabel yang sama</span><div id="cx-rel"></div></div>
+        <div class="sec"><span class="t">Tips menulis</span>
+          <ul><li>Jelaskan arti data ini bagi bisnis, bukan cara menyimpannya.</li><li>Mulai dengan kata benda, mis. "Nilai…", "Tanggal…", "Kategori…".</li><li>Sebutkan satuan, rentang, atau pilihan nilai jika ada.</li><li>Pakai istilah yang dipahami unit lain, hindari singkatan internal.</li></ul></div>
+      </aside>
+    </div>
+    <footer>
+      <button class="ant-btn ant-btn-default" type="button" id="ws-close">Tutup</button>
+      <button class="ant-btn dg-btn-sec" type="button" id="ws-savenext">Simpan &amp; lanjut ke yang belum</button>
+      <button class="ant-btn ant-btn-primary" type="button" id="ws-save">Simpan</button>
+    </footer>
+  </section>
+
+  <section class="ant-card dg-list" aria-label="Daftar business glossary"><div class="ant-card-body" style="padding:0">
+    <div class="dg-list-hd">Daftar business glossary</div>
+    <div class="dg-toolbar">
+      <input class="ant-input" id="q" type="search" placeholder="Cari FIELD_ID, business term, atau definisi" aria-label="Cari glossary">
+      <select id="grp" aria-label="Kelompok"><option value="">Semua kelompok</option></select>
+      <select id="st" aria-label="Status"><option value="">Semua status</option><option value="done">Sudah ada definisi</option><option value="todo">Belum ada definisi</option></select>
+      <span class="dg-count" id="count"></span>
+    </div>
+    <div class="ant-table-wrapper"><div class="ant-table"><div class="ant-table-container"><div class="ant-table-content">
+      <table style="width:100%;table-layout:auto">
+        <thead class="ant-table-thead"><tr><th class="ant-table-cell" style="width:110px">FIELD_ID<span class="th-chip">Dari master</span></th><th class="ant-table-cell">BUSINESS_TERM<span class="th-chip">Dari master</span></th><th class="ant-table-cell">DEFINISI<span class="th-chip mn">Manual</span></th><th class="ant-table-cell">Dipakai di Data Element</th><th class="ant-table-cell" id="th-aksi" hidden style="text-align:right">Aksi</th></tr></thead>
+        <tbody id="rows" class="ant-table-tbody"></tbody>
+      </table></div></div></div></div>
+    <div class="dg-empty" id="empty" hidden></div>
+  </div></section>
 
   <section class="dg-legacy">
     Pengeditan istilah lain (nama, kelompok, pemilik) masih dilakukan di aplikasi Glosarium lama.
-    <br><a class="ant-btn ant-btn-default" href="/glossary" style="text-decoration:none">Buka Glosarium di aplikasi lama</a>
+    <br><a class="ant-btn ant-btn-default" href="/glossary" style="text-decoration:none;margin-top:8px">Buka Glosarium di aplikasi lama</a>
   </section>
 </main>
 <script src="/_leno/shell.js"></script>
 <script>
 (function () {
-  var all = [], canEdit = false, editing = null;
+  var MAX = 500;
+  var all = [], FM = {}, canEdit = false;
+  var work = null;            // { fid, tried }
+  var drafts = {};            // draf sementara per FIELD_ID (belum disimpan)
+  var confirmDel = null, flash = null;
   var $ = function (id) { return document.getElementById(id); };
-  var rowsEl = $('rows'), q = $('q'), grp = $('grp'), st = $('st'), count = $('count'), empty = $('empty');
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-  function has(r) { return !!(r.definisi && String(r.definisi).trim()); }
-  function statusChip(r) { return has(r) ? '<span class="dg-chip ok">Sudah ada definisi</span>' : '<span class="dg-chip mn">Belum ada definisi</span>'; }
-  function note(m) { $('banner').textContent = m; $('banner').hidden = !m; }
-  function render() {
-    var term = q.value.trim().toLowerCase(), g = grp.value, s = st.value;
-    var list = all.filter(function (r) {
+  function hasDef(fid) { var r = FM[fid]; return !!(r && r.definisi && String(r.definisi).trim()); }
+  function textOf(fid) { return drafts[fid] !== undefined ? drafts[fid] : (FM[fid] && FM[fid].definisi) || ''; }
+  function tablesOf(r) { return (r.cols || []).map(function (c) { return c[0]; }).filter(function (t, i, a) { return t && a.indexOf(t) === i; }); }
+
+  /* Cek kualitas definisi: sama persis dengan artifact (2 Wajib, 4 Saran). Server menolak bila Wajib gagal. */
+  var STARTERS = ['kategori yang menunjukkan', 'pilihan yang menentukan', 'uraian mengenai', 'keterangan yang menjelaskan', 'nilai angka yang menunjukkan', 'nilai dalam rupiah yang menunjukkan', 'persentase yang menunjukkan', 'tanggal saat', 'waktu saat', 'penanda apakah', 'dokumen pendukung yang', 'nilai yang menunjukkan'];
+  function checks(fld, text) {
+    var t = (text || '').trim(), empty = !t, low = t.toLowerCase();
+    var term = (fld.business_term || '').toLowerCase();
+    var rest = term ? low.split(term).join(' ') : low;
+    var techs = (fld.cols || []).map(function (c) { return c[1]; }).filter(function (n, i, a) { return n && a.indexOf(n) === i && (/[a-z][A-Z]/.test(n) || n.indexOf('_') >= 0); });
+    var tplOnly = STARTERS.some(function (st) { return low.indexOf(st) === 0 && low.length - st.length < 10; });
+    var usedTech = techs.filter(function (n) { return t.indexOf(n) >= 0; });
+    var sentences = (t.match(/[.!?](\s|$)/g) || []).length || (t ? 1 : 0);
+    var list = [
+      { text: tplOnly ? 'Lengkapi kalimat setelah awalan template' : 'Ditulis dalam kalimat lengkap, minimal 10 karakter', req: true, ok: t.length >= 10 && !tplOnly },
+      { text: 'Tidak lebih dari 500 karakter', req: true, ok: t.length <= MAX },
+      { text: 'Tidak hanya mengulang business term "' + (fld.business_term || '') + '"', req: false, ok: rest.replace(/[^a-z0-9]/g, '').length >= 10 },
+      { text: usedTech.length ? 'Hindari nama kolom teknis (' + usedTech.join(', ') + ')' : 'Tidak memakai nama kolom teknis', req: false, ok: usedTech.length === 0 },
+      { text: 'Tidak diawali "adalah", "merupakan", atau "yaitu"', req: false, ok: !/^(adalah|merupakan|yaitu)\b/i.test(t) },
+      { text: 'Ringkas, maksimal 3 kalimat', req: false, ok: sentences <= 3 }
+    ];
+    return list.map(function (c) { return { text: c.text, req: c.req, ok: !empty && c.ok, fail: !empty && !c.ok, idle: empty }; });
+  }
+  var TPL = { 'Enum': ['Kategori yang menunjukkan ', 'Pilihan yang menentukan '], 'Text/String': ['Uraian mengenai ', 'Keterangan yang menjelaskan '], 'Integer': ['Nilai angka yang menunjukkan '], 'Float/Decimal/Double': ['Nilai angka yang menunjukkan '], 'Currency': ['Nilai dalam Rupiah yang menunjukkan '], 'Percentage': ['Persentase yang menunjukkan '], 'Date': ['Tanggal saat '], 'Datetime/Timestamp': ['Waktu saat '], 'Boolean': ['Penanda apakah '], 'Binary/BLOB': ['Dokumen pendukung yang '] };
+  function templatesOf(fld) {
+    var cols = fld.cols || [], mainType = cols.length ? cols[cols.length - 1][2] : '';
+    return (TPL[mainType] || ['Nilai yang menunjukkan ']).concat(mainType === 'Enum' || mainType === 'Text/String' ? [] : ['Kategori yang menunjukkan ']).slice(0, 3);
+  }
+
+  function filtered() {
+    var term = $('q').value.trim().toLowerCase(), g = $('grp').value, s = $('st').value;
+    return all.filter(function (r) {
+      var has = hasDef(r.field_id);
       if (g && r.glosarium !== g) return false;
-      if (s === 'ada' && !has(r)) return false;
-      if (s === 'kosong' && has(r)) return false;
-      return !term || [r.field_id, r.business_term, r.definisi].some(function (v) { return v && String(v).toLowerCase().indexOf(term) >= 0; });
+      if (s === 'done' && !has) return false;
+      if (s === 'todo' && has) return false;
+      return !term || (r.field_id + ' ' + (r.business_term || '') + ' ' + (r.definisi || '')).toLowerCase().indexOf(term) >= 0;
     });
-    rowsEl.innerHTML = list.map(function (r, i) {
-      var def = r.definisi ? esc(String(r.definisi).length > 160 ? String(r.definisi).slice(0, 160) + '…' : r.definisi) : '<span class="dg-chip mn">Belum ada definisi</span>';
-      return '<tr class="ant-table-row"><td class="ant-table-cell" style="white-space:nowrap;font-family:monospace;font-size:12px;width:120px">' + esc(r.field_id) + '</td><td class="ant-table-cell">' + esc(r.business_term) + '</td><td class="ant-table-cell" style="width:40%">' + def + '</td>' +
-        '<td class="ant-table-cell">' + esc(r.dipakai) + '</td><td class="ant-table-cell">' + statusChip(r) + '</td>' +
-        (canEdit ? '<td class="ant-table-cell act" style="text-align:right"><div class="dg-menu"><button class="ant-btn ant-btn-default ant-btn-sm" type="button" data-dg-menu="1"><span>Aksi ▾</span></button><div class="dg-menu-list" role="menu" hidden><button type="button" role="menuitem" data-isi="' + esc(r.field_id) + '">Isi definisi</button></div></div></td>' : '') + '</tr>';
+  }
+  function queue() {
+    var f = filtered().map(function (r) { return r.field_id; });
+    if (work && f.indexOf(work.fid) < 0) return all.map(function (r) { return r.field_id; });
+    return f;
+  }
+  function nextTodo(fromFid) {
+    var q = queue(), i = q.indexOf(fromFid);
+    for (var k = 1; k <= q.length; k++) { var id = q[(i + k) % q.length]; if (!hasDef(id) && id !== fromFid) return id; }
+    var r = all.filter(function (x) { return !hasDef(x.field_id) && x.field_id !== fromFid; })[0];
+    return r ? r.field_id : '';
+  }
+  function toast(m) { $('toast-t').textContent = m || ''; $('toast').hidden = !m; }
+
+  function renderStats() {
+    var n = all.length, done = all.filter(function (r) { return hasDef(r.field_id); }).length, pct = n ? Math.round(done * 100 / n) : 0;
+    $('s-done').textContent = done; $('s-of').textContent = 'dari ' + n + ' · ' + pct + '%';
+    $('s-bar').style.width = pct + '%'; $('s-barwrap').setAttribute('aria-label', done + ' dari ' + n + ' FIELD_ID sudah punya definisi');
+    $('s-todo').textContent = n - done; $('s-btns').hidden = !(canEdit && n - done > 0);
+  }
+  function renderList() {
+    var list = filtered();
+    $('rows').innerHTML = list.map(function (r) {
+      var fid = r.field_id, has = hasDef(fid);
+      var draft = drafts[fid] !== undefined && drafts[fid] !== (r.definisi || '');
+      var def = has ? esc(r.definisi) : '<span class="dg-chip mn">Belum ada definisi</span>';
+      if (draft) def += '<span class="dg-chip draft">Ada draf</span>';
+      var tb = tablesOf(r);
+      var used = tb.length + ' tabel' + (tb.length ? ': ' + esc(tb.join(', ')) : '');
+      var cls = confirmDel === fid ? 'confirm' : (work && work.fid === fid ? 'editing' : (flash === fid ? 'flash' : ''));
+      var act = '';
+      if (canEdit) {
+        if (confirmDel === fid) {
+          act = '<span class="dg-confirm"><button class="ant-btn ant-btn-sm dg-btn-hapus" type="button" data-del-ok="' + esc(fid) + '">Ya, hapus</button><button class="no" type="button" data-del-no="1">Batal</button></span>';
+        } else {
+          var items = has
+            ? '<button type="button" role="menuitem" data-ubah="' + esc(fid) + '" aria-label="Ubah definisi ' + esc(fid) + '">Ubah</button><button type="button" role="menuitem" data-hapus="' + esc(fid) + '" aria-label="Hapus definisi ' + esc(fid) + '">Hapus</button>'
+            : '<button type="button" role="menuitem" data-isi="' + esc(fid) + '" aria-label="Isi definisi ' + esc(fid) + '">Isi definisi</button>';
+          act = '<div class="dg-menu"><button class="ant-btn ant-btn-default ant-btn-sm" type="button" data-dg-menu="1"><span>Aksi ▾</span></button><div class="dg-menu-list" role="menu" hidden>' + items + '</div></div>';
+        }
+        act = '<td class="ant-table-cell act" style="text-align:right">' + act + '</td>';
+      }
+      return '<tr class="ant-table-row ' + cls + '" data-fid="' + esc(fid) + '"><td class="ant-table-cell" style="white-space:nowrap;font-family:monospace;font-size:12px">' + esc(fid) + '</td><td class="ant-table-cell">' + esc(r.business_term) + '</td><td class="ant-table-cell" style="width:42%">' + def + '</td>' +
+        '<td class="ant-table-cell" style="font-size:12px;color:#3A4658">' + used + '</td>' + act + '</tr>';
     }).join('');
-    empty.hidden = list.length > 0;
-    count.textContent = list.length + ' dari ' + all.length + ' istilah';
+    $('empty').hidden = list.length > 0;
+    $('empty').textContent = all.length ? 'Tidak ada FIELD_ID yang cocok dengan pencarian atau filter.' : 'Belum ada data. Tambahkan dengan tombol Tambah Business Glossary.';
+    $('count').textContent = 'Menampilkan ' + list.length + ' dari ' + all.length + ' FIELD_ID';
   }
-  rowsEl.addEventListener('click', function (e) {
-    var b = e.target.closest('[data-isi]'); if (!b) return;
-    var r = all.find(function (x) { return x.field_id === b.getAttribute('data-isi'); }); if (!r) return;
-    editing = r;
-    $('d-sub').textContent = r.field_id + ' · ' + (r.business_term || '');
-    $('d-text').value = r.definisi || ''; $('d-alasan').value = ''; $('d-err').hidden = true; $('d-srv').hidden = true;
-    $('m-def').hidden = false; document.getElementById('m-form') && document.getElementById('m-form').scrollIntoView({block:'start', behavior:'smooth'}); document.getElementById('m-def') && document.getElementById('m-def').scrollIntoView({block:'start', behavior:'smooth'}); $('d-text').focus();
-  });
-  document.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', function () { $('m-def').hidden = true; }); });
-  $('d-save').addEventListener('click', function () {
-    var txt = $('d-text').value.trim();
-    if (txt.length < 10) { $('d-err').textContent = 'Tulis minimal satu kalimat yang jelas.'; $('d-err').hidden = false; return; }
-    var btn = $('d-save'); btn.disabled = true;
-    fetch('/_export/glosarium', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ field_id: editing.field_id, definisi: txt, alasan: $('d-alasan').value.trim() }) })
-      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, body: j }; }); })
-      .then(function (res) {
-        btn.disabled = false;
-        if (!res.ok) { $('d-srv').textContent = res.body.error || 'Definisi belum dapat disimpan.'; $('d-srv').hidden = false; return; }
-        $('m-def').hidden = true; note('Definisi ' + editing.field_id + ' tersimpan.'); load();
-      })
-      .catch(function () { btn.disabled = false; $('d-srv').textContent = 'Jaringan terputus. Coba lagi.'; $('d-srv').hidden = false; });
-  });
-  function stats() {
-    var n = all.length, ada = all.filter(has).length;
-    $('s-total').textContent = n; $('s-def').textContent = ada + ' dari ' + n;
-    $('s-bar').style.width = (n ? Math.round(ada * 100 / n) : 0) + '%';
-    $('s-todo').textContent = n - ada;
+
+  function renderChecks() {
+    if (!work) return;
+    var fld = FM[work.fid], text = textOf(work.fid), t = text.trim();
+    var cks = checks(fld, text);
+    var reqFail = cks.filter(function (c) { return c.req && !c.ok; });
+    var advOk = cks.filter(function (c) { return !c.req && c.ok; }).length, advN = cks.filter(function (c) { return !c.req; }).length;
+    var errMsg = '';
+    if (work.tried && reqFail.length) errMsg = !t ? 'Isi definisi terlebih dahulu.' : (reqFail[0].text.indexOf('Tidak lebih') === 0 ? 'Definisi maksimal 500 karakter.' : reqFail[0].text + '.');
+    if (work.srv) errMsg = work.srv;
+    $('ws-err').textContent = errMsg; $('ws-err').hidden = !errMsg;
+    $('ws-def').setAttribute('aria-invalid', errMsg ? 'true' : 'false');
+    var dirty = drafts[work.fid] !== undefined && drafts[work.fid] !== (fld.definisi || '');
+    $('ws-draft').hidden = !dirty;
+    $('ws-count').textContent = t.length + ' / ' + MAX; $('ws-count').className = 'cnt' + (t.length > MAX ? ' over' : '');
+    $('ws-sum').textContent = t ? (reqFail.length ? reqFail.length + ' syarat wajib belum terpenuhi' : 'Syarat wajib terpenuhi · ' + advOk + ' dari ' + advN + ' saran') : 'Mulai mengetik untuk melihat hasil cek';
+    var CHECK = '<svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    $('ws-list').innerHTML = cks.map(function (c) {
+      var st = c.ok ? 'ok' : (c.fail ? 'fail' : 'idle');
+      var lbl = c.ok ? 'Terpenuhi' : (c.fail ? 'Belum terpenuhi' : 'Belum dicek');
+      return '<li class="' + st + '"><span class="ic" role="img" aria-label="' + lbl + '">' + (c.ok ? CHECK : '') + '</span><span class="tx">' + esc(c.text) + '</span><span class="tag ' + (c.req ? 'req">Wajib' : 'adv">Saran') + '</span></li>';
+    }).join('');
+    $('ws-tpl').hidden = !!t;
+    $('ws-savenext').hidden = !nextTodo(work.fid);
   }
+  function renderWork() {
+    $('ws').hidden = !work;
+    if (!work) return;
+    var fld = FM[work.fid], q = queue(), idx = q.indexOf(work.fid);
+    $('ws-mode').textContent = hasDef(work.fid) ? 'Mengubah definisi' : 'Mengisi definisi baru';
+    $('ws-title').innerHTML = '<span class="fid">' + esc(fld.field_id) + '</span> · ' + esc(fld.business_term);
+    $('ws-pos').textContent = (idx + 1) + ' dari ' + q.length + ($('st').value === 'todo' ? ' yang belum' : '');
+    $('ws-prev').disabled = idx <= 0; $('ws-next').disabled = idx < 0 || idx >= q.length - 1;
+    $('ws-jump').innerHTML = all.map(function (r) { return '<option value="' + esc(r.field_id) + '"' + (r.field_id === work.fid ? ' selected' : '') + '>' + esc(r.field_id + ' · ' + (r.business_term || '') + (hasDef(r.field_id) ? '' : ' (belum)')) + '</option>'; }).join('');
+    var def = $('ws-def');
+    def.value = textOf(work.fid);
+    def.placeholder = 'Tulis arti "' + (fld.business_term || '') + '" dalam bahasa bisnis…';
+    $('ws-tpl').innerHTML = '<span>Mulai dengan:</span>' + templatesOf(fld).map(function (tp) { return '<button type="button" data-tpl="' + esc(tp) + '">' + esc(tp.trim()) + '…</button>'; }).join('');
+    $('ws-alasan').value = work.alasan || '';
+    // Konteks dari katalog
+    var cols = fld.cols || [];
+    $('cx-cols').innerHTML = cols.length ? cols.map(function (c) { return '<div class="col"><span class="p">' + esc(c[0] + '.' + c[1]) + '</span><span class="ty">' + esc(c[2] || '') + '</span></div>'; }).join('') : '<span class="none">Belum ada kolom.</span>';
+    var dq = fld.dq || [];
+    $('cx-dq').innerHTML = dq.length ? dq.map(function (d) { return '<span>' + esc(d[0]) + (d[1] ? ' <em>(' + esc(d[1]) + ')</em>' : '') + '</span>'; }).join('') : '<span class="none">Belum ada aturan.</span>';
+    var lin = fld.lin || [];
+    $('cx-lin').innerHTML = (lin.length ? lin.map(function (l) { return '<div class="lin">' + esc(l[0] || '') + ' <em>› ' + esc(l[1] || '') + '</em></div>'; }).join('') : '<span class="none">Belum ada data lineage.</span>') +
+      ((fld.lin_n || 0) > lin.length ? '<span class="none">dan ' + (fld.lin_n - lin.length) + ' tampilan lainnya</span>' : '');
+    var tbs = tablesOf(fld);
+    var rel = all.filter(function (x) { return x.field_id !== fld.field_id && hasDef(x.field_id) && tablesOf(x).some(function (t) { return tbs.indexOf(t) >= 0; }); }).slice(0, 3);
+    $('cx-rel').innerHTML = rel.length ? rel.map(function (x) { return '<div class="rel"><b>' + esc(x.business_term) + '<em>' + esc(x.field_id) + '</em></b><span>' + esc(x.definisi) + '</span></div>'; }).join('') : '<span class="none">Belum ada contoh.</span>';
+    renderChecks();
+  }
+  function renderAll() { renderStats(); renderList(); renderWork(); }
+  function open(fid, keepFilter) {
+    if (!keepFilter) {}
+    work = { fid: fid, tried: false }; confirmDel = null; toast('');
+    renderAll();
+    $('ws').scrollIntoView({ block: 'start', behavior: 'smooth' }); $('ws-def').focus();
+  }
+  function go(fid) { if (fid) { work = { fid: fid, tried: false }; renderAll(); $('ws-def').focus(); } }
+
+  function post(body) {
+    return fetch('/_export/glosarium', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, body: j }; }); });
+  }
+  function commit(goNext) {
+    var fid = work.fid, fld = FM[fid], tx = textOf(fid).trim();
+    if (checks(fld, tx).some(function (c) { return c.req && !c.ok; })) { work.tried = true; work.srv = ''; renderChecks(); $('ws-def').focus(); return; }
+    var btns = [$('ws-save'), $('ws-savenext')]; btns.forEach(function (b) { b.disabled = true; });
+    post({ field_id: fid, definisi: tx, alasan: $('ws-alasan').value.trim() }).then(function (res) {
+      btns.forEach(function (b) { b.disabled = false; });
+      if (!res.ok) { work.srv = res.body.error || 'Definisi belum dapat disimpan.'; renderChecks(); return; }
+      fld.definisi = tx; fld.sumber_perubahan = 'Aplikasi'; delete drafts[fid];
+      var msg = 'Definisi ' + fid + ' berhasil disimpan.', nxt = '';
+      if (goNext) { nxt = nextTodo(fid); if (!nxt) msg += ' Semua FIELD_ID sudah punya definisi.'; }
+      flash = fid; work = nxt ? { fid: nxt, tried: false } : null;
+      renderAll(); toast(msg);
+      if (work) $('ws-def').focus();
+    }).catch(function () { btns.forEach(function (b) { b.disabled = false; }); work.srv = 'Jaringan terputus. Coba lagi.'; renderChecks(); });
+  }
+  function doDelete(fid) {
+    post({ field_id: fid, aksi: 'hapus' }).then(function (res) {
+      if (!res.ok) { confirmDel = null; renderList(); toast(res.body.error || 'Definisi belum dapat dihapus.'); return; }
+      FM[fid].definisi = null; confirmDel = null; flash = null;
+      renderAll(); toast('Definisi ' + fid + ' telah dihapus. FIELD_ID-nya tetap ada di Data Element.');
+    }).catch(function () { toast('Jaringan terputus. Coba lagi.'); });
+  }
+
+  // Ruang kerja
+  $('ws-def').addEventListener('input', function () { drafts[work.fid] = this.value; work.srv = ''; renderChecks(); renderList(); });
+  $('ws-alasan').addEventListener('input', function () { work.alasan = this.value; });
+  $('ws-tpl').addEventListener('click', function (e) { var b = e.target.closest('[data-tpl]'); if (!b) return; drafts[work.fid] = b.getAttribute('data-tpl'); var d = $('ws-def'); d.value = drafts[work.fid]; d.focus(); d.setSelectionRange(d.value.length, d.value.length); renderChecks(); renderList(); });
+  $('ws-prev').addEventListener('click', function () { var q = queue(); go(q[q.indexOf(work.fid) - 1]); });
+  $('ws-next').addEventListener('click', function () { var q = queue(); go(q[q.indexOf(work.fid) + 1]); });
+  $('ws-jump').addEventListener('change', function () { go(this.value); });
+  $('ws-close').addEventListener('click', function () { work = null; renderAll(); });
+  $('ws-save').addEventListener('click', function () { commit(false); });
+  $('ws-savenext').addEventListener('click', function () { commit(true); });
+  // Ringkasan dan tombol atas
+  $('b-start').addEventListener('click', function () { $('st').value = 'todo'; $('q').value = ''; var f = all.filter(function (r) { return !hasDef(r.field_id); })[0]; if (f) open(f.field_id); });
+  $('b-show').addEventListener('click', function () { $('st').value = 'todo'; $('q').value = ''; renderAll(); });
+  $('btn-tambah').addEventListener('click', function () { var f = all.filter(function (r) { return !hasDef(r.field_id); })[0]; if (f) open(f.field_id); else toast('Semua FIELD_ID sudah punya definisi.'); });
+  $('toast-x').addEventListener('click', function () { toast(''); });
+  // Aksi baris
+  $('rows').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-isi],[data-ubah]');
+    if (b) { open(b.getAttribute('data-isi') || b.getAttribute('data-ubah')); return; }
+    b = e.target.closest('[data-hapus]');
+    if (b) { confirmDel = b.getAttribute('data-hapus'); toast(''); renderList(); return; }
+    b = e.target.closest('[data-del-ok]');
+    if (b) { b.disabled = true; doDelete(b.getAttribute('data-del-ok')); return; }
+    if (e.target.closest('[data-del-no]')) { confirmDel = null; renderList(); }
+  });
+  ['q', 'grp', 'st'].forEach(function (id) { $(id).addEventListener(id === 'q' ? 'input' : 'change', function () { renderList(); if (work) renderWork(); }); });
+
   function load() {
     return fetch('/_export/glosarium', { credentials: 'same-origin' })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (j) {
-        all = j.rows || [];
+        var isF = function (x) { return /^F\d+$/.test(x.field_id) ? 0 : 1; };
+        all = (j.rows || []).sort(function (a, b) { return isF(a) - isF(b) || String(a.field_id).localeCompare(String(b.field_id), 'id', { numeric: true }); });
+        FM = {}; all.forEach(function (r) { FM[r.field_id] = r; });
         var gs = Array.from(new Set(all.map(function (r) { return r.glosarium; }).filter(Boolean))).sort();
-        grp.innerHTML = '<option value="">Semua kelompok</option>' + gs.map(function (v) { return '<option>' + esc(v) + '</option>'; }).join('');
-        stats(); render();
+        $('grp').innerHTML = '<option value="">Semua kelompok</option>' + gs.map(function (v) { return '<option>' + esc(v) + '</option>'; }).join('');
+        renderAll();
       })
-      .catch(function () { count.textContent = ''; empty.hidden = false; empty.textContent = 'Data belum dapat dimuat. Coba lagi sebentar.'; });
+      .catch(function () { $('count').textContent = ''; $('empty').hidden = false; $('empty').textContent = 'Data belum dapat dimuat. Coba lagi sebentar.'; });
   }
   fetch('/_export/whoami', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) {
-    canEdit = !!j.bisa_ubah; $('th-aksi').hidden = !canEdit; load();
-  });
-  q.addEventListener('input', render); grp.addEventListener('change', render); st.addEventListener('change', render);
+    canEdit = !!j.bisa_ubah; $('th-aksi').hidden = !canEdit; $('btn-tambah').hidden = !canEdit; load();
+  }).catch(function () { load(); });
 })();
 </script>
 </body>

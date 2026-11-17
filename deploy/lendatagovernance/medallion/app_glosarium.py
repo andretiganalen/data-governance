@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Definisi Business Glossary dari aplikasi (isi / ubah definisi). Tabel app_glosarium (Trino), append-only.
+"""Definisi Business Glossary dari aplikasi (isi / ubah / hapus definisi). Tabel app_glosarium (Trino), append-only.
 Daftar = gold_meta_glossary_app + definisi terbaru dari aplikasi (perubahan menang untuk FIELD_ID yang sama)."""
 from __future__ import annotations
 
@@ -38,21 +38,41 @@ def latest_app(tq) -> dict[str, dict]:
     return {r[1]: dict(zip(cols, [None if v is None else str(v) for v in r])) for r in tq.q(sql)}
 
 
-def validate(field_id: str | None, definisi: str | None, current: set[str]) -> tuple[str, str]:
+# Cek kualitas definisi (sama dengan artifact "Business Glossary"): 2 syarat Wajib, 4 Saran.
+MIN_LEN, MAX_LEN = 10, 500
+STARTERS = ("kategori yang menunjukkan", "pilihan yang menentukan", "uraian mengenai", "keterangan yang menjelaskan",
+            "nilai angka yang menunjukkan", "nilai dalam rupiah yang menunjukkan", "persentase yang menunjukkan",
+            "tanggal saat", "waktu saat", "penanda apakah", "dokumen pendukung yang", "nilai yang menunjukkan")
+
+
+def template_only(d: str) -> bool:
+    low = d.strip().lower()
+    return any(low.startswith(st) and len(low) - len(st) < 10 for st in STARTERS)
+
+
+def validate(field_id: str | None, definisi: str | None, current: set[str], aksi: str = "isi") -> tuple[str, str]:
+    """Hanya syarat Wajib yang menolak simpan; Saran tidak menghalangi."""
     fid = (field_id or "").strip()
     if not FID_RE.match(fid) or fid not in current:
         return fid, "FIELD_ID tidak dikenal."
+    if aksi == "hapus":
+        return fid, ""
     d = (definisi or "").strip()
-    if len(d) < 10:
-        return fid, "Definisi terlalu pendek. Tulis minimal satu kalimat yang jelas."
-    if len(d) > 2000:
-        return fid, "Definisi terlalu panjang (maksimal 2000 karakter)."
+    if not d:
+        return fid, "Isi definisi terlebih dahulu."
+    if template_only(d):
+        return fid, "Lengkapi kalimat setelah awalan template."
+    if len(d) < MIN_LEN:
+        return fid, "Ditulis dalam kalimat lengkap, minimal 10 karakter."
+    if len(d) > MAX_LEN:
+        return fid, "Definisi maksimal 500 karakter."
     return fid, ""
 
 
-def append(tq, field_id: str, definisi: str, oleh: str, alasan: str | None) -> dict:
+def append(tq, field_id: str, definisi: str | None, oleh: str, alasan: str | None, aksi: str = "isi") -> dict:
+    """aksi isi = isi/ubah definisi; aksi hapus = definisi dikosongkan (FIELD_ID tetap ada di Data Element)."""
     ensure(tq)
-    row = {"_id": uuid.uuid4().hex, "field_id": field_id, "definisi": definisi.strip(), "aksi": "isi",
+    row = {"_id": uuid.uuid4().hex, "field_id": field_id, "definisi": None if aksi == "hapus" else (definisi or "").strip(), "aksi": aksi,
            "oleh": oleh, "diubah_pada": _now(), "alasan": (alasan or "").strip()[:500] or None}
     cols = ["_id", "field_id", "definisi", "aksi", "oleh", "diubah_pada", "alasan"]
     tq.q(f"INSERT INTO {tq.fq(TABLE)} ({', '.join(cols)}) VALUES ({', '.join(_sq(row[c]) for c in cols)})")

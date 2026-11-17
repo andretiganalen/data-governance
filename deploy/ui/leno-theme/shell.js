@@ -219,6 +219,7 @@
         return;
       }
       if (tr.querySelector('td.dg-aksi-td')) return;
+      if (tr.querySelector('td.act')) return;   // sel Aksi milik halaman (mis. konfirmasi Ya, hapus) dibiarkan
       var td = document.createElement('td'); td.className = 'ant-table-cell act dg-aksi-td'; td.style.textAlign = 'right';
       td.innerHTML = '<div class="dg-menu" style="position:relative;display:inline-block"><button class="ant-btn ant-btn-default ant-btn-sm" type="button" data-dg-menu="1"><span>Aksi ▾</span></button>' +
         '<div class="dg-menu-list" role="menu" hidden style="position:absolute;right:0;top:32px;min-width:140px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 12px 24px rgba(16,24,40,.12);padding:4px;z-index:30;text-align:left">' +

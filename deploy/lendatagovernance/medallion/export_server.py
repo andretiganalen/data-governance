@@ -98,14 +98,35 @@ def glosarium() -> dict:
     status = {r[0]: str(r[1]) for r in tq.q(f"SELECT field_id, status FROM {tq.fq('gold_meta_glossary_status')}")}
     dipakai = {r[0]: int(r[1]) for r in tq.q(f"SELECT field_id, count(*) FROM {tq.fq('silver_dim_meta_field')} GROUP BY 1")}
     app = AG.latest_app(tq)
+    # Konteks dari katalog (panel kanan artifact): kolom database, aturan kualitas data, tampilan di aplikasi.
+    cols_of: dict[str, list] = {}
+    for fid, tbl, col, typ in tq.q(f"SELECT field_id, coalesce(table_name, table_id), column_name, data_type "
+                                   f"FROM {tq.fq('silver_dim_meta_field')} ORDER BY field_id, 2, 3"):
+        cols_of.setdefault(fid, []).append([tbl, col, typ])
+    dq_of: dict[str, list] = {}
+    for fid, rule, val in tq.q(f"SELECT field_id, rule, validation FROM {tq.fq('silver_dim_meta_dq_rule')} ORDER BY dq_rule_id"):
+        dq_of.setdefault(fid, []).append([rule, val])
+    lin_of: dict[str, list] = {}
+    for fid, screen, label in tq.q(f"SELECT field_id, target_screen, target_label FROM {tq.fq('gold_meta_lineage')} ORDER BY lineage_id"):
+        lin_of.setdefault(fid, []).append([screen, label])
+    try:   # tambahan dari layar Data Quality Rules / Data Flow Lineage di aplikasi
+        import app_daftar as AD
+        for r in AD.added(tq, "kualitas"):
+            dq_of.setdefault(r["field_id"], []).append([r["rule"], r["validation"]])
+        for r in AD.added(tq, "lineage"):
+            lin_of.setdefault(r["field_id"], []).append([r["asset_type"], r["target_label"]])
+    except Exception as e:  # noqa: BLE001
+        log("konteks glosarium: tambahan aplikasi dilewati", repr(e)[:120])
     rows = []
     for fid, r in base.items():
         a = app.get(fid)
-        d = (a["definisi"] if a and a["aksi"] == "isi" else r["definisi"]) or None
-        rows.append({"field_id": fid, "business_term": r["business_term"], "definisi": d, "glosarium": r["glosarium"],
+        d = (a["definisi"] if a["aksi"] == "isi" else None) if a else r["definisi"]
+        lin = lin_of.get(fid, [])
+        rows.append({"field_id": fid, "business_term": r["business_term"], "definisi": d or None, "glosarium": r["glosarium"],
                      "data_owner": r["data_owner"], "data_steward": r["data_steward"], "status": status.get(fid),
                      "dipakai": dipakai.get(fid, 0), "sumber_perubahan": "Aplikasi" if a else r["sumber_perubahan"],
-                     "diubah_oleh": a["oleh"] if a else None, "diubah_pada": a["diubah_pada"] if a else r["diubah_pada"]})
+                     "diubah_oleh": a["oleh"] if a else None, "diubah_pada": a["diubah_pada"] if a else r["diubah_pada"],
+                     "cols": cols_of.get(fid, []), "dq": dq_of.get(fid, []), "lin": lin[:3], "lin_n": len(lin)})
     return {"rows": sorted(rows, key=lambda x: (x["glosarium"] or "", x["business_term"] or ""))}
 
 
@@ -326,11 +347,12 @@ class H(BaseHTTPRequestHandler):
         try:
             tq = X.Trino()
             current = {r[0] for r in tq.q(f"SELECT field_id FROM {tq.fq('gold_meta_glossary_app')}")}
-            fid, galat = AG.validate(body.get("field_id"), body.get("definisi"), current)
+            aksi = "hapus" if body.get("aksi") == "hapus" else "isi"
+            fid, galat = AG.validate(body.get("field_id"), body.get("definisi"), current, aksi)
             if galat:
                 return self._json(400, {"error": galat})
-            row = AG.append(tq, fid, body.get("definisi"), user.get("name") or "pengguna", body.get("alasan"))
-            log("glosarium-definisi", fid, "oleh", user.get("name"))
+            row = AG.append(tq, fid, body.get("definisi"), user.get("name") or "pengguna", body.get("alasan"), aksi)
+            log("glosarium-definisi", aksi, fid, "oleh", user.get("name"))
             self._json(200, {"ok": True, "field_id": fid, "diubah_pada": row["diubah_pada"]})
         except Exception as e:  # noqa: BLE001
             log("galat glosarium", repr(e)[:200])
