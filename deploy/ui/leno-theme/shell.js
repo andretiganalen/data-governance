@@ -35,6 +35,11 @@
     '.dg-side a:hover{background:var(--uix-surface-muted);}',
     '.dg-side a[aria-current="page"]{background:var(--uix-primary-soft);color:var(--uix-primary);font-weight:600;}',
     '.dg-side span.dg-off{color:var(--uix-text-muted);cursor:default;}',
+    '.dg-side .dg-fold{display:flex;align-items:center;justify-content:space-between;width:100%;margin:16px 0 6px;padding:0 8px;background:none;border:0;font:inherit;font-size:12px;font-weight:600;color:var(--uix-text-muted);cursor:pointer;text-align:left;}',
+    '.dg-side .dg-fold:hover{color:var(--uix-text-body);}',
+    '.dg-side .dg-fold .dg-car{transition:transform .15s;display:inline-block;}',
+    '.dg-side .dg-fold[aria-expanded="false"] .dg-car{transform:rotate(-90deg);}',
+    '.dg-side .dg-grp[hidden]{display:none;}',
     '.dg-main{flex:1;min-width:0;}',
     '.dg-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 24px;background:var(--uix-surface);border-bottom:1px solid var(--uix-border);font-family:var(--uix-font);font-size:14px;color:var(--uix-text-body);}',
     '.dg-top .dg-user{display:flex;align-items:center;gap:10px;}',
@@ -51,15 +56,26 @@
   var path = location.pathname.replace(/index\.html$/, '');
   var side = document.createElement('aside'); side.className = 'dg-side'; side.setAttribute('aria-label', 'Navigasi');
   var html = '<div class="dg-brand"><img src="/brand/len-logo.png" alt="" onerror="this.remove()">Data Governance</div>';
-  NAV.concat([NAV_BAWAH]).forEach(function (g) {
-    if (g.title) html += '<h4>' + esc(g.title) + '</h4>';
+  NAV.concat([NAV_BAWAH]).forEach(function (g, gi) {
+    var fold = g === NAV_BAWAH;
+    if (fold) html += '<button type="button" class="dg-fold" aria-expanded="false" aria-controls="dg-grp-' + gi + '">' + esc(g.title) + '<span class="dg-car" aria-hidden="true">▾</span></button><div class="dg-grp" id="dg-grp-' + gi + '" hidden>';
+    else if (g.title) html += '<h4>' + esc(g.title) + '</h4>';
     g.items.forEach(function (it) {
       if (!it.href) { html += '<span class="dg-off" title="Belum tersedia">' + esc(it.label) + '</span>'; return; }
       var cur = it.href === '/' ? path === '/' : path.indexOf(it.href) === 0;
       html += '<a href="' + it.href + '"' + (cur ? ' aria-current="page"' : '') + '>' + esc(it.label) + '</a>';
     });
+    if (fold) html += '</div>';
   });
   side.innerHTML = html;
+  /* Grup "Lainnya" dibuka/ditutup di tempat (tanpa tab baru). */
+  side.addEventListener('click', function (e) {
+    var f = e.target.closest('.dg-fold'); if (!f) return;
+    var open = f.getAttribute('aria-expanded') !== 'true';
+    f.setAttribute('aria-expanded', String(open));
+    var box = document.getElementById(f.getAttribute('aria-controls'));
+    if (box) box.hidden = !open;
+  });
 
   var main = document.createElement('div'); main.className = 'dg-main';
   var top = document.createElement('header'); top.className = 'dg-top';
