@@ -136,6 +136,49 @@ def fungsi() -> dict:
     return {"rows": rows}
 
 
+def sistem() -> dict:
+    """Master Sistem: silver_dim_meta_system + perubahan aplikasi (app_sistem). Nilai kosong tetap kosong."""
+    import app_sistem as AS
+    return {"rows": AS.merged(X.Trino())}
+
+
+def dataset() -> dict:
+    """Business Dataset: silver_dim_meta_dataset + perubahan aplikasi (app_dataset). Nilai kosong tetap kosong."""
+    import app_dataset as AD
+    return {"rows": AD.merged(X.Trino())}
+
+
+def objek() -> dict:
+    """Database Object (silver_dim_meta_table + perubahan app_objek) + kolomnya (silver_dim_meta_field). Hanya dibaca dari Trino."""
+    tq = X.Trino()
+    tcols = ["table_id", "dataset_id", "dataset_name", "table_name", "object_type", "database_name", "object_owner", "row_count",
+             "sensitive_data_flag", "critical_data_flag", "source_system"]
+    fcols = ["field_id", "table_id", "column_name", "business_term", "data_type", "pk_flag", "fk_flag", "nullable_flag",
+             "sensitive_flag", "metadata_status"]
+    import app_objek as AO
+    tables = AO.merged(tq)
+    fields = [dict(zip(fcols, [None if v is None else str(v) for v in r]))
+              for r in tq.q(f"SELECT {', '.join(fcols)} FROM {tq.fq('silver_dim_meta_field')} ORDER BY table_id, field_id")]
+    return {"rows": tables, "fields": fields}
+
+
+DAFTAR = {   # kunci → (sumber Trino, kolom)  — baca saja
+    "elemen": ("silver_dim_meta_field", ["field_id", "table_name", "column_name", "business_term", "data_type", "pk_flag", "sensitive_flag", "metadata_status"]),
+    "assignment": ("silver_dim_meta_governance_assignment", ["field_id", "field_name", "business_term", "role", "org_id", "unit_kerja", "role_status"]),
+    "kualitas": ("silver_dim_meta_dq_rule", ["dq_rule_id", "field_id", "business_term", "rule", "validation", "dq_dimension", "pass_fail", "check_date"]),
+    "lineage": ("gold_meta_lineage", ["lineage_id", "system_name", "dataset_name", "table_name", "column_name", "field_id", "business_term", "target_label", "asset_type"]),
+    "akses": ("gold_meta_access_matrix", ["access_id", "screen_label", "column_name", "field_id", "org_id", "unit_kerja", "classification", "permission_category", "permission_type"]),
+}
+
+
+def daftar(key: str) -> dict:
+    """Daftar baca saja untuk layar Katalog/Tata kelola. Nilai kosong tetap kosong. Hanya dibaca dari Trino."""
+    tbl, cols = DAFTAR[key]
+    tq = X.Trino()
+    rows = [dict(zip(cols, [None if v is None else str(v) for v in r])) for r in tq.q(f"SELECT {', '.join(cols)} FROM {tq.fq(tbl)}")]
+    return {"rows": rows, "kolom": cols}
+
+
 def can_edit(user: dict) -> bool:
     """Tulis Master Organisasi: isAdmin atau tim UV-1 (Admin Data Governance)."""
     return bool(user.get("isAdmin")) or any(t.get("name") == STAFF for t in (user.get("teams") or []))

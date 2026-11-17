@@ -49,6 +49,8 @@
     '.dg-top .dg-user{display:flex;align-items:center;gap:10px;}',
     '.dg-top .dg-av{width:32px;height:32px;border-radius:999px;background:var(--uix-primary);color:var(--uix-on-primary);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;}',
     '.dg-top .dg-name{font-weight:600;color:var(--uix-text-head);}',
+    '.ant-table-content{overflow-x:auto;}',
+    '.ant-table-wrapper table{width:100%;}',
     '@media (max-width:820px){.dg-side{display:none;}}'
   ].join('');
 

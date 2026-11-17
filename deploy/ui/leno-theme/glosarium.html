@@ -103,7 +103,7 @@
   <section class="ant-card" style="margin-top:20px"><div class="ant-card-body" style="padding:0">
     <div class="ant-table-wrapper"><div class="ant-spin-nested-loading"><div class="ant-spin-container"><div class="ant-table"><div class="ant-table-container"><div class="ant-table-content">
       <table style="width:100%;table-layout:auto">
-        <thead class="ant-table-thead"><tr><th class="ant-table-cell">FIELD_ID</th><th class="ant-table-cell">BUSINESS_TERM</th><th class="ant-table-cell">DEFINISI</th><th class="ant-table-cell">Dipakai di Data Element</th><th class="ant-table-cell">Status</th><th class="ant-table-cell" id="th-aksi" hidden style="text-align:right">Aksi</th></tr></thead>
+        <thead class="ant-table-thead"><tr><th class="ant-table-cell" style="width:120px">FIELD_ID</th><th class="ant-table-cell">BUSINESS_TERM</th><th class="ant-table-cell">DEFINISI</th><th class="ant-table-cell">Dipakai di Data Element</th><th class="ant-table-cell">Status</th><th class="ant-table-cell" id="th-aksi" hidden style="text-align:right">Aksi</th></tr></thead>
         <tbody id="rows" class="ant-table-tbody"></tbody>
       </table></div></div></div></div></div></div>
       <div class="dg-empty" id="empty" hidden>Tidak ada istilah yang cocok.</div>
@@ -138,7 +138,7 @@
     });
     rowsEl.innerHTML = list.map(function (r, i) {
       var def = r.definisi ? esc(String(r.definisi).length > 160 ? String(r.definisi).slice(0, 160) + '…' : r.definisi) : '<span class="dg-chip mn">Belum ada definisi</span>';
-      return '<tr class="ant-table-row"><td class="ant-table-cell" style="white-space:nowrap;font-family:monospace;font-size:12px">' + esc(r.field_id) + '</td><td class="ant-table-cell">' + esc(r.business_term) + '</td><td class="ant-table-cell" style="min-width:320px">' + def + '</td>' +
+      return '<tr class="ant-table-row"><td class="ant-table-cell" style="white-space:nowrap;font-family:monospace;font-size:12px;width:120px">' + esc(r.field_id) + '</td><td class="ant-table-cell">' + esc(r.business_term) + '</td><td class="ant-table-cell" style="width:40%">' + def + '</td>' +
         '<td class="ant-table-cell">' + esc(r.dipakai) + '</td><td class="ant-table-cell">' + statusChip(r) + '</td>' +
         (canEdit ? '<td class="ant-table-cell" style="text-align:right"><button class="ant-btn ant-btn-primary ant-btn-sm" type="button" data-isi="' + esc(r.field_id) + '"><span>Isi definisi</span></button></td>' : '') + '</tr>';
     }).join('');
