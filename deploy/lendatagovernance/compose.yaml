@@ -126,6 +126,7 @@ services:
       - ./medallion:/app:ro
       - ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/secrets/trino.env:/data/secrets/trino.env:ro
       - ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/medallion/pdf_request:/data/medallion/pdf_request   # permintaan "Terbitkan Revisi PDF" + status
+      - ${LDG_DATA_DIR:-/home/ubuntu/data-governance/data}/medallion/templates:/data/medallion/templates:ro   # templat Excel ERM (di luar git)
     depends_on:
       ldg-server: { condition: service_healthy }
     networks: [ldg-internal, ldg-egress]

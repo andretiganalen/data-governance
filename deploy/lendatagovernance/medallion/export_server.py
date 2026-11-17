@@ -160,6 +160,23 @@ class H(BaseHTTPRequestHandler):
         if not user:
             return self._json(401, {"error": "Silakan masuk terlebih dahulu."})
         try:
+            if path == "/_export/erm.xlsx":   # Excel format ERM (templat Rev.0.1), data Trino yang berlaku; hanya admin / UV-1
+                a = access(user)
+                if a["orgs"] is not None or not a["allowed"]:
+                    return self._json(403, {"error": "Hanya Admin Data Governance yang dapat mengunduh format ERM."})
+                import erm_xlsx as EX
+                buf = io.BytesIO()
+                counts = EX.build(X.Trino(), buf)
+                log("unduh erm.xlsx", user.get("name"), "baris=", counts)
+                data = buf.getvalue()
+                name = f"{datetime.now(WIB):%y%m%d} Data Governance ERM.xlsx"
+                self.send_response(200)
+                self.send_header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                self.send_header("Content-Disposition", f'attachment; filename="{name}"')
+                self.send_header("Cache-Control", "no-store")
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                return self.wfile.write(data)
             if path == "/_export/whoami":   # nama untuk kerangka halaman (tanpa data lain)
                 nama = user.get("displayName") or user.get("name") or ""
                 return self._json(200, {"nama": nama, "bisa_ubah": can_edit(user)})

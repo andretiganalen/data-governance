@@ -19,6 +19,7 @@
   .dg-stat span { font-size: 12px; color: var(--uix-text-secondary); }
   .dg-btn { display: inline-flex; align-items: center; height: var(--uix-control-md); padding: 0 14px; border-radius: var(--uix-radius); background: var(--uix-primary); color: var(--uix-on-primary); text-decoration: none; font-size: 14px; font-weight: 500; margin-top: 16px; }
   .dg-btn:hover { background: var(--uix-primary-strong); }
+  .dg-btn.ghost { background: var(--uix-surface); color: var(--uix-text-body); border: 1px solid var(--uix-border-strong); margin-left: 8px; }
   .dg-section { margin-top: 24px; }
   .dg-section h2 { font-size: 16px; color: var(--uix-text-head); margin: 0 0 4px; font-weight: 600; }
   .dg-section > p { margin: 0 0 12px; font-size: 13px; color: var(--uix-text-secondary); }
@@ -47,6 +48,7 @@
       <h1 id="dg-greeting">Selamat datang</h1>
       <p>Satu tempat untuk mengelola katalog dan tata kelola data Len. Sebagian data ditarik otomatis dari database, sisanya dilengkapi BPO. Ikuti 10 langkah di bawah ini secara berurutan supaya setiap isian punya data acuan.</p>
       <a class="dg-btn" href="/">Mulai dari langkah 1</a>
+      <a class="dg-btn ghost" id="btn-erm" href="/_export/erm.xlsx" hidden>Unduh Excel format ERM</a>
     </div>
     <div class="dg-stats">
       <div class="dg-stat"><b>10</b><span>langkah</span></div>
@@ -154,6 +156,7 @@
 </main>
 <script src="/_leno/shell.js"></script>
 <script>
+  fetch('/_export/whoami', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) { var b = document.getElementById('btn-erm'); if (b) b.hidden = !j.bisa_ubah; });
   (function () {
     var h = new Date().getHours();
     var sapa = h < 11 ? 'Selamat Pagi' : (h < 15 ? 'Selamat Siang' : (h < 18 ? 'Selamat Sore' : 'Selamat Malam'));
