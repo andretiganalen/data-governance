@@ -72,7 +72,7 @@
 .dg-guide { font-size: 12px; color: var(--uix-text-secondary); padding: 8px 20px 0; }
   .dg-toolbar-top { display: flex; flex-wrap: nowrap; align-items: center; gap: 12px; margin: 0 0 16px; padding: 0; border: 0; }
   .dg-toolbar-top input { flex: 1 1 auto; min-width: 200px; height: var(--uix-control-md); }
-  .dg-toolbar-top select { flex: 0 0 auto; width: auto; min-width: 180px; height: var(--uix-control-md); }
+  .dg-toolbar-top select { flex: 0 1 auto; width: auto; min-width: 150px; height: var(--uix-control-md); }
   .dg-toolbar-top .dg-count { margin-left: auto; white-space: nowrap; }
   @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
 </style>
@@ -81,17 +81,17 @@
 <main class="dg-wrap">
   <div class="dg-crumb"><a href="/">Beranda</a> › Master data › Organisasi</div>
 <div class="dg-toolbar dg-toolbar-top">
-      <select id="fungsi-sel" aria-label="Fungsi" style="min-width:260px"><option value="">Semua fungsi</option></select>
+      <select id="fungsi-sel" aria-label="Fungsi" style="min-width:200px"><option value="">Semua fungsi</option></select>
       <input class="ant-input" id="q" type="search" placeholder="Cari unit kerja, fungsi, divisi…" aria-label="Cari unit kerja">
       <select id="dir" aria-label="Direktorat"><option value="">Semua direktorat</option></select>
       <span class="dg-count" id="count"></span>
+      <button class="ant-btn ant-btn-primary" id="btn-tambah" type="button" hidden>Tambah Master Organisasi</button>
     </div>
   <section class="dg-head">
     <div>
       <h1>Master Organisasi</h1>
       <p>Unit kerja dan ORG_ID diambil langsung dari database. BPO memilih unit kerja dan melengkapi fungsinya.</p>
     </div>
-    <button class="ant-btn ant-btn-primary" id="btn-tambah" type="button" hidden>Tambah Master Organisasi</button>
   </section>
 
   <div class="dg-inline" id="m-form" hidden>
@@ -102,6 +102,8 @@
     </header>
     <div class="dg-legend-in"><span><span class="dg-ch">Otomatis</span> Dibuat sistem, tidak bisa diketik</span><span><span class="dg-ch">Otomatis dari DB</span> Pilihannya ditarik dari database</span><span><span class="dg-ch">Dari master</span> Dipilih dari halaman lain</span><span><span class="dg-ch manual">Manual</span> Diketik atau dipilih pengguna</span></div><div class="dg-guide"><b>Petunjuk:</b> Isi unit kerja dari database; fungsi dipilih atau dibuat baru. ORG_ID mengikuti format huruf-angka seperti UD-1.</div>
       <form class="dg-form body" id="f" novalidate>
+      <div class="dg-field"><label for="f-fungsi">Fungsi * <span class="dg-chip mn">Manual</span></label>
+        <select id="f-fungsi"></select><input id="f-fungsi-baru" placeholder="Nama fungsi baru" hidden style="margin-top:8px"><div class="err" data-err="fungsi"></div></div>
       <div class="dg-field"><label for="f-dir">Direktorat * <span class="dg-chip">Otomatis dari DB</span></label>
         <input id="f-dir" list="dl-dir" autocomplete="off" placeholder="Ketik atau pilih direktorat"><datalist id="dl-dir"></datalist><div class="err" data-err="direktorat"></div></div>
       <div class="dg-field"><label for="f-div">Divisi * <span class="dg-chip">Otomatis dari DB</span></label>
@@ -110,8 +112,7 @@
         <input id="f-unit" autocomplete="off" placeholder="Nama unit kerja"><div class="err" data-err="unit_kerja"></div></div>
       <div class="dg-field"><label for="f-id">ORG_ID * <span class="dg-ch manual">Manual</span></label>
         <input id="f-id" autocomplete="off" placeholder="contoh UD-1"><small>Format huruf-angka, misalnya UD-1. Tidak bisa diubah setelah disimpan.</small><div class="err" data-err="org_id"></div></div>
-      <div class="dg-field"><label for="f-fungsi">Fungsi * <span class="dg-chip mn">Manual</span></label>
-        <select id="f-fungsi"></select><input id="f-fungsi-baru" placeholder="Nama fungsi baru" hidden style="margin-top:8px"><div class="err" data-err="fungsi"></div></div>
+      
       <div class="dg-field"><label for="f-alasan">Alasan perubahan</label>
         <textarea id="f-alasan" maxlength="500" placeholder="Opsional, misalnya nomor nota atau dokumen dasar"></textarea></div>
       <div class="err" id="f-err" hidden></div>

@@ -67,7 +67,7 @@
 .dg-guide { font-size: 12px; color: var(--uix-text-secondary); padding: 8px 20px 0; }
   .dg-toolbar-top { display: flex; flex-wrap: nowrap; align-items: center; gap: 12px; margin: 0 0 16px; padding: 0; border: 0; }
   .dg-toolbar-top input { flex: 1 1 auto; min-width: 200px; height: var(--uix-control-md); }
-  .dg-toolbar-top select { flex: 0 0 auto; width: auto; min-width: 180px; height: var(--uix-control-md); }
+  .dg-toolbar-top select { flex: 0 1 auto; width: auto; min-width: 150px; height: var(--uix-control-md); }
   .dg-toolbar-top .dg-count { margin-left: auto; white-space: nowrap; }
   @media (max-width: 600px) { .dg-wrap { padding: 16px; } .dg-toolbar input { min-width: 0; width: 100%; } }
 </style>
@@ -78,13 +78,13 @@
 <div class="dg-toolbar dg-toolbar-top">
       <input class="ant-input" id="q" type="search" placeholder="Cari dataset, fungsi, atau sistem…" aria-label="Cari dataset">
       <span class="dg-count" id="count"></span>
+      <button class="ant-btn ant-btn-primary" id="btn-tambah" type="button" hidden>Tambah Business Dataset</button>
     </div>
   <section class="dg-head">
     <div>
     <h1>Business Dataset</h1>
     <p>Kelompok data bisnis, fungsi, sistem, dan pemiliknya. Kolom yang belum ada di sumber ditandai "Perlu input manual".</p>
     </div>
-    <button class="ant-btn ant-btn-primary" id="btn-tambah" type="button" hidden>Tambah Business Dataset</button>
   </section>
 
   <div class="dg-inline" id="m-form" hidden>
@@ -92,9 +92,10 @@
       <header><h2 id="f-title">Tambah Business Dataset</h2></header>
       <div class="dg-legend-in"><span><span class="dg-ch">Otomatis</span> Dibuat sistem, tidak bisa diketik</span><span><span class="dg-ch">Otomatis dari DB</span> Pilihannya ditarik dari database</span><span><span class="dg-ch">Dari master</span> Dipilih dari halaman lain</span><span><span class="dg-ch manual">Manual</span> Diketik atau dipilih pengguna</span></div><div class="dg-guide"><b>Petunjuk:</b> Isi nama business dataset. Fungsi dan sistem dipilih dari halaman lain bila sudah tersedia.</div>
       <form class="body" id="f" novalidate>
+      <div class="dg-field"><label for="f-fungsi">Fungsi <span class="dg-ch">Dari master</span></label><input id="f-fungsi" placeholder="Nama fungsi (opsional)"></div>
         <div class="dg-field"><label for="f-id">DATASET_ID * <span class="dg-ch manual">Manual</span></label><input id="f-id" placeholder="contoh DS006"><div class="err" data-err="dataset_id"></div></div>
         <div class="dg-field"><label for="f-nama">Nama dataset * <span class="dg-ch manual">Manual</span></label><input id="f-nama" placeholder="Nama business dataset"><div class="err" data-err="dataset_name"></div></div>
-        <div class="dg-field"><label for="f-fungsi">Fungsi <span class="dg-ch">Dari master</span></label><input id="f-fungsi" placeholder="Nama fungsi (opsional)"></div>
+        
         <div class="dg-field"><label for="f-sys">SYSTEM_ID <span class="dg-ch">Dari master</span></label><input id="f-sys" placeholder="contoh SYS001 (opsional)"></div>
         <div class="dg-field"><label for="f-alasan">Alasan perubahan</label><textarea id="f-alasan" rows="2" maxlength="500" placeholder="Opsional"></textarea></div>
         <div class="err" id="f-err" hidden></div>
