@@ -4,6 +4,9 @@
 (function () {
   var NAV = [
     { title: null, items: [{ label: 'Beranda', href: '/' }] },
+    { title: 'Master data', items: [
+      { label: 'Organisasi', href: '/organisasi/' },
+      { label: 'Sistem', href: '/sistem/' }] },
     { title: 'Katalog data', items: [
       { label: 'Business Dataset', href: '/dataset/' },
       { label: 'Database Object', href: '/objek/' },
@@ -13,10 +16,7 @@
       { label: 'Governance Assignment' },
       { label: 'Data Quality Rules' },
       { label: 'Data Flow Lineage' },
-      { label: 'Security Access' }] },
-    { title: 'Master data', items: [
-      { label: 'Organisasi', href: '/organisasi/' },
-      { label: 'Sistem', href: '/sistem/' }] }
+      { label: 'Security Access' }] }
   ];
   /* Menu aplikasi lama (sidebar bawah) tetap dilampirkan: item yang tidak ada di desain. */
   var NAV_BAWAH = { title: 'Lainnya', items: [
