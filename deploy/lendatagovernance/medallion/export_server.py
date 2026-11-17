@@ -110,13 +110,9 @@ def sistem() -> dict:
 
 
 def dataset() -> dict:
-    """Business Dataset (silver_dim_meta_dataset, dari Excel ERM). Nilai kosong tetap kosong. Hanya dibaca dari Trino."""
-    tq = X.Trino()
-    cols = ["dataset_id", "dataset_name", "business_dataset", "business_domain", "system_id", "system_name", "data_domain",
-            "subdomain", "data_owner", "data_steward", "criticality", "classification", "record_count", "data_asset_status"]
-    rows = [dict(zip(cols, [None if v is None else str(v) for v in r]))
-            for r in tq.q(f"SELECT {', '.join(cols)} FROM {tq.fq('silver_dim_meta_dataset')} ORDER BY dataset_id")]
-    return {"rows": rows}
+    """Business Dataset: silver_dim_meta_dataset + perubahan aplikasi (app_dataset). Nilai kosong tetap kosong."""
+    import app_dataset as AD
+    return {"rows": AD.merged(X.Trino())}
 
 
 def objek() -> dict:
@@ -233,6 +229,25 @@ class H(BaseHTTPRequestHandler):
         except ValueError:
             return {}
 
+    def _dataset_write(self, user: dict):
+        import app_dataset as AD
+        if not can_edit(user):
+            return self._json(403, {"error": "Hanya Admin Data Governance yang dapat mengubah Business Dataset."})
+        body = self._body()
+        aksi = str(body.get("aksi") or "")
+        try:
+            tq = X.Trino()
+            current = {r["dataset_id"]: r for r in AD.merged(tq)}
+            did, galat = AD.validate(aksi, body.get("dataset_id"), body, current)
+            if galat:
+                return self._json(400, {"error": galat})
+            row = AD.append(tq, aksi, did, body, user.get("name") or "pengguna", body.get("alasan"))
+            log("business-dataset", aksi, did, "oleh", user.get("name"))
+            self._json(200, {"ok": True, "dataset_id": did, "aksi": aksi, "diubah_pada": row["diubah_pada"]})
+        except Exception as e:  # noqa: BLE001
+            log("galat business-dataset", repr(e)[:200])
+            self._json(500, {"error": "Perubahan belum dapat disimpan. Coba lagi sebentar."})
+
     def _sistem_write(self, user: dict):
         import app_sistem as AS
         if not can_edit(user):
@@ -273,7 +288,7 @@ class H(BaseHTTPRequestHandler):
 
     def do_POST(self):  # noqa: N802
         path = self.path.split("?")[0]
-        if path not in ("/_export/fungsi-pdf", "/_export/master-organisasi", "/_export/sistem"):
+        if path not in ("/_export/fungsi-pdf", "/_export/master-organisasi", "/_export/sistem", "/_export/dataset"):
             return self._json(404, {"error": "tidak ditemukan"})
         auth = self.headers.get("Authorization", "")
         if not auth.startswith("Bearer "):
@@ -286,6 +301,8 @@ class H(BaseHTTPRequestHandler):
             return self._master_write(user)
         if path == "/_export/sistem":
             return self._sistem_write(user)
+        if path == "/_export/dataset":
+            return self._dataset_write(user)
         try:
             a = access(user)
             if not (a["allowed"] and a["orgs"] is None):
