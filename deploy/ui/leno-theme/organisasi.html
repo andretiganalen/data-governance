@@ -111,13 +111,13 @@
       <div class="dg-field"><label for="f-fungsi">Fungsi * <span class="dg-chip mn">Manual</span></label>
         <select id="f-fungsi"></select><input id="f-fungsi-baru" placeholder="Nama fungsi baru" hidden style="margin-top:8px"><div class="err" data-err="fungsi"></div></div>
       <div class="dg-field"><label for="f-dir">Direktorat * <span class="dg-chip">Otomatis dari DB</span></label>
-        <input id="f-dir" list="dl-dir" autocomplete="off" placeholder="Ketik atau pilih direktorat"><datalist id="dl-dir"></datalist><div class="err" data-err="direktorat"></div></div>
+        <select id="f-dir"></select><div class="err" data-err="direktorat"></div></div>
       <div class="dg-field"><label for="f-div">Divisi * <span class="dg-chip">Otomatis dari DB</span></label>
-        <input id="f-div" list="dl-div" autocomplete="off" placeholder="Ketik atau pilih divisi"><datalist id="dl-div"></datalist><div class="err" data-err="divisi"></div></div>
+        <select id="f-div"></select><div class="err" data-err="divisi"></div></div>
       <div class="dg-field"><label for="f-unit">Unit kerja * <span class="dg-chip">Otomatis dari DB</span></label>
         <input id="f-unit" autocomplete="off" placeholder="Nama unit kerja"><div class="err" data-err="unit_kerja"></div></div>
       <div class="dg-field"><label for="f-id">ORG_ID * <span class="dg-ch manual">Manual</span></label>
-        <input id="f-id" autocomplete="off" placeholder="contoh UD-1"><small>Format huruf-angka, misalnya UD-1. Tidak bisa diubah setelah disimpan.</small><div class="err" data-err="org_id"></div></div>
+        <input id="f-id" autocomplete="off" readonly placeholder="Otomatis dari Divisi"><small>Format huruf-angka, misalnya UD-1. Tidak bisa diubah setelah disimpan.</small><div class="err" data-err="org_id"></div></div>
       
       <div class="dg-field"><label for="f-alasan">Alasan perubahan</label>
         <textarea id="f-alasan" maxlength="500" placeholder="Opsional, misalnya nomor nota atau dokumen dasar"></textarea></div>
@@ -236,10 +236,40 @@
     sel.innerHTML = '<option value="">Semua fungsi</option>' + fs.map(function (v) { return '<option' + (v === FUNGSI ? ' selected' : '') + '>' + esc(v) + '</option>'; }).join('');
   }
   $('fungsi-sel').addEventListener('change', function () { FUNGSI = this.value; render(); });
+
+  /* Berantai: Fungsi -> Direktorat -> Divisi; ORG_ID otomatis dari kode Divisi (tanpa nomor urut, lalu +1). Unit kerja manual. */
+  function fillSel(id, vals, cur) {
+    $(id).innerHTML = '<option value="">Pilih</option>' + vals.map(function (v) { return '<option' + (v === cur ? ' selected' : '') + '>' + esc(v) + '</option>'; }).join('');
+    $(id).value = cur || '';
+  }
+  function chainFrom(level) {
+    var fg = $('f-fungsi').value === FUNGSI_BARU ? '' : $('f-fungsi').value;
+    var inFg = function (r) { return !fg || r.fungsi === fg; };
+    var dirs = uniq(all.filter(inFg).map(function (r) { return r.direktorat; }));
+    var dsel = level === 'fungsi' ? '' : $('f-dir').value;
+    if (dirs.indexOf(dsel) < 0) dsel = '';
+    fillSel('f-dir', dirs, dsel);
+    var divs = uniq(all.filter(function (r) { return inFg(r) && (!dsel || r.direktorat === dsel); }).map(function (r) { return r.divisi; }));
+    var vsel = (level === 'fungsi' || level === 'dir') ? '' : $('f-div').value;
+    if (divs.indexOf(vsel) < 0) vsel = '';
+    fillSel('f-div', divs, vsel);
+    orgIdFromDivisi();
+  }
+  function orgIdFromDivisi() {
+    if (editing) return;
+    var dv = $('f-div').value;
+    var row = all.find(function (r) { return r.divisi === dv; });
+    var prefix = row ? String(row.org_id).split('-')[0] : '';
+    if (!prefix) { $('f-id').value = ''; $('f-id').readOnly = false; $('f-id').placeholder = 'Isi manual, contoh UD-1'; return; }
+    var nums = all.map(function (r) { var m = new RegExp('^' + prefix + '-(\\d+)$').exec(r.org_id); return m ? +m[1] : 0; });
+    $('f-id').value = prefix + '-' + (Math.max.apply(null, [0].concat(nums)) + 1);
+    $('f-id').readOnly = true;
+  }
+  $('f-fungsi').addEventListener('change', function () { chainFrom('fungsi'); });
+  $('f-dir').addEventListener('change', function () { chainFrom('dir'); });
+  $('f-div').addEventListener('change', function () { chainFrom('div'); });
   function fillLists() {
     fillFungsiSel();
-    $('dl-dir').innerHTML = uniq(all.map(function (r) { return r.direktorat; })).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
-    $('dl-div').innerHTML = uniq(all.map(function (r) { return r.divisi; })).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
     var fs = uniq(all.map(function (r) { return r.fungsi; }));
     $('f-fungsi').innerHTML = '<option value="">Pilih fungsi</option>' + fs.map(function (v) { return '<option>' + esc(v) + '</option>'; }).join('') + '<option value="' + FUNGSI_BARU + '">+ Fungsi baru…</option>';
     var dirs = uniq(all.map(function (r) { return r.direktorat; }));
@@ -274,6 +304,7 @@
     $('f-fungsi').value = editing && editing.fungsi ? editing.fungsi : '';
     $('f-fungsi-baru').hidden = true; $('f-fungsi-baru').value = '';
     $('f-alasan').value = '';
+    chainFrom(editing ? 'init' : 'fungsi');
     $('m-form').hidden = false; document.getElementById('m-form') && document.getElementById('m-form').scrollIntoView({block:'start', behavior:'smooth'}); document.getElementById('m-def') && document.getElementById('m-def').scrollIntoView({block:'start', behavior:'smooth'});
     $(editing ? 'f-unit' : 'f-id').focus();
   }
@@ -322,7 +353,7 @@
       notice('Perubahan untuk ' + res.body.org_id + ' tersimpan.');
       if (keepOpen) {
         // tetap terbuka: Direktorat, Divisi, dan Fungsi dibawa ke isian berikutnya
-        $('f-id').value = ''; $('f-unit').value = ''; $('f-alasan').value = ''; $('f-err').hidden = true;
+        $('f-unit').value = ''; $('f-alasan').value = ''; $('f-err').hidden = true; orgIdFromDivisi();
         document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; });
         $('f-id').focus();
       } else {
@@ -343,7 +374,7 @@
   function fillDivisi(s) {   // Lengkapi: tambah unit di bawah Divisi ini, Direktorat dan Divisi sudah terisi
     var parts = s.split('|');
     openForm(null);
-    $('f-dir').value = parts[1] || ''; $('f-div').value = parts[0] || '';
+    $('f-dir').value = parts[1] || ''; chainFrom('dir'); $('f-div').value = parts[0] || ''; orgIdFromDivisi();
     $('f-unit').focus();
   }
   function openDetail(r) {
