@@ -30,8 +30,8 @@
   .dg-empty { padding: 32px; text-align: center; color: var(--uix-text-secondary); }
   .dg-note { margin-top: 12px; font-size: 12px; color: var(--uix-text-muted); }
   .dg-head { display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; align-items:flex-start; }
-  .dg-btn { display:inline-flex; align-items:center; height:var(--uix-control-md); padding:0 14px; border-radius:var(--uix-radius); background:var(--uix-primary); color:var(--uix-on-primary); border:0; font:inherit; font-size:14px; font-weight:500; cursor:pointer; }
-  .dg-btn.ghost { background:var(--uix-surface); color:var(--uix-text-body); border:1px solid var(--uix-border-strong); }
+  .ant-btn ant-btn-primary { display:inline-flex; align-items:center; height:var(--uix-control-md); padding:0 14px; border-radius:var(--uix-radius); background:var(--uix-primary); color:var(--uix-on-primary); border:0; font:inherit; font-size:14px; font-weight:500; cursor:pointer; }
+  .ant-btn ant-btn-primary.ghost { background:var(--uix-surface); color:var(--uix-text-body); border:1px solid var(--uix-border-strong); }
   .dg-modal { position:fixed; inset:0; background:rgba(16,24,40,.45); display:flex; align-items:center; justify-content:center; padding:16px; z-index:50; }
   .dg-modal[hidden] { display:none; }
   .dg-dialog { background:var(--uix-surface); border-radius:var(--uix-radius-md); box-shadow:var(--uix-shadow-md); width:100%; max-width:560px; max-height:90vh; overflow:auto; }
@@ -76,7 +76,7 @@
     <h1>Master Sistem</h1>
     <p>Daftar aplikasi sumber data beserta deskripsinya. Kolom yang belum ada di sumber ditandai "Perlu input manual".</p>
     </div>
-    <button class="dg-btn" id="btn-tambah" type="button" hidden>Tambah Sistem</button>
+    <button class="ant-btn ant-btn-primary" id="btn-tambah" type="button" hidden>Tambah Sistem</button>
   </section>
 
   <div class="dg-inline" id="m-form" hidden>
@@ -90,19 +90,19 @@
         <div class="dg-field"><label for="f-alasan">Alasan perubahan</label><textarea id="f-alasan" rows="2" maxlength="500" placeholder="Opsional"></textarea></div>
         <div class="err" id="f-err" hidden></div>
       </form>
-      <footer><button class="dg-btn ghost" type="button" data-close>Batal</button><button class="dg-btn" type="button" id="f-save">Simpan</button></footer>
+      <footer><button class="ant-btn ant-btn-default" type="button" data-close>Batal</button><button class="ant-btn ant-btn-primary" type="button" id="f-save">Simpan</button></footer>
     </div>
   </div>
-  <section class="dg-card">
+  <section class="ant-card" style="margin-top:20px"><div class="ant-card-body" style="padding:0">
     <div class="dg-toolbar">
-      <input id="q" type="search" placeholder="Cari sistem, deskripsi, atau pemilik…" aria-label="Cari sistem">
+      <input class="ant-input" id="q" type="search" placeholder="Cari sistem, deskripsi, atau pemilik…" aria-label="Cari sistem">
       <span class="dg-count" id="count"></span>
     </div>
-    <div class="dg-table-wrap">
+    <div class="ant-table-wrapper"><div class="ant-table"><div class="ant-table-container"><div class="ant-table-content">
       <table>
-        <thead><tr><th>SYSTEM_ID</th><th>Nama sistem</th><th>Deskripsi</th><th>Pemilik bisnis</th><th>Data owner</th><th>Platform database</th><th>Status</th><th>Sumber</th><th id="th-aksi" hidden>Aksi</th></tr></thead>
-        <tbody id="rows"></tbody>
-      </table>
+        <thead class="ant-table-thead"><tr><th class="ant-table-cell">SYSTEM_ID</th><th class="ant-table-cell">Nama sistem</th><th class="ant-table-cell">Deskripsi</th><th class="ant-table-cell">Pemilik bisnis</th><th class="ant-table-cell">Data owner</th><th class="ant-table-cell">Platform database</th><th class="ant-table-cell">Status</th><th class="ant-table-cell">Sumber</th><th class="ant-table-cell" id="th-aksi" hidden>Aksi</th></tr></thead>
+        <tbody id="rows" class="ant-table-tbody"></tbody>
+      </table></div></div></div>
       <div class="dg-empty" id="empty" hidden>Tidak ada sistem yang cocok.</div>
     </div>
   </section>
@@ -113,7 +113,7 @@
       <div class="body" style="font-size:13px;line-height:1.6">Sistem ini tidak akan tampil di daftar. Riwayat tetap tersimpan, dan sistem dapat ditambahkan kembali dengan SYSTEM_ID yang sama.
         <div class="dg-field" style="margin-top:14px"><label for="h-alasan">Alasan (opsional)</label><textarea id="h-alasan" rows="2" maxlength="500"></textarea></div>
         <div class="err" id="h-err" hidden style="color:#8E1418;font-size:12px"></div></div>
-      <footer><button class="dg-btn ghost" type="button" data-close-h>Batal</button><button class="dg-btn" type="button" id="h-ok" style="background:#FCE8E9;color:#8E1418;border:1px solid #E7B3B5">Ya, hapus</button></footer>
+      <footer><button class="ant-btn ant-btn-default" type="button" data-close-h>Batal</button><button class="ant-btn ant-btn-primary" type="button" id="h-ok" style="background:#FCE8E9;color:#8E1418;border:1px solid #E7B3B5">Ya, hapus</button></footer>
     </div>
   </div>
   
@@ -132,9 +132,9 @@
       return !term || [r.system_id, r.system_name, r.description, r.business_owner, r.data_owner].some(function (v) { return v && String(v).toLowerCase().indexOf(term) >= 0; });
     });
     rowsEl.innerHTML = list.map(function (r, i) {
-      return '<tr class="row" data-i="' + i + '"><td class="id">' + esc(r.system_id) + '</td><td>' + val(r.system_name) + '</td>' +
-        '<td>' + val(r.description) + '</td><td>' + val(r.business_owner) + '</td><td>' + val(r.data_owner) + '</td>' +
-        '<td>' + val(r.database_platform) + '</td><td>' + val(r.dm_assessment_status) + '</td><td><span class="dg-chip">' + (r.sumber === 'Aplikasi' ? 'Aplikasi' : 'Database') + '</span></td>' + (canEdit ? '<td class="act"><div class="dg-menu"><button class="dg-btn ghost" type="button" data-menu="1">Aksi ▾</button><div class="dg-menu-list" hidden><button type="button" data-ubah="' + esc(r.system_id) + '">Ubah</button><button type="button" class="danger" data-hapus="' + esc(r.system_id) + '">Hapus</button></div></div></td>' : '') + '</tr>';
+      return '<tr class="row" data-i="' + i + '"><td class="ant-table-cell id">' + esc(r.system_id) + '</td><td class="ant-table-cell ant-table-cell">' + val(r.system_name) + '</td>' +
+        '<td class="ant-table-cell ant-table-cell">' + val(r.description) + '</td><td class="ant-table-cell ant-table-cell">' + val(r.business_owner) + '</td><td class="ant-table-cell ant-table-cell">' + val(r.data_owner) + '</td>' +
+        '<td class="ant-table-cell ant-table-cell">' + val(r.database_platform) + '</td><td class="ant-table-cell ant-table-cell">' + val(r.dm_assessment_status) + '</td><td><span class="dg-chip">' + (r.sumber === 'Aplikasi' ? 'Aplikasi' : 'Database') + '</span></td>' + (canEdit ? '<td class="ant-table-cell act"><div class="dg-menu"><button class="ant-btn ant-btn-default" type="button" data-menu="1">Aksi ▾</button><div class="dg-menu-list" hidden><button type="button" data-ubah="' + esc(r.system_id) + '">Ubah</button><button type="button" class="danger" data-hapus="' + esc(r.system_id) + '">Hapus</button></div></div></td>' : '') + '</tr>';
     }).join('');
     empty.hidden = list.length > 0;
     count.textContent = list.length + ' dari ' + all.length + ' sistem';

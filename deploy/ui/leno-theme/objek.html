@@ -32,8 +32,8 @@
   .dg-sub { font-size: 12px; font-weight: 600; color: var(--uix-text-head); margin: 12px 0 6px; }
   .dg-empty { padding: 32px; text-align: center; color: var(--uix-text-secondary); }
   .dg-note { margin-top: 12px; font-size: 12px; color: var(--uix-text-muted); }
-.dg-btn { display:inline-flex; align-items:center; height:var(--uix-control-md); padding:0 14px; border-radius:var(--uix-radius); background:var(--uix-primary); color:var(--uix-on-primary); border:0; font:inherit; font-size:14px; font-weight:500; cursor:pointer; }
-  .dg-btn.ghost { background:var(--uix-surface); color:var(--uix-text-body); border:1px solid var(--uix-border-strong); }
+.ant-btn ant-btn-primary { display:inline-flex; align-items:center; height:var(--uix-control-md); padding:0 14px; border-radius:var(--uix-radius); background:var(--uix-primary); color:var(--uix-on-primary); border:0; font:inherit; font-size:14px; font-weight:500; cursor:pointer; }
+  .ant-btn ant-btn-primary.ghost { background:var(--uix-surface); color:var(--uix-text-body); border:1px solid var(--uix-border-strong); }
   .dg-head { display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; align-items:flex-start; }
   .dg-menu { position:relative; display:inline-block; }
   .dg-menu-list { position:absolute; right:0; top:32px; min-width:140px; background:var(--uix-surface); border:1px solid var(--uix-border); border-radius:var(--uix-radius); box-shadow:var(--uix-shadow-md); padding:4px; z-index:20; }
@@ -78,7 +78,7 @@
     <h1>Database Object</h1>
     <p>Pilih tabel dari database milik dataset. Klik tabel untuk melihat kolomnya.</p>
     </div>
-    <button class="dg-btn" id="btn-tambah" type="button" hidden>Tambah Database Object</button>
+    <button class="ant-btn ant-btn-primary" id="btn-tambah" type="button" hidden>Tambah Database Object</button>
   </section>
 
   <div class="dg-inline" id="m-form" hidden><div class="dg-dialog">
@@ -93,19 +93,19 @@
       <div class="dg-field"><label for="f-alasan">Alasan perubahan</label><input id="f-alasan" placeholder="Opsional"></div>
       <div class="err" id="f-err" hidden></div>
     </form>
-    <footer><button class="dg-btn ghost" type="button" data-close>Batal</button><button class="dg-btn" type="button" id="f-save">Simpan</button></footer>
+    <footer><button class="ant-btn ant-btn-default" type="button" data-close>Batal</button><button class="ant-btn ant-btn-primary" type="button" id="f-save">Simpan</button></footer>
   </div></div>
-  <section class="dg-card">
+  <section class="ant-card" style="margin-top:20px"><div class="ant-card-body" style="padding:0">
     <div class="dg-toolbar">
-      <input id="q" type="search" placeholder="Cari tabel, dataset, atau kolom…" aria-label="Cari tabel">
+      <input class="ant-input" id="q" type="search" placeholder="Cari tabel, dataset, atau kolom…" aria-label="Cari tabel">
       <select id="ds" aria-label="Dataset"><option value="">Semua dataset</option></select>
       <span class="dg-count" id="count"></span>
     </div>
-    <div class="dg-table-wrap">
+    <div class="ant-table-wrapper"><div class="ant-table"><div class="ant-table-container"><div class="ant-table-content">
       <table>
-        <thead><tr><th>TABLE_ID</th><th>Nama tabel</th><th>Dataset</th><th>Jenis objek</th><th>Database</th><th>Data sensitif</th><th>Jumlah kolom</th><th id="th-aksi" hidden>Aksi</th></tr></thead>
-        <tbody id="rows"></tbody>
-      </table>
+        <thead class="ant-table-thead"><tr><th class="ant-table-cell">TABLE_ID</th><th class="ant-table-cell">Nama tabel</th><th class="ant-table-cell">Dataset</th><th class="ant-table-cell">Jenis objek</th><th class="ant-table-cell">Database</th><th class="ant-table-cell">Data sensitif</th><th class="ant-table-cell">Jumlah kolom</th><th class="ant-table-cell" id="th-aksi" hidden>Aksi</th></tr></thead>
+        <tbody id="rows" class="ant-table-tbody"></tbody>
+      </table></div></div></div>
       <div class="dg-empty" id="empty" hidden>Tidak ada tabel yang cocok.</div>
     </div>
   </section>
@@ -115,7 +115,7 @@
     <header><h2>Hapus tabel dari daftar?</h2><p id="h-sub" style="font-size:13px;color:#6a7282;margin:4px 0 0"></p></header>
     <div class="body" style="font-size:13px;line-height:1.6">Tabel ini tidak akan tampil di daftar. Riwayat tetap tersimpan, dan tabel dapat ditambahkan kembali dengan TABLE_ID yang sama.
       <div class="dg-field" style="margin-top:14px"><label for="h-alasan">Alasan (opsional)</label><input id="h-alasan"></div><div class="err" id="h-err" hidden></div></div>
-    <footer><button class="dg-btn ghost" type="button" data-close-h>Batal</button><button class="dg-btn" type="button" id="h-ok" style="background:#FCE8E9;color:#8E1418;border:1px solid #E7B3B5">Ya, hapus</button></footer>
+    <footer><button class="ant-btn ant-btn-default" type="button" data-close-h>Batal</button><button class="ant-btn ant-btn-primary" type="button" id="h-ok" style="background:#FCE8E9;color:#8E1418;border:1px solid #E7B3B5">Ya, hapus</button></footer>
   </div></div>
   <p class="dg-note">Data hanya dibaca dari Trino (silver_dim_meta_table dan silver_dim_meta_field, sumber Excel ERM). Perubahan belum tersedia di halaman ini.</p>
 </main>
@@ -137,9 +137,9 @@
       return (fields[t.table_id] || []).some(function (f) { return (f.column_name || '').toLowerCase().indexOf(term) >= 0; });
     });
     rowsEl.innerHTML = list.map(function (t, i) {
-      return '<tr class="row" data-i="' + i + '"><td class="id">' + esc(t.table_id) + '</td><td>' + val(t.table_name) + '</td>' +
-        '<td>' + val(t.dataset_name) + '</td><td>' + val(t.object_type) + '</td><td>' + val(t.database_name) + '</td>' +
-        '<td>' + flag(t.sensitive_data_flag) + '</td><td>' + (fields[t.table_id] || []).length + '</td>' + (canEdit ? '<td class="act"><div class="dg-menu"><button class="dg-btn ghost" type="button" data-menu="1">Aksi ▾</button><div class="dg-menu-list" hidden><button type="button" data-ubah="' + esc(t.table_id) + '">Ubah</button><button type="button" class="danger" data-hapus="' + esc(t.table_id) + '">Hapus</button></div></div></td>' : '') + '</tr>';
+      return '<tr class="row" data-i="' + i + '"><td class="ant-table-cell id">' + esc(t.table_id) + '</td><td class="ant-table-cell ant-table-cell">' + val(t.table_name) + '</td>' +
+        '<td class="ant-table-cell ant-table-cell">' + val(t.dataset_name) + '</td><td class="ant-table-cell ant-table-cell">' + val(t.object_type) + '</td><td class="ant-table-cell ant-table-cell">' + val(t.database_name) + '</td>' +
+        '<td class="ant-table-cell ant-table-cell">' + flag(t.sensitive_data_flag) + '</td><td class="ant-table-cell ant-table-cell">' + (fields[t.table_id] || []).length + '</td>' + (canEdit ? '<td class="ant-table-cell act"><div class="dg-menu"><button class="ant-btn ant-btn-default" type="button" data-menu="1">Aksi ▾</button><div class="dg-menu-list" hidden><button type="button" data-ubah="' + esc(t.table_id) + '">Ubah</button><button type="button" class="danger" data-hapus="' + esc(t.table_id) + '">Hapus</button></div></div></td>' : '') + '</tr>';
     }).join('');
     empty.hidden = list.length > 0;
     count.textContent = list.length + ' dari ' + tables.length + ' tabel';
@@ -151,10 +151,10 @@
     if (next && next.classList.contains('detail')) { next.remove(); return; }
     var t = rowsEl._list[+tr.getAttribute('data-i')];
     var fs = fields[t.table_id] || [];
-    var body = fs.length ? '<table><thead><tr><th>FIELD_ID</th><th>Kolom</th><th>Business term</th><th>Tipe data</th><th>PK</th><th>Sensitif</th><th>Status metadata</th></tr></thead><tbody>' +
+    var body = fs.length ? '<table><thead class="ant-table-thead"><tr><th class="ant-table-cell">FIELD_ID</th><th class="ant-table-cell">Kolom</th><th class="ant-table-cell">Business term</th><th class="ant-table-cell">Tipe data</th><th class="ant-table-cell">PK</th><th class="ant-table-cell">Sensitif</th><th class="ant-table-cell">Status metadata</th></tr></thead><tbody>' +
       fs.map(function (f) {
-        return '<tr><td class="id">' + esc(f.field_id) + '</td><td>' + val(f.column_name) + '</td><td>' + val(f.business_term) + '</td><td>' + val(f.data_type) +
-          '</td><td>' + (isTrue(f.pk_flag) ? 'Ya' : '–') + '</td><td>' + flag(f.sensitive_flag) + '</td><td>' +
+        return '<tr class="ant-table-row"><td class="ant-table-cell id">' + esc(f.field_id) + '</td><td class="ant-table-cell ant-table-cell">' + val(f.column_name) + '</td><td class="ant-table-cell ant-table-cell">' + val(f.business_term) + '</td><td class="ant-table-cell ant-table-cell">' + val(f.data_type) +
+          '</td><td class="ant-table-cell ant-table-cell">' + (isTrue(f.pk_flag) ? 'Ya' : '–') + '</td><td class="ant-table-cell ant-table-cell">' + flag(f.sensitive_flag) + '</td><td class="ant-table-cell ant-table-cell">' +
           (f.metadata_status === 'Lengkap' ? '<span class="dg-chip ok">Lengkap</span>' : '<span class="dg-chip mn">' + esc(f.metadata_status || 'Perlu dilengkapi') + '</span>') + '</td></tr>';
       }).join('') + '</tbody></table>'
       : '<div class="dg-sub">Belum ada kolom untuk tabel ini.</div>';

@@ -14,13 +14,13 @@
   .dg-head { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
   .dg-head h1 { margin: 0 0 4px; font-size: 22px; color: var(--uix-text-head); font-weight: 600; }
   .dg-head p { margin: 0; font-size: 14px; color: var(--uix-text-secondary); line-height: 1.6; max-width: 720px; }
-  .dg-btn { display: inline-flex; align-items: center; height: var(--uix-control-md); padding: 0 14px; border-radius: var(--uix-radius); background: var(--uix-primary); color: var(--uix-on-primary); border: 0; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none; }
-  .dg-btn:hover { background: var(--uix-primary-strong); }
-  .dg-btn.ghost { background: var(--uix-surface); color: var(--uix-text-body); border: 1px solid var(--uix-border-strong); }
-  .dg-btn.ghost:hover { background: var(--uix-surface-muted); }
-  .dg-btn.danger { background: var(--uix-surface); color: #8E1418; border: 1px solid #E7B3B5; }
-  .dg-btn.danger:hover { background: #FCE8E9; }
-  .dg-btn.small { height: 28px; padding: 0 10px; font-size: 13px; }
+  .ant-btn ant-btn-primary { display: inline-flex; align-items: center; height: var(--uix-control-md); padding: 0 14px; border-radius: var(--uix-radius); background: var(--uix-primary); color: var(--uix-on-primary); border: 0; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none; }
+  .ant-btn ant-btn-primary:hover { background: var(--uix-primary-strong); }
+  .ant-btn ant-btn-primary.ghost { background: var(--uix-surface); color: var(--uix-text-body); border: 1px solid var(--uix-border-strong); }
+  .ant-btn ant-btn-primary.ghost:hover { background: var(--uix-surface-muted); }
+  .ant-btn ant-btn-primary.danger { background: var(--uix-surface); color: #8E1418; border: 1px solid #E7B3B5; }
+  .ant-btn ant-btn-primary.danger:hover { background: #FCE8E9; }
+  .ant-btn ant-btn-primary.small { height: 28px; padding: 0 10px; font-size: 13px; }
   .dg-card { background: var(--uix-surface); border: 1px solid var(--uix-border); border-radius: var(--uix-radius-md); box-shadow: var(--uix-shadow-xs); margin-top: 20px; }
   .dg-toolbar { display: flex; gap: 12px; padding: 16px; flex-wrap: wrap; align-items: center; border-bottom: 1px solid var(--uix-border); }
   .dg-toolbar input, .dg-toolbar select, .dg-form input, .dg-form select, .dg-form textarea { height: var(--uix-control-md); border: 1px solid var(--uix-field-border); border-radius: var(--uix-radius); padding: 0 10px; font: inherit; font-size: 14px; background: var(--uix-surface); color: var(--uix-text-body); box-sizing: border-box; width: 100%; }
@@ -81,7 +81,7 @@
       <h1>Master Organisasi</h1>
       <p>Unit kerja dan ORG_ID diambil langsung dari database. BPO memilih unit kerja dan melengkapi fungsinya.</p>
     </div>
-    <button class="dg-btn" id="btn-tambah" type="button" hidden>Tambah Master Organisasi</button>
+    <button class="ant-btn ant-btn-primary" id="btn-tambah" type="button" hidden>Tambah Master Organisasi</button>
   </section>
 
   <div class="dg-inline" id="m-form" hidden>
@@ -107,26 +107,26 @@
       <div class="err" id="f-err" hidden></div>
     </form>
     <footer>
-      <button class="dg-btn ghost" type="button" data-close>Batal</button>
-      <button class="dg-btn" type="button" id="f-save">Simpan</button>
+      <button class="ant-btn ant-btn-default" type="button" data-close>Batal</button>
+      <button class="ant-btn ant-btn-primary" type="button" id="f-save">Simpan</button>
     </footer>
   </div>
 </div>
-  <section class="dg-card">
+  <section class="ant-card" style="margin-top:20px"><div class="ant-card-body" style="padding:0">
     <div class="dg-toolbar">
-      <input id="q" type="search" placeholder="Cari unit kerja, fungsi, divisi…" aria-label="Cari unit kerja">
+      <input class="ant-input" id="q" type="search" placeholder="Cari unit kerja, fungsi, divisi…" aria-label="Cari unit kerja">
       <select id="dir" aria-label="Direktorat"><option value="">Semua direktorat</option></select>
       <span class="dg-count" id="count"></span>
     </div>
-    <div class="dg-table-wrap">
+    <div class="ant-table-wrapper"><div class="ant-table"><div class="ant-table-container"><div class="ant-table-content">
       <table>
-        <thead>
+        <thead class="ant-table-thead">
           <tr>
-            <th>ORG_ID</th><th>Fungsi</th><th>Unit kerja</th><th>Divisi</th><th>Direktorat</th><th>Sumber</th><th id="th-aksi" hidden>Aksi</th>
+            <th class="ant-table-cell">ORG_ID</th><th class="ant-table-cell">Fungsi</th><th class="ant-table-cell">Unit kerja</th><th class="ant-table-cell">Divisi</th><th class="ant-table-cell">Direktorat</th><th class="ant-table-cell">Sumber</th><th class="ant-table-cell" id="th-aksi" hidden>Aksi</th>
           </tr>
         </thead>
-        <tbody id="rows"></tbody>
-      </table>
+        <tbody id="rows" class="ant-table-tbody"></tbody>
+      </table></div></div></div>
       <div class="dg-empty" id="empty" hidden>Tidak ada unit kerja yang cocok.</div>
     </div>
   </section>
@@ -151,8 +151,8 @@
       <div class="err" id="h-err" hidden style="color:#8E1418;font-size:12px"></div>
     </div>
     <footer>
-      <button class="dg-btn ghost" type="button" data-close>Batal</button>
-      <button class="dg-btn danger" type="button" id="h-ok">Ya, hapus</button>
+      <button class="ant-btn ant-btn-default" type="button" data-close>Batal</button>
+      <button class="ant-btn ant-btn-dangerous" type="button" id="h-ok">Ya, hapus</button>
     </footer>
   </div>
 </div>
@@ -177,12 +177,12 @@
       return !term || [r.org_id, r.fungsi, r.unit_kerja, r.divisi, r.direktorat].some(function (v) { return v && String(v).toLowerCase().indexOf(term) >= 0; });
     });
     rowsEl.innerHTML = list.map(function (r) {
-      var act = canEdit ? '<td class="act"><div class="dg-menu"><button class="dg-btn ghost small" type="button" aria-haspopup="menu" aria-expanded="false" data-menu="' + esc(r.org_id) + '">Aksi ▾</button>' +
+      var act = canEdit ? '<td class="ant-table-cell act"><div class="dg-menu"><button class="ant-btn ant-btn-default ant-btn-sm" type="button" aria-haspopup="menu" aria-expanded="false" data-menu="' + esc(r.org_id) + '">Aksi ▾</button>' +
         '<div class="dg-menu-list" role="menu" hidden><button type="button" role="menuitem" data-ubah="' + esc(r.org_id) + '">Ubah</button>' +
         '<button type="button" role="menuitem" class="danger" data-hapus="' + esc(r.org_id) + '">Hapus</button></div></div></td>' : '';
-      return '<tr><td class="id">' + esc(r.org_id) + '</td>' +
-        '<td>' + (r.fungsi ? esc(r.fungsi) : '<span class="dg-chip mn">Perlu input manual</span>') + '</td>' +
-        '<td>' + esc(r.unit_kerja) + '</td><td>' + esc(r.divisi) + '</td><td>' + esc(r.direktorat) + '</td>' +
+      return '<tr class="ant-table-row"><td class="ant-table-cell id">' + esc(r.org_id) + '</td>' +
+        '<td class="ant-table-cell ant-table-cell">' + (r.fungsi ? esc(r.fungsi) : '<span class="dg-chip mn">Perlu input manual</span>') + '</td>' +
+        '<td class="ant-table-cell ant-table-cell">' + esc(r.unit_kerja) + '</td><td class="ant-table-cell ant-table-cell">' + esc(r.divisi) + '</td><td class="ant-table-cell ant-table-cell">' + esc(r.direktorat) + '</td>' +
         '<td><span class="dg-chip">' + (r.sumber === 'Aplikasi' ? 'Aplikasi' : 'Database') + '</span></td>' + act + '</tr>';
     }).join('');
     empty.hidden = list.length > 0;
