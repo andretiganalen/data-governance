@@ -106,9 +106,11 @@
       <h2 id="f-title">Tambah Master Organisasi</h2>
       <p id="f-sub">Unit kerja dan ORG_ID diambil langsung dari database. BPO memilih unit kerja dan melengkapi fungsinya.</p>
     </header>
-    <div class="dg-legend-in"><span><span class="dg-ch">Otomatis</span> Dibuat sistem, tidak bisa diketik</span><span><span class="dg-ch">Otomatis dari DB</span> Pilihannya ditarik dari database</span><span><span class="dg-ch">Dari master</span> Dipilih dari halaman lain</span><span><span class="dg-ch manual">Manual</span> Diketik atau dipilih pengguna</span></div><div class="dg-guide"><b>Petunjuk:</b> Pilih Direktorat dulu. Divisi mengikuti Direktorat, lalu Unit kerja. ORG_ID terisi otomatis dari Divisi. Fungsi dipilih terakhir.</div>
+    <div class="dg-legend-in"><span><span class="dg-ch">Otomatis</span> Dibuat sistem, tidak bisa diketik</span><span><span class="dg-ch">Otomatis dari DB</span> Pilihannya ditarik dari database</span><span><span class="dg-ch">Dari master</span> Dipilih dari halaman lain</span><span><span class="dg-ch manual">Manual</span> Diketik atau dipilih pengguna</span></div><div class="dg-guide"><b>Petunjuk:</b> Pilih Fungsi dulu, lalu Direktorat, Divisi, dan Unit kerja. ORG_ID terisi otomatis dari Divisi.</div>
       <form class="dg-form body" id="f" novalidate>
       
+      <div class="dg-field"><label for="f-fungsi">Fungsi * <span class="dg-chip mn">Manual</span></label>
+        <select id="f-fungsi"></select><input id="f-fungsi-baru" placeholder="Nama fungsi baru" hidden style="margin-top:8px"><div class="err" data-err="fungsi"></div></div>
       <div class="dg-field"><label for="f-dir">Direktorat * <span class="dg-chip">Otomatis dari DB</span></label>
         <select id="f-dir"></select><div class="err" data-err="direktorat"></div></div>
       <div class="dg-field"><label for="f-div">Divisi * <span class="dg-chip">Otomatis dari DB</span></label>
@@ -117,8 +119,7 @@
         <input id="f-unit" autocomplete="off" placeholder="Nama unit kerja"><div class="err" data-err="unit_kerja"></div></div>
       <div class="dg-field"><label for="f-id">ORG_ID * <span class="dg-ch">Otomatis dari form isian sebelumnya</span></label>
         <input id="f-id" autocomplete="off" readonly placeholder="Otomatis dari Divisi"><small>Format huruf-angka, misalnya UD-1. Tidak bisa diubah setelah disimpan.</small><div class="err" data-err="org_id"></div></div>
-      <div class="dg-field"><label for="f-fungsi">Fungsi * <span class="dg-chip mn">Manual</span></label>
-        <select id="f-fungsi"></select><input id="f-fungsi-baru" placeholder="Nama fungsi baru" hidden style="margin-top:8px"><div class="err" data-err="fungsi"></div></div>
+      
       
       <div class="dg-field"><label for="f-alasan">Alasan perubahan</label>
         <textarea id="f-alasan" maxlength="500" placeholder="Opsional, misalnya nomor nota atau dokumen dasar"></textarea></div>
@@ -244,17 +245,17 @@
     $(id).value = cur || '';
   }
   function chainFrom(level) {
-    var dirs = uniq(all.map(function (r) { return r.direktorat; }));
-    var dsel = $('f-dir').value;
+    var fg = $('f-fungsi').value === FUNGSI_BARU ? '' : $('f-fungsi').value;
+    var inFg = function (r) { return !fg || r.fungsi === fg; };
+    var dirs = uniq(all.filter(inFg).map(function (r) { return r.direktorat; }));
+    var dsel = level === 'fungsi' ? '' : $('f-dir').value;
     if (dirs.indexOf(dsel) < 0) dsel = '';
     fillSel('f-dir', dirs, dsel);
-    var divs = uniq(all.filter(function (r) { return !dsel || r.direktorat === dsel; }).map(function (r) { return r.divisi; }));
-    var vsel = level === 'dir' ? '' : $('f-div').value;
+    var divs = uniq(all.filter(function (r) { return inFg(r) && (!dsel || r.direktorat === dsel); }).map(function (r) { return r.divisi; }));
+    var vsel = (level === 'fungsi' || level === 'dir') ? '' : $('f-div').value;
     if (divs.indexOf(vsel) < 0) vsel = '';
     fillSel('f-div', divs, vsel);
     $('f-div').disabled = !dsel;
-    var row = all.find(function (r) { return r.divisi === vsel; });
-    if (row && (level === 'div' || level === 'init')) $('f-fungsi').value = row.fungsi || '';
     orgIdFromDivisi();
   }
   function orgIdFromDivisi() {
@@ -267,6 +268,7 @@
     $('f-id').value = prefix + '-' + (Math.max.apply(null, [0].concat(nums)) + 1);
     $('f-id').readOnly = true;
   }
+  $('f-fungsi').addEventListener('change', function () { chainFrom('fungsi'); });
   $('f-dir').addEventListener('change', function () { chainFrom('dir'); });
   $('f-div').addEventListener('change', function () { chainFrom('div'); });
   function fillLists() {
@@ -305,7 +307,7 @@
     $('f-fungsi').value = editing && editing.fungsi ? editing.fungsi : '';
     $('f-fungsi-baru').hidden = true; $('f-fungsi-baru').value = '';
     $('f-alasan').value = '';
-    chainFrom(editing ? 'init' : 'dir');
+    chainFrom(editing ? 'init' : 'fungsi');
     $('m-form').hidden = false; document.getElementById('m-form') && document.getElementById('m-form').scrollIntoView({block:'start', behavior:'smooth'}); document.getElementById('m-def') && document.getElementById('m-def').scrollIntoView({block:'start', behavior:'smooth'});
     $(editing ? 'f-unit' : 'f-id').focus();
   }
