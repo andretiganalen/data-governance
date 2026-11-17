@@ -57,7 +57,8 @@
   .dg-ws-meta .err { color: #9A4A06; }
   .dg-ws-meta .draft { color: #566173; }
   .dg-ws-meta .cnt { margin-left: auto; color: #566173; font-variant-numeric: tabular-nums; }
-  .dg-ws-meta .cnt.over { color: #9A4A06; font-weight: 600; }
+  .dg-ws-meta .cnt.over { color: #C2410C; font-weight: 600; }
+  .dg-chip.long { background: #FDF1E3; color: #9A4A06; margin-left: 6px; }
   .dg-checks { border: 1px solid #DFE3EA; border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
   .dg-checks .hd { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .dg-checks .hd b { font-weight: 600; font-size: 13px; color: #16202E; }
@@ -68,6 +69,10 @@
   .dg-checks li .ic { flex: 0 0 18px; height: 18px; box-sizing: border-box; border-radius: 50%; margin-top: 1px; display: inline-flex; align-items: center; justify-content: center; }
   .dg-checks li.ok .ic { background: #ae2524; }
   .dg-checks li.fail .ic { border: 2px solid #B45309; background: #fff; }
+  .dg-checks li.warn { color: #9A4A06; }
+  .dg-checks li.warn .ic { background: #EA8A1A; color: #fff; font-size: 12px; font-weight: 700; }
+  .dg-checks li.warn .ic::before { content: '!'; }
+  .dg-checks li .tag.warn { background: #FDF1E3; color: #9A4A06; }
   .dg-checks li.idle .ic { border: 2px solid #C9CFDA; background: #F5F6F8; }
   .dg-checks li .tx { flex: 1; }
   .dg-checks li .tag { flex: 0 0 auto; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
@@ -237,13 +242,14 @@
     var sentences = (t.match(/[.!?](\s|$)/g) || []).length || (t ? 1 : 0);
     var list = [
       { text: tplOnly ? 'Lengkapi kalimat setelah awalan template' : 'Ditulis dalam kalimat lengkap, minimal 10 karakter', req: true, ok: t.length >= 10 && !tplOnly },
-      { text: 'Tidak lebih dari 500 karakter', req: true, ok: t.length <= MAX },
+      // > 500 karakter: hanya disebutkan (oranye), tidak menghalangi simpan.
+      { text: t.length > MAX ? 'Lebih dari 500 karakter (' + t.length + ' karakter), sebaiknya diringkas' : 'Tidak lebih dari 500 karakter', req: false, warn: true, ok: t.length <= MAX },
       { text: 'Tidak hanya mengulang business term "' + (fld.business_term || '') + '"', req: false, ok: rest.replace(/[^a-z0-9]/g, '').length >= 10 },
       { text: usedTech.length ? 'Hindari nama kolom teknis (' + usedTech.join(', ') + ')' : 'Tidak memakai nama kolom teknis', req: false, ok: usedTech.length === 0 },
       { text: 'Tidak diawali "adalah", "merupakan", atau "yaitu"', req: false, ok: !/^(adalah|merupakan|yaitu)\b/i.test(t) },
       { text: 'Ringkas, maksimal 3 kalimat', req: false, ok: sentences <= 3 }
     ];
-    return list.map(function (c) { return { text: c.text, req: c.req, ok: !empty && c.ok, fail: !empty && !c.ok, idle: empty }; });
+    return list.map(function (c) { return { text: c.text, req: c.req, warnKind: !!c.warn, ok: !empty && c.ok, fail: !empty && !c.ok, idle: empty }; });
   }
   var TPL = { 'Enum': ['Kategori yang menunjukkan ', 'Pilihan yang menentukan '], 'Text/String': ['Uraian mengenai ', 'Keterangan yang menjelaskan '], 'Integer': ['Nilai angka yang menunjukkan '], 'Float/Decimal/Double': ['Nilai angka yang menunjukkan '], 'Currency': ['Nilai dalam Rupiah yang menunjukkan '], 'Percentage': ['Persentase yang menunjukkan '], 'Date': ['Tanggal saat '], 'Datetime/Timestamp': ['Waktu saat '], 'Boolean': ['Penanda apakah '], 'Binary/BLOB': ['Dokumen pendukung yang '] };
   function templatesOf(fld) {
@@ -287,6 +293,7 @@
       var draft = drafts[fid] !== undefined && drafts[fid] !== (r.definisi || '');
       var def = has ? esc(r.definisi) : '<span class="dg-chip mn">Belum ada definisi</span>';
       if (draft) def += '<span class="dg-chip draft">Ada draf</span>';
+      if (has && String(r.definisi).length > MAX) def += ' <span class="dg-chip long" title="Sebaiknya diringkas">' + String(r.definisi).length + ' karakter, lebih dari 500</span>';
       var tb = tablesOf(r);
       var used = tb.length + ' tabel' + (tb.length ? ': ' + esc(tb.join(', ')) : '');
       var cls = confirmDel === fid ? 'confirm' : (work && work.fid === fid ? 'editing' : (flash === fid ? 'flash' : ''));
@@ -315,21 +322,22 @@
     var fld = FM[work.fid], text = textOf(work.fid), t = text.trim();
     var cks = checks(fld, text);
     var reqFail = cks.filter(function (c) { return c.req && !c.ok; });
-    var advOk = cks.filter(function (c) { return !c.req && c.ok; }).length, advN = cks.filter(function (c) { return !c.req; }).length;
+    var advOk = cks.filter(function (c) { return !c.req && !c.warnKind && c.ok; }).length, advN = cks.filter(function (c) { return !c.req && !c.warnKind; }).length;
+    var longW = cks.some(function (c) { return c.warnKind && c.fail; });
     var errMsg = '';
-    if (work.tried && reqFail.length) errMsg = !t ? 'Isi definisi terlebih dahulu.' : (reqFail[0].text.indexOf('Tidak lebih') === 0 ? 'Definisi maksimal 500 karakter.' : reqFail[0].text + '.');
+    if (work.tried && reqFail.length) errMsg = !t ? 'Isi definisi terlebih dahulu.' : reqFail[0].text + '.';
     if (work.srv) errMsg = work.srv;
     $('ws-err').textContent = errMsg; $('ws-err').hidden = !errMsg;
     $('ws-def').setAttribute('aria-invalid', errMsg ? 'true' : 'false');
     var dirty = drafts[work.fid] !== undefined && drafts[work.fid] !== (fld.definisi || '');
     $('ws-draft').hidden = !dirty;
     $('ws-count').textContent = t.length + ' / ' + MAX; $('ws-count').className = 'cnt' + (t.length > MAX ? ' over' : '');
-    $('ws-sum').textContent = t ? (reqFail.length ? reqFail.length + ' syarat wajib belum terpenuhi' : 'Syarat wajib terpenuhi · ' + advOk + ' dari ' + advN + ' saran') : 'Mulai mengetik untuk melihat hasil cek';
+    $('ws-sum').textContent = t ? (reqFail.length ? reqFail.length + ' syarat wajib belum terpenuhi' : 'Syarat wajib terpenuhi · ' + advOk + ' dari ' + advN + ' saran' + (longW ? ' · lebih dari 500 karakter' : '')) : 'Mulai mengetik untuk melihat hasil cek';
     var CHECK = '<svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
     $('ws-list').innerHTML = cks.map(function (c) {
-      var st = c.ok ? 'ok' : (c.fail ? 'fail' : 'idle');
+      var st = c.ok ? 'ok' : (c.fail ? (c.warnKind ? 'warn' : 'fail') : 'idle');
       var lbl = c.ok ? 'Terpenuhi' : (c.fail ? 'Belum terpenuhi' : 'Belum dicek');
-      return '<li class="' + st + '"><span class="ic" role="img" aria-label="' + lbl + '">' + (c.ok ? CHECK : '') + '</span><span class="tx">' + esc(c.text) + '</span><span class="tag ' + (c.req ? 'req">Wajib' : 'adv">Saran') + '</span></li>';
+      return '<li class="' + st + '"><span class="ic" role="img" aria-label="' + lbl + '">' + (c.ok ? CHECK : '') + '</span><span class="tx">' + esc(c.text) + '</span><span class="tag ' + (c.req ? 'req">Wajib' : (c.warnKind ? 'warn">Perhatian' : 'adv">Saran')) + '</span></li>';
     }).join('');
     $('ws-tpl').hidden = !!t;
     $('ws-savenext').hidden = !nextTodo(work.fid);

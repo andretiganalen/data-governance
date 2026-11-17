@@ -39,7 +39,7 @@ def latest_app(tq) -> dict[str, dict]:
 
 
 # Cek kualitas definisi (sama dengan artifact "Business Glossary"): 2 syarat Wajib, 4 Saran.
-MIN_LEN, MAX_LEN = 10, 500
+MIN_LEN, MAX_LEN, HARD_MAX = 10, 500, 4000
 STARTERS = ("kategori yang menunjukkan", "pilihan yang menentukan", "uraian mengenai", "keterangan yang menjelaskan",
             "nilai angka yang menunjukkan", "nilai dalam rupiah yang menunjukkan", "persentase yang menunjukkan",
             "tanggal saat", "waktu saat", "penanda apakah", "dokumen pendukung yang", "nilai yang menunjukkan")
@@ -64,8 +64,8 @@ def validate(field_id: str | None, definisi: str | None, current: set[str], aksi
         return fid, "Lengkapi kalimat setelah awalan template."
     if len(d) < MIN_LEN:
         return fid, "Ditulis dalam kalimat lengkap, minimal 10 karakter."
-    if len(d) > MAX_LEN:
-        return fid, "Definisi maksimal 500 karakter."
+    if len(d) > HARD_MAX:   # > 500 hanya peringatan (oranye) di layar; batas keras untuk melindungi tabel
+        return fid, "Definisi terlalu panjang (maksimal 4000 karakter)."
     return fid, ""
 
 
