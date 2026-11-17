@@ -1092,9 +1092,8 @@ def main() -> None:
     if a.cmd == "cdc":
         return cdc(tq, schema, batch_id, now)
     if a.cmd == "glossary":
-        import glossary_app
-        log(f"gold_meta_glossary_app: {glossary_app.build(tq, schema, batch_id)} istilah dicatat dari aplikasi")
-        return log(f"gold_meta_fungsi: {glossary_app.build_fungsi(tq, schema, batch_id)} Fungsi dicatat dari aplikasi")
+        import glossary_app   # pipeline lengkap: glossary_org, master_org, fungsi_pdf, glossary_app, fungsi, status kelengkapan
+        return glossary_app.main()
     inbox = DATA / "medallion" / "inbox"
     if a.cmd == "inbox" and not any(f.is_file() and f.suffix.lower() in (".xlsx", ".xlsm", ".csv") for f in inbox.glob("*")):
         return                                   # timer tiap 10 menit: inbox kosong → Trino tidak disentuh sama sekali
